@@ -1,0 +1,18 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+pika = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.6"
+
+[scripts]
+consume = "python consume.py"
+publish = "python publish.py"
+build = "docker build -t runner:latest -f docker/Dockerfile ."
+docker = "docker run --network=host runner"
