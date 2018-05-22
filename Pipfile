@@ -7,6 +7,11 @@ name = "pypi"
 pika = "*"
 
 [dev-packages]
+docker = "*"
+flask = "*"
+flask-sockets = "*"
+gevent = "==1.2.2"
+gevent-websocket = "*"
 
 [requires]
 python_version = "3.6"
@@ -14,5 +19,6 @@ python_version = "3.6"
 [scripts]
 consume = "python consume.py"
 publish = "python publish.py"
-build = "docker build -t runner:latest -f docker/Dockerfile ."
-docker = "docker run --network=host runner"
+build = "docker build -t pythondiscord/snekbox:latest -f docker/Dockerfile ."
+compose = "docker-compose up"
+webapp = "PYTHONPATH=/vagrant/discord-python/snekbox python webapp/webapp.py"

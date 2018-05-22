@@ -1,14 +1,22 @@
 import pika
-from config import (
-    USERNAME,
-    PASSWORD,
-    HOST,
-    PORT,
-    EXCHANGE,
-    EXCHANGE_TYPE,
-    QUEUE,
-    ROUTING_KEY,
-)
+from config import USERNAME
+from config import PASSWORD
+from config import HOST
+from config import PORT
+from config import EXCHANGE
+from config import EXCHANGE_TYPE
+from config import QUEUE
+from config import ROUTING_KEY
+
+try:
+    import docker
+    client = docker.from_env()
+    containers = client.containers.get('snekbox_pdrmq_1')
+    print("Attempting to get rabbitmq host automatically")
+    HOST = list(containers.attrs.get('NetworkSettings').get('Networks').values())[0]['IPAddress']
+    print(f"found {HOST}")
+except:
+    pass
 
 def send(message):
     credentials = pika.PlainCredentials(USERNAME, PASSWORD)
@@ -28,15 +36,11 @@ def send(message):
     )
 
     if result:
-        print(f"""Connecting to
-            host: {HOST}
-            port: {PORT}
-            exchange: {EXCHANGE}
-            queue: {QUEUE}""", flush=True)
+        print(f"""Connecting to\nhost:     {HOST}\nport:     {PORT}\nexchange: {EXCHANGE}\nqueue:    {QUEUE}""", flush=True)
         print(f"Sent: '{message}'")
     else:
         print("not delivered")
 
     connection.close()
 
-send('print "bacon is delicious"')
+#send('print("bacon is delicious")')

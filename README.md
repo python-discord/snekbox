@@ -3,20 +3,20 @@ Python sandbox runners for executing code in isolation
 
 # Dependencies
 
-| dep    | version (or greater) |
-|--------|----------------------|
-| python | 3.6.5                |
-| pip    | 10.0.1               |
-| pipenv | 2018.05.18           |
-| docker | 18.03.1-ce           |
-
+| dep            | version (or greater) |
+|----------------|:---------------------|
+| python         | 3.6.5                |
+| pip            | 10.0.1               |
+| pipenv         | 2018.05.18           |
+| docker         | 18.03.1-ce           |
+| docker-compose | 1.21.2               |
 
 ## Setup local test
 
 install python packages
 
 ```bash
-pipenv sync
+pipenv sync --dev
 ```
 
 Start a rabbitmq instance and get the container IP
@@ -55,3 +55,23 @@ docker logs snekbox -f
 #terminal 2
 pipenv run python runner/publish.py
 ```
+
+## Docker compose
+
+Start both rabbitmq and a consumer with docker-compose
+
+```bash
+docker-compose up
+```
+
+## Try the webapp
+
+After getting docker-compose to run the rabbitmq server and the consumer
+
+try running the webapp in another terminal
+
+```bash
+pipenv run python webapp/webapp.py
+```
+
+and then open up the page: http://localhost:5000 (or whatever address it's running on)

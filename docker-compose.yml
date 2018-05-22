@@ -1,0 +1,18 @@
+version: '3'
+services:
+  pdrmq:
+    hostname: "pdrmq"
+    image: rabbitmq:3.7.5-alpine
+    networks:
+      - sneknet
+
+  pdsnekbox:
+    hostname: "pdsnekbox"
+    image: pythondiscord/snekbox:latest
+    networks:
+      - sneknet
+    environment:
+      RMQ_HOST: pdrmq
+
+networks:
+  sneknet:
