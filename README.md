@@ -1,5 +1,20 @@
 # snekbox
-Python sandbox runners for executing code in isolation
+Python sandbox runners for executing code in isolation aka snekbox
+
+The user sends a piece of python code to a snekbox, the snekbox executes the code and sends the result back to the users.
+As of 2018-05-22 (yyyy-mm-dd) it does not return the result, it simply outputs it to stdout.
+
+```
+user ->
+        website ->
+        <-      websocket ->
+                <-      webserver ->
+                        <-      rabbitmq ->
+                                <-      snekbox ->
+                                        <-      <executes python code>
+
+```
+
 
 # Dependencies
 
@@ -25,7 +40,7 @@ Start a rabbitmq instance and get the container IP
 docker run --name rmq -d rabbitmq:3.7.5-alpine
 docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' rmq
 # expected output with default setting: 172.17.0.2
-# If not, change the runner/config.py file to match
+# If not, change the snekbox/config.py file to match
 ```
 
 ## Test the code
@@ -34,10 +49,10 @@ use two terminals!
 
 ```bash
 #terminal 1
-pipenv run python runner/consume.py
+pipenv run python snekbox/consume.py
 
 #terminal 2
-pipenv run python runner/publish.py
+pipenv run python snekbox/publish.py
 ```
 
 The publish will put a message on the message queue
@@ -53,7 +68,7 @@ docker run --name snekbox -d snekbox:latest
 docker logs snekbox -f
 
 #terminal 2
-pipenv run python runner/publish.py
+pipenv run python snekbox/publish.py
 ```
 
 ## Docker compose
