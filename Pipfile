@@ -19,6 +19,7 @@ python_version = "3.6"
 [scripts]
 consume = "python consume.py"
 publish = "python publish.py"
+webapp = "python webapp.py"
 build = "docker build -t pythondiscord/snekbox:latest -f docker/Dockerfile ."
+buildwebapp = "docker build -t pythondiscord/snekboxweb:latest -f docker/Dockerfile.webapp ."
 compose = "docker-compose up"
-webapp = "PYTHONPATH=/vagrant/discord-python/snekbox python webapp/webapp.py"

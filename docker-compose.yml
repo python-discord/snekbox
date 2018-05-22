@@ -14,5 +14,18 @@ services:
     environment:
       RMQ_HOST: pdrmq
 
+  pdsnekboxweb:
+    hostname: "pdsnekboxweb"
+    image: pythondiscord/snekboxweb:latest
+    networks:
+      - sneknet
+    ports:
+       - "5000:5000"
+    expose:
+      - "5000"
+    environment:
+      RMQ_HOST: pdrmq
+
+
 networks:
   sneknet:

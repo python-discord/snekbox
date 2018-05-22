@@ -58,20 +58,12 @@ pipenv run python runner/publish.py
 
 ## Docker compose
 
-Start both rabbitmq and a consumer with docker-compose
+Start all the containers with docker-compose
 
 ```bash
 docker-compose up
 ```
 
-## Try the webapp
+this boots up rabbitmq, the snekbox and a webinterface on port 5000
 
-After getting docker-compose to run the rabbitmq server and the consumer
-
-try running the webapp in another terminal
-
-```bash
-pipenv run python webapp/webapp.py
-```
-
-and then open up the page: http://localhost:5000 (or whatever address it's running on)
+`http://localhost:5000`
