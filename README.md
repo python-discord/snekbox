@@ -61,10 +61,10 @@ and the consumer will pick it up and do stuff
 ## Build and run the consumer in a container
 
 ```bash
-docker build -t snekbox:latest -f docker/Dockerfile .
+docker build -t pythondiscord/snekbox:latest -f docker/Dockerfile .
 
 #terminal 1
-docker run --name snekbox -d snekbox:latest
+docker run --name snekbox -d pythondiscord/snekbox:latest
 docker logs snekbox -f
 
 #terminal 2
