@@ -15,7 +15,7 @@ user ->
 ```
 
 
-# Dependencies
+## Dependencies
 
 | dep            | version (or greater) |
 |----------------|:---------------------|
@@ -50,8 +50,6 @@ netstat -plnt
 # tcp    0.0.0.0:5000    LISTEN
 ```
 
-## Test the code
-
 use two terminals!
 
 ```bash
@@ -64,17 +62,18 @@ pipenv run python snekweb.py
 
 `http://localhost:5000`
 
-## Build and run the consumer in a container
+_________________________________
+
+# Build the containers
 
 ```bash
-docker build -t pythondiscord/snekbox:latest -f docker/Dockerfile .
+# Build
+pipenv run buildbox
+pipenv run buildweb
 
-#terminal 1
-docker run --name snekbox -d pythondiscord/snekbox:latest
-docker logs snekbox -f
-
-#terminal 2
-pipenv run python snekbox/publish.py
+# Push
+pipenv run pushbox
+pipenv run pushweb
 ```
 
 ## Docker compose
