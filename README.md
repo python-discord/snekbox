@@ -43,20 +43,27 @@ docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' rmq
 # If not, change the snekbox/config.py file to match
 ```
 
+start the webserver
+
+```bash
+docker run --name snekboxweb --network=host -d pythondiscord/snekboxweb:latest
+netstat -plnt
+# tcp    0.0.0.0:5000    LISTEN
+```
+
 ## Test the code
 
 use two terminals!
 
 ```bash
 #terminal 1
-pipenv run python snekbox/consume.py
+pipenv run python snekbox.py
 
 #terminal 2
-pipenv run python snekbox/publish.py
+pipenv run python snekweb.py
 ```
 
-The publish will put a message on the message queue
-and the consumer will pick it up and do stuff
+`http://localhost:5000`
 
 ## Build and run the consumer in a container
 

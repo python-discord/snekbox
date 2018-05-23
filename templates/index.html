@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <meta charset="utf-8" />
-<title>WebSocket Test</title>
+<title>snekboxweb</title>
 <script language="javascript" type="text/javascript">
 
+let _ready = false
 var output;
 
 function init(){
     output = document.getElementById("output");
-    testWebSocket();
+    websocketHandler();
 }
 
-function testWebSocket(){
+function websocketHandler(){
     var here = window.location.host;
     var wsUri = `ws://${here}/ws`;
     websocket = new WebSocket(wsUri);
@@ -21,25 +22,47 @@ function testWebSocket(){
 }
 
 function onOpen(evt){
-    writeToScreen("CONNECTED");
+    _ready = true
+    console.log("CONNECTED");
 }
 
 function onClose(evt){
-    writeToScreen("DISCONNECTED");
+    _ready = false
+    console.log("DISCONNECTED");
 }
 
 function onMessage(evt){
     writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>');
+}
+
+function exit(){
     websocket.close();
 }
 
 function onError(evt){
+    _ready = false
     writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
 }
 
-function sendMessage(message){
-    writeToScreen("SENT: " + message);
-    websocket.send(message);
+function sendMessage(msg){
+    waitForSocketConnection(function(){
+        websocket.send(msg);
+    });
+    console.log("sent message "+msg)
+}
+
+function waitForSocketConnection(callback){
+    setTimeout(
+        function () {
+            if (_ready === true) {
+                if(callback != null){
+                    callback();}
+                return;
+            }
+            else {
+                waitForSocketConnection(callback);}
+
+        }, 500); // milliseconds
 }
 
 function writeToScreen(message){
@@ -58,7 +81,12 @@ window.addEventListener("load", init, false);
 
 </script>
 
-<input type="text" id="field1" value="print('fsdf')"><br>
+<textarea rows="4" cols="50" type="text" id="field1">
+def sum(a,b):
+    return a+b
+print( sum(1,2) )
+</textarea>
+<br>
 <button onclick="sendFromInput()">Send</button>
-
+<button onclick="exit()">disconnect from websocket</button>
 <div id="output"></div>

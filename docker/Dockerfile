@@ -14,10 +14,10 @@ RUN pip install pipenv
 RUN mkdir -p /snekbox
 COPY Pipfile /snekbox
 COPY Pipfile.lock /snekbox
-COPY snekbox /snekbox
+COPY . /snekbox
 WORKDIR /snekbox
 
 RUN pipenv sync
 
 ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["pipenv", "run", "consume"]
+CMD ["pipenv", "run", "snekbox"]

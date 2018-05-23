@@ -13,3 +13,7 @@ Vagrantfile
 .gitignore
 .travis.yml
 docker
+docker-compose.yml
+LICENSE
+README.md
+tox.ini

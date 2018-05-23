@@ -14,7 +14,7 @@ RUN pip install pipenv
 RUN mkdir -p /webapp
 COPY Pipfile /webapp
 COPY Pipfile.lock /webapp
-COPY webapp /webapp
+COPY . /webapp
 WORKDIR /webapp
 
 RUN pipenv sync --dev
@@ -22,4 +22,4 @@ RUN pipenv sync --dev
 EXPOSE 5000
 
 ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["pipenv", "run", "webapp"]
+CMD ["pipenv", "run", "snekweb"]
