@@ -39,7 +39,7 @@ Start a rabbitmq instance and get the container IP
 docker run --name rmq -d rabbitmq:3.7.5-alpine
 docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' rmq
 # expected output with default setting: 172.17.0.2
-# If not, change the snekbox/config.py file to match
+# If not, change the config.py file to match
 ```
 
 start the webserver
