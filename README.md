@@ -2,7 +2,6 @@
 Python sandbox runners for executing code in isolation aka snekbox
 
 The user sends a piece of python code to a snekbox, the snekbox executes the code and sends the result back to the users.
-As of 2018-05-22 (yyyy-mm-dd) it does not return the result, it simply outputs it to stdout.
 
 ```
 user ->
