@@ -3,8 +3,18 @@
 <title>snekboxweb</title>
 <script language="javascript" type="text/javascript">
 
+
 let _ready = false
+let snekbox_id
 var output;
+
+snekbox_id = sessionStorage.getItem("snekbox_id");
+console.log(snekbox_id)
+if (snekbox_id == null) {
+    snekbox_id = generate_id()
+    sessionStorage.setItem("snekbox_id", snekbox_id)
+    console.log(snekbox_id)
+}
 
 function init(){
     output = document.getElementById("output");
@@ -13,7 +23,7 @@ function init(){
 
 function websocketHandler(){
     var here = window.location.host;
-    var wsUri = `ws://${here}/ws`;
+    var wsUri = `ws://${here}/ws/`+snekbox_id;
     websocket = new WebSocket(wsUri);
     websocket.onopen = function(evt) { onOpen(evt) };
     websocket.onclose = function(evt) { onClose(evt) };
@@ -76,6 +86,13 @@ function sendFromInput(){
     var msg = document.getElementById("field1").value;
     sendMessage(msg)
 }
+
+function generate_id(){
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
+
+
 
 window.addEventListener("load", init, false);
 

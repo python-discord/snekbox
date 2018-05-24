@@ -12,13 +12,14 @@ flask = "*"
 flask-sockets = "*"
 gevent = "==1.2.2"
 gevent-websocket = "*"
+gunicorn = "*"
 
 [requires]
 python_version = "3.6"
 
 [scripts]
 snekbox = "python snekbox.py"
-snekweb = "python snekweb.py"
+snekweb = "gunicorn -w 1 -b 0.0.0.0:5000 -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker snekweb:app"
 buildbox = "docker build -t pythondiscord/snekbox:latest -f docker/Dockerfile ."
 buildweb = "docker build -t pythondiscord/snekboxweb:latest -f docker/Dockerfile.webapp ."
 pushbox = "docker push pythondiscord/snekbox:latest"

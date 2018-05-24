@@ -3,6 +3,7 @@ import sys
 import time
 import pika
 import io
+import json
 
 from rmq.consumer import consume
 from rmq.publisher import publish
@@ -39,9 +40,11 @@ def message_handler(ch, method, properties, body):
 
     # Execute code snippets here
     print(f"incoming: {msg}", flush=True)
-    result = execute(msg)
-    print(f"outgoing: {result}", flush=True)
-    publish(result, host=HOST, queue=RETURN_QUEUE, routingkey=RETURN_ROUTING_KEY, exchange=RETURN_EXCHANGE, exchange_type=EXCHANGE_TYPE)
+    snek_msg = json.loads(msg)
+    for snekid, snekcode in snek_msg.items():
+        result = execute(snekcode)
+        print(f"outgoing: {result}", flush=True)
+        publish(result, host=HOST, queue=snekid, routingkey=snekid, exchange=snekid, exchange_type=EXCHANGE_TYPE)
 
     ch.basic_ack(delivery_tag = method.delivery_tag)
 
