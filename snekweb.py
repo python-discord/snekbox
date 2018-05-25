@@ -12,11 +12,9 @@ from flask import render_template
 from flask_sockets import Sockets
 
 from config import HOST
-from config import PORT
 from config import EXCHANGE
 from config import EXCHANGE_TYPE
 from config import QUEUE
-from config import RETURN_QUEUE
 from config import ROUTING_KEY
 
 app = Flask(__name__)
@@ -28,6 +26,7 @@ sockets = Sockets(app)
 def index():
     return render_template('index.html')
 
+
 @sockets.route('/ws/<snekboxid>')
 def websocket_route(ws, snekboxid):
     RMQ_queue = queue.Queue(maxsize=0)
@@ -35,9 +34,10 @@ def websocket_route(ws, snekboxid):
     def message_handler(ch, method, properties, body):
         msg = body.decode('utf-8')
         RMQ_queue.put(msg)
-        ch.basic_ack(delivery_tag = method.delivery_tag)
+        ch.basic_ack(delivery_tag=method.delivery_tag)
 
-    consumer = threading.Thread(target=consume, kwargs={'host':HOST, 'queue':snekboxid, 'callback':message_handler})
+    consumer_parameters = {'host': HOST, 'queue': snekboxid, 'callback': message_handler}
+    consumer = threading.Thread(target=consume, kwargs=consumer_parameters)
     consumer.daemon = True
     consumer.start()
 
@@ -60,19 +60,25 @@ def websocket_route(ws, snekboxid):
         while not ws.closed:
             message = ws.receive()
             if message:
-                snek_msg = json.dumps({snekboxid:message})
+                snek_msg = json.dumps({snekboxid: message})
                 print(f"forwarding {snek_msg} to rabbitmq")
-                publish(snek_msg, host=HOST, queue=QUEUE, routingkey=ROUTING_KEY, exchange=EXCHANGE, exchange_type=EXCHANGE_TYPE)
+                publish(snek_msg,
+                        host=HOST,
+                        queue=QUEUE,
+                        routingkey=ROUTING_KEY,
+                        exchange=EXCHANGE,
+                        exchange_type=EXCHANGE_TYPE)
 
-    except:
+    except Exception:
         print(traceback.format_exc())
 
     finally:
         if not ws.closed:
             ws.close()
 
-# if __name__ == '__main__':
-#     from gevent import pywsgi
-#     from geventwebsocket.handler import WebSocketHandler
-#     server = pywsgi.WSGIServer(('0.0.0.0', 5000), app, handler_class=WebSocketHandler)
-#     server.serve_forever()
+
+if __name__ == '__main__':
+    from gevent import pywsgi
+    from geventwebsocket.handler import WebSocketHandler
+    server = pywsgi.WSGIServer(('0.0.0.0', 5000), app, handler_class=WebSocketHandler)
+    server.serve_forever()

@@ -3,7 +3,14 @@ import traceback
 import pika
 from pika.exceptions import ConnectionClosed
 
-def consume(username='guest', password='guest', host='localhost', port=5672, queue='', callback=None):
+
+def consume(username='guest',
+            password='guest',
+            host='localhost',
+            port=5672,
+            queue='',
+            callback=None):
+
     while True:
         credentials = pika.PlainCredentials(username, password)
         con_params = pika.ConnectionParameters(host, port, '/', credentials)
@@ -21,7 +28,7 @@ def consume(username='guest', password='guest', host='localhost', port=5672, que
 
                 channel.start_consuming()
 
-            except:
+            except Exception:
                 exc = traceback.format_exc()
                 print(exc, flush=True)
 

@@ -1,5 +1,6 @@
 import os
 
+
 def attempt_automatically_finding_the_ip_of_rmq():
     try:
         import docker
@@ -7,8 +8,9 @@ def attempt_automatically_finding_the_ip_of_rmq():
         containers = client.containers.get('snekbox_pdrmq_1')
         HOST = list(containers.attrs.get('NetworkSettings').get('Networks').values())[0]['IPAddress']
         return HOST
-    except:
+    except Exception:
         return '172.17.0.2'
+
 
 USERNAME = 'guest'
 PASSWORD = 'guest'
