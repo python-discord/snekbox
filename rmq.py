@@ -63,7 +63,6 @@ class Rmq(object):
 
             except ConnectionClosed:
                 log.info(f"Connection lost, reconnecting to {self.host}")
-                pass
 
             time.sleep(2)
 
