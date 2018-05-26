@@ -1,13 +1,12 @@
 import sys
 import io
 import json
+import logging
 
-from rmq.consumer import consume
-from rmq.publisher import publish
+from logs import log
+from rmq import Rmq
 
-from config import HOST
-from config import EXCHANGE_TYPE
-from config import QUEUE
+rmq = Rmq()
 
 
 def execute(snippet):
@@ -26,24 +25,21 @@ def execute(snippet):
     return redirected_output.getvalue().strip()
 
 
-def message_handler(ch, method, properties, body):
+def message_handler(ch, method, properties, body, thread_ws=None):
     msg = body.decode('utf-8')
 
-    print(f"incoming: {msg}", flush=True)
+    log.info(f"incoming: {msg}")
     snek_msg = json.loads(msg)
 
     for snekid, snekcode in snek_msg.items():
         result = execute(snekcode)
-        print(f"outgoing: {result}", flush=True)
-        publish(result,
-                host=HOST,
-                queue=snekid,
-                routingkey=snekid,
-                exchange=snekid,
-                exchange_type=EXCHANGE_TYPE)
-
+        log.info(f"outgoing: {result}")
+        rmq.publish(result,
+                    queue=snekid,
+                    routingkey=snekid,
+                    exchange=snekid)
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
 
 if __name__ == '__main__':
-    consume(host=HOST, queue=QUEUE, callback=message_handler)
+    rmq.consume(callback=message_handler)

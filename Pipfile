@@ -21,7 +21,7 @@ python_version = "3.6"
 [scripts]
 lint = "flake8"
 snekbox = "python snekbox.py"
-snekweb = "gunicorn -w 1 -b 0.0.0.0:5000 -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker snekweb:app"
+snekweb = "gunicorn -w 2 -b 0.0.0.0:5000 --log-level debug -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker snekweb:app"
 buildbox = "docker build -t pythondiscord/snekbox:latest -f docker/Dockerfile ."
 buildweb = "docker build -t pythondiscord/snekboxweb:latest -f docker/Dockerfile.webapp ."
 pushbox = "docker push pythondiscord/snekbox:latest"
