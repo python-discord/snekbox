@@ -36,11 +36,13 @@ pipenv sync --dev
 Start a rabbitmq instance and get the container IP
 
 ```bash
-docker run --name rmq -d rabbitmq:3.7.5-alpine
+docker run -d --name rmq -p 15672:15672 -e RABBITMQ_DEFAULT_USER=rabbits -e RABBITMQ_DEFAULT_PASS=rabbits rabbitmq:3.7.5-management-alpine
 docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' rmq
 # expected output with default setting: 172.17.0.2
 # If not, change the config.py file to match
 ```
+
+rabbitmq webinterface: `http://localhost:15672`
 
 start the webserver
 

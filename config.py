@@ -1,27 +1,25 @@
 import os
 
 
-def attempt_automatically_finding_the_ip_of_rmq():
+def autodiscover():
+    container_names = ["rmq", "pdrmq", "snekbox_pdrmq_1"]
     try:
         import docker
         client = docker.from_env()
-        containers = client.containers.get('snekbox_pdrmq_1')
-        HOST = list(containers.attrs.get('NetworkSettings').get('Networks').values())[0]['IPAddress']
-        return HOST
+        for name in container_names:
+            container = client.containers.get(name)
+            if container.status == "running":
+                host = list(container.attrs.get('NetworkSettings').get('Networks').values())[0]['IPAddress']
+                return host
     except Exception:
         return '172.17.0.2'
 
 
-USERNAME = 'guest'
-PASSWORD = 'guest'
-HOST = os.environ.get('RMQ_HOST', attempt_automatically_finding_the_ip_of_rmq())
+USERNAME = os.environ.get('RMQ_USERNAME', 'rabbits')
+PASSWORD = os.environ.get('RMQ_PASSWORD', 'rabbits')
+HOST = os.environ.get('RMQ_HOST', autodiscover())
 PORT = 5672
-EXCHANGE_TYPE = 'direct'
-
 QUEUE = 'input'
 EXCHANGE = QUEUE
 ROUTING_KEY = QUEUE
-
-RETURN_QUEUE = 'return'
-RETURN_EXCHANGE = RETURN_QUEUE
-RETURN_ROUTING_KEY = RETURN_QUEUE
+EXCHANGE_TYPE = 'direct'

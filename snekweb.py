@@ -36,14 +36,17 @@ def websocket_route(ws, snekboxid):
 
     def message_handler(ch, method, properties, body, thread_ws):
         msg = body.decode('utf-8')
-        log.debug(f"message_handler: {msg}")
         thread_ws.send(msg)
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
     consumer_parameters = {'queue': snekboxid,
                            'callback': message_handler,
                            'thread_ws': localdata.thread_ws}
-    consumer = threading.Thread(target=rmq.consume, kwargs=consumer_parameters)
+
+    consumer = threading.Thread(
+        target=rmq.consume,
+        kwargs=consumer_parameters)
+
     consumer.daemon = True
     consumer.start()
 
