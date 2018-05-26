@@ -2,7 +2,7 @@ version: '3'
 services:
   pdrmq:
     hostname: "pdrmq"
-    image: rabbitmq:3.7.5-management-alpine
+    image: pythondiscord/rmq:latest
     expose:
       - "15672"
     ports:
