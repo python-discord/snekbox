@@ -1,7 +1,6 @@
 import sys
 import io
 import json
-import logging
 
 from logs import log
 from rmq import Rmq

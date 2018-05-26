@@ -1,10 +1,7 @@
 import traceback
-import queue
 import threading
-import time
-import json
 import logging
-import geventwebsocket
+import json
 
 from flask import Flask
 from flask import render_template
@@ -55,7 +52,7 @@ def websocket_route(ws, snekboxid):
             message = ws.receive()
             if message:
                 snek_msg = json.dumps({snekboxid: message})
-                log.info(f"forwarding {snek_msg} to rabbitmq")
+                log.info(f"User {snekboxid} sends message\n{message.strip()}")
                 rmq.publish(snek_msg)
 
     except Exception:
