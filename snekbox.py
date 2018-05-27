@@ -2,6 +2,8 @@ import sys
 import io
 import json
 import multiprocessing
+import threading
+import time
 
 from logs import log
 from rmq import Rmq
@@ -54,11 +56,25 @@ def execute(body):
                 exchange=snekid)
     exit(0)
 
+def stopwatch(process):
+    log.debug(f"10 second timer started for process {process.pid}")
+    for _ in range(10):
+        time.sleep(1)
+        if not process.is_alive():
+            log.debug(f"Clean exit on process {process.pid}")
+            exit(0)
+
+    process.terminate()
+    log.debug(f"Rerminated process {process.pid} forcefully")
 
 def message_handler(ch, method, properties, body, thread_ws=None):
     p = multiprocessing.Process(target=execute, args=(body,))
     p.daemon = True
     p.start()
+
+    t = threading.Thread(target=stopwatch, args=(p,))
+    t.daemon = True
+    t.start()
 
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
