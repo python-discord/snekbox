@@ -111,13 +111,11 @@ class Rmq(object):
                     properties=self.properties)
 
                 if result:
-                    log.info((f"published message: {self.host} "
-                              f"port: {self.port} "
-                              f"exchange: {exchange} "
+                    log.info((f"published: {self.host} "
                               f"queue: {queue} "
                               f"message: {message}"))
                 else:
-                    log.error(f"Messge '{message}' not delivered")
+                    log.error(f"Message '{message}' not delivered")
 
             except ConnectionClosed:
                 log.error(f"Could not send message, connection to {self.host} was lost")

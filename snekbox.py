@@ -16,24 +16,35 @@ def execute(body):
     failed = False
 
     old_stdout = sys.stdout
+    old_stderr = sys.stderr
     redirected_output = sys.stdout = io.StringIO()
+    redirected_error = sys.stderr = io.StringIO()
+    snek_msg = json.loads(msg)
+    snekid = snek_msg['snekid']
+    snekcode = snek_msg['message'].strip()
 
     try:
-
-        snek_msg = json.loads(msg)
-        for snekid, snekcode in snek_msg.items():
-            exec(snekcode)
+        exec(snekcode)
 
     except Exception as e:
         failed = str(e)
 
     finally:
         sys.stdout = old_stdout
+        sys.stderr = old_stderr
 
     if failed:
         result = failed.strip()
+        log.debug(f"this was captured via exception: {result}")
 
-    result = redirected_output.getvalue().strip()
+    result_err = redirected_error.getvalue().strip()
+    result_ok = redirected_output.getvalue().strip()
+
+    if result_err:
+        log.debug(f"this was captured via stderr: {result_err}")
+        result = result_err
+    if result_ok:
+        result = result_ok
 
     log.info(f"outgoing: {result}")
 

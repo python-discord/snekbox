@@ -54,7 +54,7 @@ def websocket_route(ws, snekboxid):
         while not ws.closed:
             message = ws.receive()
             if message:
-                snek_msg = json.dumps({snekboxid: message})
+                snek_msg = json.dumps({"snekid": snekboxid, "message": message})
                 log.info(f"User {snekboxid} sends message\n{message.strip()}")
                 rmq.publish(snek_msg)
 
