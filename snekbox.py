@@ -65,7 +65,7 @@ def stopwatch(process):
             exit(0)
 
     process.terminate()
-    log.debug(f"Rerminated process {process.pid} forcefully")
+    log.debug(f"Terminated process {process.pid} forcefully")
 
 def message_handler(ch, method, properties, body, thread_ws=None):
     p = multiprocessing.Process(target=execute, args=(body,))
