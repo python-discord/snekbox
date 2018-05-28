@@ -6,7 +6,7 @@ The user sends a piece of python code to a snekbox, the snekbox executes the cod
 ```
           +-------------+           +------------+         +-----------+
  input -> |             |---------->|            |-------->|           | >----------+
-          |  WEBSERVER  | websocket |  RABBITMQ  |  AMQP   |  SNEKBOX  |  execution |
+          |  WEBSERVER  |           |  RABBITMQ  |         |  SNEKBOX  |  execution |
 result <- |             |<----------|            |<--------|           | <----------+
           +-------------+           +------------+         +-----------+
              ^                         ^                      ^
