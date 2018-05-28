@@ -2,6 +2,7 @@ FROM python:3.6-alpine3.7
 
 RUN apk add --update tini
 RUN apk add --update build-base
+RUN addgroup -g 1000 -S snek && adduser -u 1000 -S snek -G snek
 
 ENV PIPENV_VENV_IN_PROJECT=1
 ENV PIPENV_IGNORE_VIRTUALENVS=1
@@ -18,6 +19,9 @@ COPY . /snekbox
 WORKDIR /snekbox
 
 RUN pipenv sync
+
+RUN chown -R snek:snek /snekbox
+USER snek
 
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["pipenv", "run", "snekbox"]
