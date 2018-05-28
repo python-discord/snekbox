@@ -4,21 +4,21 @@ Python sandbox runners for executing code in isolation aka snekbox
 The user sends a piece of python code to a snekbox, the snekbox executes the code and sends the result back to the users.
 
 ```
-        +-------------+           +------------+         +-----------+
-        |             |---------->|            |-------->|           | >-------+
-input-> |  WEBSERVER  | websocket |  RABBITMQ  |  AMQP   |  SNEKBOX  |  output |
-        |             |<----------|            |<--------|           | <-------+
-        +-------------+           +------------+         +-----------+
-           ^                         ^                      ^
-           |                         |                      |- Executes python code
-           |                         |                      |- Returns result
-           |                         |                      +-----------------------
-           |                         |
-           |                         |- Messaging queues opens on demand and closes automatically
-           |                         +-----------------------------------------------------------
-           |
-           |- Uses websockets for asynchronous connection between webui and webserver
-           +-------------------------------------------------------------------------
+          +-------------+           +------------+         +-----------+
+ input -> |             |---------->|            |-------->|           | >----------+
+          |  WEBSERVER  | websocket |  RABBITMQ  |  AMQP   |  SNEKBOX  |  execution |
+result <- |             |<----------|            |<--------|           | <----------+
+          +-------------+           +------------+         +-----------+
+             ^                         ^                      ^
+             |                         |                      |- Executes python code
+             |                         |                      |- Returns result
+             |                         |                      +-----------------------
+             |                         |
+             |                         |- Message queues opens on demand and closes automatically
+             |                         +---------------------------------------------------------
+             |
+             |- Uses websockets for asynchronous connection between webui and webserver
+             +-------------------------------------------------------------------------
 
 ```
 
