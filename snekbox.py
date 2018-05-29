@@ -4,80 +4,110 @@ import json
 import multiprocessing
 import threading
 import time
+import re
+import yaml
 
 from logs import log
 from rmq import Rmq
 
-rmq = Rmq()
 
+class Snekbox(object):
 
-def execute(body):
-    msg = body.decode('utf-8')
-    log.info(f"incoming: {msg}")
+    def match_pattern(self, snek_code, expr):
+        pattern = re.compile(expr)
+        result = pattern.findall(snek_code)
 
-    failed = False
+        return result
 
-    old_stdout = sys.stdout
-    old_stderr = sys.stderr
-    redirected_output = sys.stdout = io.StringIO()
-    redirected_error = sys.stderr = io.StringIO()
-    snek_msg = json.loads(msg)
-    snekid = snek_msg['snekid']
-    snekcode = snek_msg['message'].strip()
+    def load_filter(self):
+        with open('filter.yml', 'r') as f:
+            filter_file = f.read()
+        filters = yaml.safe_load(filter_file)
 
-    try:
-        exec(snekcode)
+        return filters
 
-    except Exception as e:
-        failed = str(e)
+    def security_filter(self, snek_code):
+        filters = self.load_filter()
 
-    finally:
-        sys.stdout = old_stdout
-        sys.stderr = old_stderr
+        for rule in filters.get('filter'):
+            if 'regex' in rule.get('type', []):
+                result = self.match_pattern(snek_code, rule.get('name'))
 
-    if failed:
-        result = failed.strip()
-        log.debug(f"this was captured via exception: {result}")
+            if result:
+                log.warn(f"security warning: {rule.get('comment')}")
+                return False
 
-    result_err = redirected_error.getvalue().strip()
-    result_ok = redirected_output.getvalue().strip()
+        return True
 
-    if result_err:
-        log.debug(f"this was captured via stderr: {result_err}")
-        result = result_err
-    if result_ok:
-        result = result_ok
+    def execute(self, body):
+        msg = body.decode('utf-8')
+        log.info(f"incoming: {msg}")
 
-    log.info(f"outgoing: {result}")
+        failed = False
 
-    rmq.publish(result,
-                queue=snekid,
-                routingkey=snekid,
-                exchange=snekid)
-    exit(0)
+        old_stdout = sys.stdout
+        old_stderr = sys.stderr
+        redirected_output = sys.stdout = io.StringIO()
+        redirected_error = sys.stderr = io.StringIO()
+        snek_msg = json.loads(msg)
+        snekid = snek_msg['snekid']
+        snekcode = snek_msg['message'].strip()
 
-def stopwatch(process):
-    log.debug(f"10 second timer started for process {process.pid}")
-    for _ in range(10):
-        time.sleep(1)
-        if not process.is_alive():
-            log.debug(f"Clean exit on process {process.pid}")
-            exit(0)
+        try:
+            exec(snekcode)
 
-    process.terminate()
-    log.debug(f"Terminated process {process.pid} forcefully")
+        except Exception as e:
+            failed = str(e)
 
-def message_handler(ch, method, properties, body, thread_ws=None):
-    p = multiprocessing.Process(target=execute, args=(body,))
-    p.daemon = True
-    p.start()
+        finally:
+            sys.stdout = old_stdout
+            sys.stderr = old_stderr
 
-    t = threading.Thread(target=stopwatch, args=(p,))
-    t.daemon = True
-    t.start()
+        if failed:
+            result = failed.strip()
+            log.debug(f"this was captured via exception: {result}")
 
-    ch.basic_ack(delivery_tag=method.delivery_tag)
+        result_err = redirected_error.getvalue().strip()
+        result_ok = redirected_output.getvalue().strip()
+
+        if result_err:
+            log.debug(f"this was captured via stderr: {result_err}")
+            result = result_err
+        if result_ok:
+            result = result_ok
+
+        log.info(f"outgoing: {result}")
+
+        rmq.publish(result,
+                    queue=snekid,
+                    routingkey=snekid,
+                    exchange=snekid)
+        exit(0)
+
+    def stopwatch(self, process):
+        log.debug(f"10 second timer started for process {process.pid}")
+        for _ in range(10):
+            time.sleep(1)
+            if not process.is_alive():
+                log.debug(f"Clean exit on process {process.pid}")
+                exit(0)
+
+        process.terminate()
+        log.debug(f"Terminated process {process.pid} forcefully")
+
+    def message_handler(self, ch, method, properties, body, thread_ws=None):
+        p = multiprocessing.Process(target=self.execute, args=(body,))
+        p.daemon = True
+        p.start()
+
+        t = threading.Thread(target=self.stopwatch, args=(p,))
+        t.daemon = True
+        t.start()
+
+        ch.basic_ack(delivery_tag=method.delivery_tag)
 
 
 if __name__ == '__main__':
-    rmq.consume(callback=message_handler)
+    rmq = Rmq()
+    snkbx = Snekbox()
+    rmq.consume(callback=snkbx.message_handler)
