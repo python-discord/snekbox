@@ -1,0 +1,38 @@
+diff --git a/contain.cc b/contain.cc
+index 525c045..c4beeed 100644
+--- a/contain.cc
++++ b/contain.cc
+@@ -42,6 +42,7 @@
+ #include "cgroup.h"
+ #include "cpu.h"
+ #include "logs.h"
++#include "macros.h"
+ #include "mnt.h"
+ #include "net.h"
+ #include "pid.h"
+diff --git a/logs.cc b/logs.cc
+index 06ffd8e..dcfb9b6 100644
+--- a/logs.cc
++++ b/logs.cc
+@@ -35,6 +35,7 @@
+ #include <time.h>
+ #include <unistd.h>
+
++#include "macros.h"
+ #include "util.h"
+
+ #include <string.h>
+diff --git a/mnt.cc b/mnt.cc
+index b3ba1b8..cde52f7 100644
+--- a/mnt.cc
++++ b/mnt.cc
+@@ -246,7 +246,9 @@ static bool remountRO(const mount_t& mpt) {
+        {MS_MANDLOCK, ST_MANDLOCK},
+        {MS_NOATIME, ST_NOATIME},
+        {MS_NODIRATIME, ST_NODIRATIME},
++#if defined(ST_RELATIME)
+        {MS_RELATIME, ST_RELATIME},
++#endif
+    };
+
+    unsigned long new_flags = MS_REMOUNT | MS_RDONLY | MS_BIND;

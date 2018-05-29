@@ -32,6 +32,7 @@ class Snekbox(object):
         for rule in filters.get('filter'):
             if 'regex' in rule.get('type', []):
                 result = self.match_pattern(snek_code, rule.get('name'))
+                log.debug(result)
 
             if result:
                 log.warn(f"security warning: {rule.get('comment')}")
@@ -52,6 +53,7 @@ class Snekbox(object):
         snek_msg = json.loads(msg)
         snekid = snek_msg['snekid']
         snekcode = snek_msg['message'].strip()
+        self.security_filter(snekcode)
 
         try:
             exec(snekcode)
@@ -108,6 +110,10 @@ class Snekbox(object):
 
 
 if __name__ == '__main__':
-    rmq = Rmq()
-    snkbx = Snekbox()
-    rmq.consume(callback=snkbx.message_handler)
+    try:
+        rmq = Rmq()
+        snkbx = Snekbox()
+        rmq.consume(callback=snkbx.message_handler)
+    except KeyboardInterrupt:
+        print("Exited")
+        exit(0)
