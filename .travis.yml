@@ -1,0 +1,31 @@
+language: python
+python:
+  - "3.6"
+
+branches:
+  only:
+    - "master"
+
+#sudo: required
+
+#services:
+#  - docker
+
+env:
+  global:
+    - PIPENV_VENV_IN_PROJECT=1
+    - PIPENV_IGNORE_VIRTUALENVS=1
+
+install:
+  - pip install pipenv
+  - pipenv sync --dev --three
+script:
+  - pipenv run lint
+  - pipenv run test
+#after_success:
+#  - bash scripts/deploy.sh
+
+cache: pip
+
+notifications:
+  email: false

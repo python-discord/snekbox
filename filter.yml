@@ -1,31 +1,39 @@
 filter:
-  - name: exec.+\(.+\)
-    example: exec()
+  - name: exec$^|.+\($^|.+\)
+    example:
+      - exec (a)
+      - exec(b)
+      - exec()
     type: regex
     comment: exec() is not allowed
 
   - name: .+\ssubprocess
-    example: import subprocess
+    example:
+      - import subprocess
     type: regex
     comment: subprocess module not allowed
 
   - name: .+\sinspect
-    example: import inspect
+    example:
+      - import inspect
     type: regex
     comment: inspect module not allowed
 
   - name: .+\sos
-    example: import os
+    example:
+      - import os
     type: regex
     comment: os module not allowed
 
   - name: .+\sthreading
-    example: import threading
+    example:
+      - import threading
     type: regex
     comment: threading module not allowed
 
   - name: .+\smultiprocessing
-    example: import multiprocessing
+    example:
+      - import multiprocessing
     type: regex
     comment: multiprocessing module not allowed
 
