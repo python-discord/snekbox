@@ -1,9 +1,4 @@
 filter:
-  - name: +++309345+09´´+0`?`?=
-    example: bollocks mate
-    type: regex
-    comment: sdfsdf
-
   - name: exec.+\(.+\)
     example: exec()
     type: regex

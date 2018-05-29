@@ -1,5 +1,6 @@
 import unittest
 import pytest
+import yaml
 
 from snekbox import Snekbox
 snek = Snekbox()
@@ -10,6 +11,10 @@ class test_filters(unittest.TestCase):
     def test_load_filter(self):
         result = snek.load_filter()
         self.assertIsInstance(result, dict)
+
+    def test_regex_failure(self):
+        with self.assertRaises(Exception):
+            snek.match_pattern('test', '+++309345+09´´+0`?`?=')
 
     @pytest.mark.dependency(depends=["test_filters::test_load_filter"])
     def test_regex_compilation(self):
