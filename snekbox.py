@@ -10,38 +10,36 @@ import subprocess
 from logs import log
 from rmq import Rmq
 
-chroot_dir = path.join(path.dirname(path.abspath(__file__)), 'chroot')
-MB = 1024 * 1024
 
 class Snekbox(object):
-
+    env = {
+        'PATH': '/snekbox/.venv/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+        'LANG': 'en_US.UTF-8',
+        'PYTHON_VERSION': '3.6.5',
+        'PYTHON_PIP_VERSION': '10.0.1',
+        'PYTHONDONTWRITEBYTECODE': '1',
+    }
     def python3(self, cmd):
-        args = ['nsjail',
-                '-Mo',
-                '--chroot', chroot_dir,
-                '-E', 'LANG=en_US.UTF-8',
-                '-R/usr',
-                '-R/lib',
-                '-R/lib64',
-                '--user', 'nobody',
-                '--group', 'nogroup',
-                '--time_limit', '2',
-                '--disable_proc',
-                '--iface_no_lo',
-                '--cgroup_mem_max', str(50 * MB),
-                '--cgroup_pids_max', '1',
-                '--quiet', '--',
-                '/usr/bin/python3', '-ISq', '-c', cmd]
+        args = ["nsjail", "-Mo",
+                "--rlimit_as", "700",
+                "--chroot", "/",
+                "-E", "LANG=en_US.UTF-8",
+                "-R/usr", "-R/lib", "-R/lib64",
+                "--user", "nobody",
+                "--group", "nogroup",
+                "--time_limit", "2",
+                "--disable_proc",
+                "--iface_no_lo",
+                "--quiet", "--", "/usr/local/bin/python3.6", "-ISq", "-c", cmd]
 
         proc = subprocess.Popen(args,
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
+                                env=self.env,
                                 universal_newlines=True)
 
         stdout, stderr = proc.communicate()
-        log.debug(stderr)
-        log.debug(stdout)
         if proc.returncode == 0:
             output = stdout
         elif proc.returncode == 1:
@@ -85,13 +83,13 @@ class Snekbox(object):
         log.debug(f"Terminated process {process.pid} forcefully")
 
     def message_handler(self, ch, method, properties, body, thread_ws=None):
-        self.execute(body)
-        #p = multiprocessing.Process(target=self.execute, args=(body,))
-        #p.daemon = True
-        #p.start()
-        #t = threading.Thread(target=self.stopwatch, args=(p,))
-        #t.daemon = True
-        #t.start()
+        #self.execute(body)
+        p = multiprocessing.Process(target=self.execute, args=(body,))
+        p.daemon = True
+        p.start()
+        t = threading.Thread(target=self.stopwatch, args=(p,))
+        t.daemon = True
+        t.start()
 
         ch.basic_ack(delivery_tag=method.delivery_tag)
 

@@ -1,7 +1,6 @@
 FROM python:3.6-alpine3.7
 
 RUN apk add --no-cache libstdc++ protobuf
-RUN apk add --update tini
 RUN apk add --update build-base
 
 ENV PIPENV_VENV_IN_PROJECT=1
@@ -23,5 +22,4 @@ RUN pipenv sync
 RUN cp binaries/nsjail /usr/sbin/nsjail
 RUN chmod +x /usr/sbin/nsjail
 
-ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["pipenv", "run", "snekbox"]
