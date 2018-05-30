@@ -1,11 +1,8 @@
-import sys
-import io
 import json
 import multiprocessing
+import subprocess
 import threading
 import time
-from os import path
-import subprocess
 
 from logs import log
 from rmq import Rmq
@@ -19,6 +16,7 @@ class Snekbox(object):
         'PYTHON_PIP_VERSION': '10.0.1',
         'PYTHONDONTWRITEBYTECODE': '1',
     }
+
     def python3(self, cmd):
         args = ["nsjail", "-Mo",
                 "--rlimit_as", "700",
