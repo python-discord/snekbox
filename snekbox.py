@@ -4,79 +4,66 @@ import json
 import multiprocessing
 import threading
 import time
-import re
-import yaml
+from os import path
+import subprocess
 
 from logs import log
 from rmq import Rmq
 
+chroot_dir = path.join(path.dirname(path.abspath(__file__)), 'chroot')
+MB = 1024 * 1024
 
 class Snekbox(object):
 
-    def match_pattern(self, snek_code, expr):
-        pattern = re.compile(expr)
-        result = pattern.findall(snek_code)
+    def python3(self, cmd):
+        args = ['nsjail',
+                '-Mo',
+                '--chroot', chroot_dir,
+                '-E', 'LANG=en_US.UTF-8',
+                '-R/usr',
+                '-R/lib',
+                '-R/lib64',
+                '--user', 'nobody',
+                '--group', 'nogroup',
+                '--time_limit', '2',
+                '--disable_proc',
+                '--iface_no_lo',
+                '--cgroup_mem_max', str(50 * MB),
+                '--cgroup_pids_max', '1',
+                '--quiet', '--',
+                '/usr/bin/python3', '-ISq', '-c', cmd]
 
-        return result
+        proc = subprocess.Popen(args,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+                                universal_newlines=True)
 
-    def load_filter(self):
-        with open('filter.yml', 'r') as f:
-            filter_file = f.read()
-        filters = yaml.safe_load(filter_file)
-
-        return filters
-
-    def security_filter(self, snek_code):
-        filters = self.load_filter()
-
-        for rule in filters.get('filter'):
-            if 'regex' in rule.get('type', []):
-                result = self.match_pattern(snek_code, rule.get('name'))
-                log.debug(result)
-
-            if result:
-                log.warn(f"security warning: {rule.get('comment')}")
-                return False
-
-        return True
+        stdout, stderr = proc.communicate()
+        log.debug(stderr)
+        log.debug(stdout)
+        if proc.returncode == 0:
+            output = stdout
+        elif proc.returncode == 1:
+            try:
+                output = stderr.split('\n')[-2]
+            except IndexError:
+                output = ''
+        elif proc.returncode == 109:
+            output = 'timed out or memory limit exceeded'
+        else:
+            output = 'unknown error'
+        return output
 
     def execute(self, body):
         msg = body.decode('utf-8')
         log.info(f"incoming: {msg}")
-
-        failed = False
-
-        old_stdout = sys.stdout
-        old_stderr = sys.stderr
-        redirected_output = sys.stdout = io.StringIO()
-        redirected_error = sys.stderr = io.StringIO()
+        result = ""
         snek_msg = json.loads(msg)
         snekid = snek_msg['snekid']
         snekcode = snek_msg['message'].strip()
-        self.security_filter(snekcode)
 
-        try:
-            exec(snekcode)
-
-        except Exception as e:
-            failed = str(e)
-
-        finally:
-            sys.stdout = old_stdout
-            sys.stderr = old_stderr
-
-        if failed:
-            result = failed.strip()
-            log.debug(f"this was captured via exception: {result}")
-
-        result_err = redirected_error.getvalue().strip()
-        result_ok = redirected_output.getvalue().strip()
-
-        if result_err:
-            log.debug(f"this was captured via stderr: {result_err}")
-            result = result_err
-        if result_ok:
-            result = result_ok
+        result = self.python3(snekcode)
 
         log.info(f"outgoing: {result}")
 
@@ -98,13 +85,13 @@ class Snekbox(object):
         log.debug(f"Terminated process {process.pid} forcefully")
 
     def message_handler(self, ch, method, properties, body, thread_ws=None):
-        p = multiprocessing.Process(target=self.execute, args=(body,))
-        p.daemon = True
-        p.start()
-
-        t = threading.Thread(target=self.stopwatch, args=(p,))
-        t.daemon = True
-        t.start()
+        self.execute(body)
+        #p = multiprocessing.Process(target=self.execute, args=(body,))
+        #p.daemon = True
+        #p.start()
+        #t = threading.Thread(target=self.stopwatch, args=(p,))
+        #t.daemon = True
+        #t.start()
 
         ch.basic_ack(delivery_tag=method.delivery_tag)
 

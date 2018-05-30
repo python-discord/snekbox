@@ -1,29 +1,8 @@
 FROM python:3.6-alpine3.7
 
-COPY ./nsjail.patch /
-
-RUN apk add --no-cache \
-        libstdc++ \
-        protobuf \
-    && apk add --no-cache --virtual=.nsjail-build-deps \
-        bison \
-        bsd-compat-headers \
-        build-base \
-        flex \
-        git \
-        linux-headers \
-        protobuf-dev \
-    && git clone --depth=1 --branch=2.5 https://github.com/google/nsjail.git /nsjail \
-    && cd /nsjail \
-    && patch -p1 < /nsjail.patch \
-    && make \
-    && mv /nsjail/nsjail /usr/sbin \
-    && rm -rf /nsjail /nsjail.patch \
-    && apk del --purge .nsjail-build-deps
-
+RUN apk add --no-cache libstdc++ protobuf
 RUN apk add --update tini
 RUN apk add --update build-base
-RUN addgroup -g 1000 -S snek && adduser -u 1000 -S snek -G snek
 
 ENV PIPENV_VENV_IN_PROJECT=1
 ENV PIPENV_IGNORE_VIRTUALENVS=1
@@ -41,8 +20,8 @@ WORKDIR /snekbox
 
 RUN pipenv sync
 
-RUN chown -R snek:snek /snekbox
-USER snek
+RUN cp binaries/nsjail /usr/sbin/nsjail
+RUN chmod +x /usr/sbin/nsjail
 
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["pipenv", "run", "snekbox"]
