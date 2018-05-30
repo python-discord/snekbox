@@ -14,12 +14,16 @@ gevent = "==1.2.2"
 gevent-websocket = "*"
 gunicorn = "*"
 "flake8" = "*"
+pytest = "*"
+pytest-cov = "*"
+pytest-dependency = "*"
 
 [requires]
 python_version = "3.6"
 
 [scripts]
 lint = "flake8"
+test = "py.test tests --cov . --cov-report term-missing -v"
 snekbox = "python snekbox.py"
 snekweb = "gunicorn -w 2 -b 0.0.0.0:5000 --log-level debug -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker snekweb:app"
 buildbox = "docker build -t pythondiscord/snekbox:latest -f docker/Dockerfile ."

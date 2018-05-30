@@ -1,0 +1,9 @@
+[run]
+omit = .venv/*,
+       tests/*,
+       snekweb.py
+
+[report]
+exclude_lines = return jsonify,
+                raise RuntimeError,
+                return
