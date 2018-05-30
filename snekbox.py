@@ -83,7 +83,6 @@ class Snekbox(object):
         log.debug(f"Terminated process {process.pid} forcefully")
 
     def message_handler(self, ch, method, properties, body, thread_ws=None):
-        #self.execute(body)
         p = multiprocessing.Process(target=self.execute, args=(body,))
         p.daemon = True
         p.start()
