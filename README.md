@@ -39,6 +39,7 @@ result <- |             |<----------|            |<--------|           | <------
 install python packages
 
 ```bash
+apt-get install -y libprotobuf-dev #needed by nsjail
 pipenv sync --dev
 ```
 

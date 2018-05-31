@@ -9,8 +9,9 @@ branches:
 dist: xenial
 sudo: required
 
-#services:
-#  - docker
+services:
+  - rabbitmq
+  #- docker
 
 before_install:
   - sudo apt-get update
@@ -23,6 +24,7 @@ env:
     - PIPENV_IGNORE_VIRTUALENVS=1
     - PIPENV_NOSPIN=1
     - PIPENV_HIDE_EMOJIS=1
+    - RABBITMQ_HOST=localhost
 
 install:
   - pip install pipenv

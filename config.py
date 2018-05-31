@@ -12,7 +12,7 @@ def autodiscover():
                 host = list(container.attrs.get('NetworkSettings').get('Networks').values())[0]['IPAddress']
                 return host
     except Exception:
-        return '172.17.0.2'
+        return '127.0.0.1'
 
 
 USERNAME = os.environ.get('RMQ_USERNAME', 'rabbits')

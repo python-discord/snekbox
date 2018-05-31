@@ -1,11 +1,17 @@
 import unittest
 import pytest
 import os
+import json
 
 from snekbox import Snekbox
+from rmq import Rmq
+
+r = Rmq()
+
 python_binary = os.environ.get('PYTHONEXECUTABLE', '/usr/bin/python3.6')
 nsjail = os.sep.join([os.getcwd(), f'binaries{os.sep}nsjail2.6-ubuntu-x86_64'])
 snek = Snekbox(nsjail_binary=nsjail, python_binary=python_binary)
+
 
 class SnekTests(unittest.TestCase):
 	def test_nsjail(self):
@@ -39,3 +45,14 @@ class SnekTests(unittest.TestCase):
 			self.assertIn('ModuleNotFoundError', result.strip())
 		else:
 			self.assertIn('returned non-zero exit status 1.', result.strip())
+
+
+class RMQTests(unittest.TestCase):
+	def test_a_publish(self):
+		message = json.dumps({"snekid": "test", "message": "print('test')"})
+		result = r.publish(message)
+		self.assertTrue(result)
+
+	def test_b_consume(self):
+		result = r.consume(callback=snek.message_handler, queue='input', run_once=True)
+		self.assertEquals(result[2], b'{"snekid": "test", "message": "print(\'test\')"}')
