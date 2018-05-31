@@ -6,7 +6,7 @@ branches:
   only:
     - "master"
 
-#sudo: required
+sudo: required
 
 #services:
 #  - docker
@@ -20,6 +20,7 @@ install:
   - pip install pipenv
   - pipenv sync --dev --three
 script:
+  - ./scripts/ci.sh
   - pipenv run lint
   - pipenv run test
 #after_success:
