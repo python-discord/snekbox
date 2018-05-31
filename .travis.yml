@@ -15,12 +15,15 @@ env:
   global:
     - PIPENV_VENV_IN_PROJECT=1
     - PIPENV_IGNORE_VIRTUALENVS=1
+    - PIPENV_NOSPIN=1
+    - PIPENV_HIDE_EMOJIS=1
 
 install:
   - pip install pipenv
   - pipenv sync --dev --three
 script:
-  - ./scripts/ci.sh
+  - chmod +x scripts/ci.sh
+  - bash scripts/ci.sh
   - pipenv run lint
   - pipenv run test
 #after_success:
