@@ -9,7 +9,10 @@ from rmq import Rmq
 
 
 class Snekbox(object):
-    def __init__(self, nsjail_binary='nsjail', python_binary='/usr/local/bin/python3.6'):
+    def __init__(self,
+                 nsjail_binary='nsjail',
+                 python_binary='/usr/local/bin/python3.6'):
+
         self.nsjail_binary = nsjail_binary
         self.python_binary = python_binary
 
@@ -32,7 +35,8 @@ class Snekbox(object):
                 '--time_limit', '2',
                 '--disable_proc',
                 '--iface_no_lo',
-                '--quiet', '--', self.python_binary, '-ISq', '-c', cmd]
+                '--quiet', '--',
+                self.python_binary, '-ISq', '-c', cmd]
 
         proc = subprocess.Popen(args,
                                 stdin=subprocess.PIPE,

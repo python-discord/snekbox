@@ -46,7 +46,7 @@ pipenv sync --dev
 Start a rabbitmq instance and get the container IP
 
 ```bash
-docker run -d --name rmq -p 15672:15672 -e RABBITMQ_DEFAULT_USER=rabbits -e RABBITMQ_DEFAULT_PASS=rabbits pythondiscord/rmq:latest
+docker run -d --name rmq -p 15672:15672 -e RABBITMQ_DEFAULT_USER=guest -e RABBITMQ_DEFAULT_PASS=guest pythondiscord/rmq:latest
 docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' rmq
 # expected output with default setting: 172.17.0.2
 # If not, change the config.py file to match
