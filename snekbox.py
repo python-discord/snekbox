@@ -9,6 +9,10 @@ from rmq import Rmq
 
 
 class Snekbox(object):
+    def __init__(self, nsjail_binary='nsjail', python_binary='/usr/local/bin/python3.6'):
+        self.nsjail_binary = nsjail_binary
+        self.python_binary = python_binary
+
     env = {
         'PATH': '/snekbox/.venv/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
         'LANG': 'en_US.UTF-8',
@@ -18,17 +22,17 @@ class Snekbox(object):
     }
 
     def python3(self, cmd):
-        args = ["nsjail", "-Mo",
-                "--rlimit_as", "700",
-                "--chroot", "/",
-                "-E", "LANG=en_US.UTF-8",
-                "-R/usr", "-R/lib", "-R/lib64",
-                "--user", "nobody",
-                "--group", "nogroup",
-                "--time_limit", "2",
-                "--disable_proc",
-                "--iface_no_lo",
-                "--quiet", "--", "/usr/local/bin/python3.6", "-ISq", "-c", cmd]
+        args = [self.nsjail_binary, '-Mo',
+                '--rlimit_as', '700',
+                '--chroot', '/',
+                '-E', 'LANG=en_US.UTF-8',
+                '-R/usr', '-R/lib', '-R/lib64',
+                '--user', 'nobody',
+                '--group', 'nogroup',
+                '--time_limit', '2',
+                '--disable_proc',
+                '--iface_no_lo',
+                '--quiet', '--', self.python_binary, '-ISq', '-c', cmd]
 
         proc = subprocess.Popen(args,
                                 stdin=subprocess.PIPE,
@@ -53,15 +57,15 @@ class Snekbox(object):
 
     def execute(self, body):
         msg = body.decode('utf-8')
-        log.info(f"incoming: {msg}")
-        result = ""
+        log.info(f'incoming: {msg}')
+        result = ''
         snek_msg = json.loads(msg)
         snekid = snek_msg['snekid']
         snekcode = snek_msg['message'].strip()
 
         result = self.python3(snekcode)
 
-        log.info(f"outgoing: {result}")
+        log.info(f'outgoing: {result}')
 
         rmq.publish(result,
                     queue=snekid,
@@ -70,15 +74,15 @@ class Snekbox(object):
         exit(0)
 
     def stopwatch(self, process):
-        log.debug(f"10 second timer started for process {process.pid}")
+        log.debug(f'10 second timer started for process {process.pid}')
         for _ in range(10):
             time.sleep(1)
             if not process.is_alive():
-                log.debug(f"Clean exit on process {process.pid}")
+                log.debug(f'Clean exit on process {process.pid}')
                 exit(0)
 
         process.terminate()
-        log.debug(f"Terminated process {process.pid} forcefully")
+        log.debug(f'Terminated process {process.pid} forcefully')
 
     def message_handler(self, ch, method, properties, body, thread_ws=None):
         p = multiprocessing.Process(target=self.execute, args=(body,))
@@ -97,5 +101,5 @@ if __name__ == '__main__':
         snkbx = Snekbox()
         rmq.consume(callback=snkbx.message_handler)
     except KeyboardInterrupt:
-        print("Exited")
+        print('Exited')
         exit(0)

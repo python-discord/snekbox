@@ -19,7 +19,7 @@ WORKDIR /snekbox
 
 RUN pipenv sync
 
-RUN cp binaries/nsjail /usr/sbin/nsjail
+RUN cp binaries/nsjail2.5-alpine-x86_64 /usr/sbin/nsjail
 RUN chmod +x /usr/sbin/nsjail
 
 CMD ["pipenv", "run", "snekbox"]
