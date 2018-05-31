@@ -10,8 +10,8 @@ services:
     networks:
       - sneknet
     environment:
-      RABBITMQ_DEFAULT_USER: rabbits
-      RABBITMQ_DEFAULT_PASS: rabbits
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
 
   pdsnekbox:
     privileged: true
@@ -21,8 +21,8 @@ services:
       - sneknet
     environment:
       RMQ_HOST: pdrmq
-      RMQ_USERNAME: rabbits
-      RMQ_PASSWORD: rabbits
+      RMQ_USERNAME: guest
+      RMQ_PASSWORD: guest
 
   pdsnekboxweb:
     hostname: "pdsnekboxweb"
@@ -35,8 +35,8 @@ services:
       - "5000"
     environment:
       RMQ_HOST: pdrmq
-      RMQ_USERNAME: rabbits
-      RMQ_PASSWORD: rabbits
+      RMQ_USERNAME: guest
+      RMQ_PASSWORD: guest
 
 
 networks:

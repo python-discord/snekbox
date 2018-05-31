@@ -15,8 +15,8 @@ def autodiscover():
         return '127.0.0.1'
 
 
-USERNAME = os.environ.get('RMQ_USERNAME', 'rabbits')
-PASSWORD = os.environ.get('RMQ_PASSWORD', 'rabbits')
+USERNAME = os.environ.get('RMQ_USERNAME', 'guest')
+PASSWORD = os.environ.get('RMQ_PASSWORD', 'guest')
 HOST = os.environ.get('RMQ_HOST', autodiscover())
 PORT = 5672
 QUEUE = 'input'
