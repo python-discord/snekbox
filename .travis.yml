@@ -6,6 +6,7 @@ branches:
   only:
     - "master"
 
+dist: xenial
 sudo: required
 
 #services:
