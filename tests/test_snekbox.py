@@ -35,4 +35,7 @@ class SnekTests(unittest.TestCase):
 		code = ('import subprocess\n'
 				'print(subprocess.check_output("kill -9 6", shell=True).decode())')
 		result = snek.python3(code)
-		self.assertIn('returned non-zero exit status 1.', result.strip())
+		if 'ModuleNotFoundError' in result.strip():
+			self.assertIn('ModuleNotFoundError', result.strip())
+		else:
+			self.assertIn('returned non-zero exit status 1.', result.strip())
