@@ -2,6 +2,7 @@
 omit = .venv/*,
        tests/*,
        snekweb.py
+       config.py
 
 [report]
 exclude_lines = return jsonify,
