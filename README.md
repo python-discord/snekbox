@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/discord-python/snekbox.svg?branch=master)](https://travis-ci.org/discord-python/snekbox)
+[![Build Status](https://travis-ci.com/discord-python/snekbox.svg?branch=master)](https://travis-ci.com/discord-python/snekbox)
 # snekbox
 Python sandbox runners for executing code in isolation aka snekbox
 
