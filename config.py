@@ -20,7 +20,8 @@ def autodiscover():
 
         except Exception:
             print(traceback.format_exc())
-            return '127.0.0.1'
+
+    return '127.0.0.1'
 
 
 USERNAME = os.environ.get('RMQ_USERNAME', 'guest')
