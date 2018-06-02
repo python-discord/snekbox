@@ -5,9 +5,9 @@ name = "pypi"
 
 [packages]
 pika = "*"
+docker = "*"
 
 [dev-packages]
-docker = "*"
 flask = "*"
 flask-sockets = "*"
 gevent = "==1.2.2"

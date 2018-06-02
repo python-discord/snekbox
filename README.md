@@ -33,7 +33,9 @@ result <- |             |<----------|            |<--------|           | <------
 | pipenv         | 2018.05.18           |
 | docker         | 18.03.1-ce           |
 | docker-compose | 1.21.2               |
+| nsjail         | 2.5                  |
 
+_________________________________________
 ## Setup local test
 
 install python packages
@@ -43,10 +45,40 @@ apt-get install -y libprotobuf-dev #needed by nsjail
 pipenv sync --dev
 ```
 
+## NSJail
+
+Copy the appropriate binary to an appropriate path
+
+```bash
+cp binaries/nsjail2.6-ubuntu-x86_64 /usr/bin/nsjail
+chmod +x /usr/bin/nsjail
+```
+
+give nsjail a test run
+
+```bash
+nsjail -Mo \
+--rlimit_as 700 \
+--chroot / \
+-E LANG=en_US.UTF-8 \
+-R/usr -R/lib -R/lib64 \
+--user nobody \
+--group nogroup \
+--time_limit 2 \
+--disable_proc \
+--iface_no_lo \
+--quiet -- \
+python3.6 -ISq -c "print('test')"
+```
+
+> if it fails, try without the `--cgroup_pids_max=1`
+
+## Development environment
+
 Start a rabbitmq instance and get the container IP
 
 ```bash
-docker run -d --name rmq -p 15672:15672 -e RABBITMQ_DEFAULT_USER=guest -e RABBITMQ_DEFAULT_PASS=guest pythondiscord/rmq:latest
+docker-compose up -d pdrmq
 docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' rmq
 # expected output with default setting: 172.17.0.2
 # If not, change the config.py file to match
@@ -57,26 +89,31 @@ rabbitmq webinterface: `http://localhost:15672`
 start the webserver
 
 ```bash
-docker run --name snekboxweb --network=host -d pythondiscord/snekboxweb:latest
+docker-compose up -d pdsnekboxweb
 netstat -plnt
 # tcp    0.0.0.0:5000    LISTEN
 ```
 
-use two terminals!
-
-```bash
-#terminal 1
-pipenv run python snekbox.py
-
-#terminal 2
-pipenv run python snekweb.py
-```
-
 `http://localhost:5000`
 
-_________________________________
+```bash
+pipenv run snekbox # for debugging
+# or
+docker-compose up pdsnekbox # for running the container
+```
 
-# Build the containers
+________________________________________
+## Unit testing and lint
+
+Make sure rabbitmq is running before running tests
+
+```bash
+pipenv run lint
+pipenv run test
+```
+
+________________________________________
+## Build the containers
 
 ```bash
 # Build
@@ -88,14 +125,4 @@ pipenv run pushbox
 pipenv run pushweb
 ```
 
-## Docker compose
 
-Start all the containers with docker-compose
-
-```bash
-docker-compose up
-```
-
-this boots up rabbitmq, the snekbox and a webinterface on port 5000
-
-`http://localhost:5000`

@@ -37,6 +37,7 @@ class Snekbox(object):
                 '--time_limit', '2',
                 '--disable_proc',
                 '--iface_no_lo',
+                # '--cgroup_pids_max=1',  # This doesn't work :(
                 '--quiet', '--',
                 self.python_binary, '-ISq', '-c', cmd]
 
