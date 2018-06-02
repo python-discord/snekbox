@@ -3,6 +3,8 @@ import multiprocessing
 import subprocess
 import threading
 import time
+import os
+import sys
 
 from logs import log
 from rmq import Rmq
@@ -11,7 +13,7 @@ from rmq import Rmq
 class Snekbox(object):
     def __init__(self,
                  nsjail_binary='nsjail',
-                 python_binary='/usr/local/bin/python3.6'):
+                 python_binary=os.path.dirname(sys.executable)+os.sep+'python3.6'):
 
         self.nsjail_binary = nsjail_binary
         self.python_binary = python_binary
@@ -56,7 +58,9 @@ class Snekbox(object):
         elif proc.returncode == 109:
             output = 'timed out or memory limit exceeded'
         else:
+            log.debug(stderr)
             output = 'unknown error'
+
         return output
 
     def execute(self, body):
@@ -78,8 +82,8 @@ class Snekbox(object):
         exit(0)
 
     def stopwatch(self, process):
-        log.debug(f'10 second timer started for process {process.pid}')
-        for _ in range(10):
+        log.debug(f'3 second timer started for process {process.pid}')
+        for _ in range(3):
             time.sleep(1)
             if not process.is_alive():
                 log.debug(f'Clean exit on process {process.pid}')
