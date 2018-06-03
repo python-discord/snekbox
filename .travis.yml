@@ -26,12 +26,12 @@ env:
     - RABBITMQ_HOST=localhost
 
 install:
-  - pip install pipenv
-  - pipenv sync --dev --three
+  - sudo pip install pipenv
+  - sudo pipenv sync --dev --three
 script:
-  - chmod +x scripts/ci.sh
-  - bash scripts/ci.sh
-  - pipenv run lint
+  - sudo chmod +x scripts/ci.sh
+  - sudo bash scripts/ci.sh
+  - sudo pipenv run lint
   - sudo pipenv run test
 #after_success:
 #  - bash scripts/deploy.sh
