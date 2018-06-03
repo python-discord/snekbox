@@ -16,6 +16,7 @@ services:
 before_install:
   - sudo apt-get update
   - sudo apt-get install -y libprotobuf-dev libstdc++6
+  - sudo su
 
 env:
   global:
@@ -26,13 +27,13 @@ env:
     - RABBITMQ_HOST=localhost
 
 install:
-  - sudo pip install pipenv
-  - sudo pipenv sync --dev --three
+  - pip install pipenv
+  - pipenv sync --dev --three
 script:
-  - sudo chmod +x scripts/ci.sh
-  - sudo bash scripts/ci.sh
-  - sudo pipenv run lint
-  - sudo pipenv run test
+  - chmod +x scripts/ci.sh
+  - bash scripts/ci.sh
+  - pipenv run lint
+  - pipenv run test
 #after_success:
 #  - bash scripts/deploy.sh
 

@@ -57,13 +57,19 @@ class Snekbox(object):
         stdout, stderr = proc.communicate()
         if proc.returncode == 0:
             output = stdout
+
         elif proc.returncode == 1:
             try:
                 output = stderr.split('\n')[-2]
             except IndexError:
                 output = ''
+
         elif proc.returncode == 109:
             output = 'timed out or memory limit exceeded'
+
+        elif proc.returncode == 255:
+            output = 'permission denied (root required)'
+
         else:
             log.debug(stderr)
             output = 'unknown error'
