@@ -19,7 +19,6 @@ before_install:
 
 env:
   global:
-    - PYTHONEXECUTABLE=/home/travis/build/discord-python/snekbox/.venv/bin/python3
     - PIPENV_VENV_IN_PROJECT=1
     - PIPENV_IGNORE_VIRTUALENVS=1
     - PIPENV_NOSPIN=1

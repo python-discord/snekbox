@@ -23,7 +23,7 @@ class SnekTests(unittest.TestCase):
                 '    x = x * 99\n')
 
         result = snek.python3(code)
-        self.assertEquals(result.strip(), 'MemoryError')
+        self.assertEquals(result.strip(), 'timed out or memory limit exceeded')
 
     def test_timeout(self):
         code = ('x = "*"\n'
@@ -43,7 +43,15 @@ class SnekTests(unittest.TestCase):
         if 'ModuleNotFoundError' in result.strip():
             self.assertIn('ModuleNotFoundError', result.strip())
         else:
-            self.assertIn('returned non-zero exit status 1.', result.strip())
+            self.assertIn('(PIDs left: 0)', result.strip())
+
+    def test_forkbomb(self):
+        code = ('import os\n'
+                'while 1:\n'
+                '    os.fork()')
+        result = snek.python3(code)
+
+        self.assertIn('(PIDs left: 0)', result.strip())
 
 
 class RMQTests(unittest.TestCase):

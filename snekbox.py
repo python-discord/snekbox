@@ -17,6 +17,7 @@ class Snekbox(object):
 
         self.nsjail_binary = nsjail_binary
         self.python_binary = python_binary
+        self.nsjail_workaround()
 
     env = {
         'PATH': '/snekbox/.venv/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
@@ -25,6 +26,12 @@ class Snekbox(object):
         'PYTHON_PIP_VERSION': '10.0.1',
         'PYTHONDONTWRITEBYTECODE': '1',
     }
+
+    def nsjail_workaround(self):
+        dirs = ['/sys/fs/cgroup/pids/NSJAIL', '/sys/fs/cgroup/memory/NSJAIL']
+        for d in dirs:
+            if not os.path.exists(d):
+                os.makedirs(d)
 
     def python3(self, cmd):
         args = [self.nsjail_binary, '-Mo',
@@ -37,7 +44,8 @@ class Snekbox(object):
                 '--time_limit', '2',
                 '--disable_proc',
                 '--iface_no_lo',
-                # '--cgroup_pids_max=1',  # This doesn't work :(
+                '--cgroup_pids_max=1',
+                '--cgroup_mem_max=52428800'
                 '--quiet', '--',
                 self.python_binary, '-ISq', '-c', cmd]
 
@@ -82,24 +90,10 @@ class Snekbox(object):
                     exchange=snekid)
         exit(0)
 
-    def stopwatch(self, process):
-        log.debug(f'3 second timer started for process {process.pid}')
-        for _ in range(3):
-            time.sleep(1)
-            if not process.is_alive():
-                log.debug(f'Clean exit on process {process.pid}')
-                exit(0)
-
-        process.terminate()
-        log.debug(f'Terminated process {process.pid} forcefully')
-
     def message_handler(self, ch, method, properties, body, thread_ws=None):
         p = multiprocessing.Process(target=self.execute, args=(body,))
         p.daemon = True
         p.start()
-        t = threading.Thread(target=self.stopwatch, args=(p,))
-        t.daemon = True
-        t.start()
 
         ch.basic_ack(delivery_tag=method.delivery_tag)
 

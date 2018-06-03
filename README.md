@@ -57,6 +57,10 @@ chmod +x /usr/bin/nsjail
 give nsjail a test run
 
 ```bash
+# This is a workaround because nsjail can't create the directories automatically
+sudo mkdir -p /sys/fs/cgroup/pids/NSJAIL \
+  && mkdir -p /sys/fs/cgroup/memory/NSJAIL
+
 nsjail -Mo \
 --rlimit_as 700 \
 --chroot / \
@@ -67,11 +71,13 @@ nsjail -Mo \
 --time_limit 2 \
 --disable_proc \
 --iface_no_lo \
+--cgroup_pids_max=1 \
+--cgroup_mem_max=52428800 \
 --quiet -- \
 python3.6 -ISq -c "print('test')"
 ```
 
-> if it fails, try without the `--cgroup_pids_max=1`
+> if it fails, try without the `--cgroup_pids_max=1` and `--cgroup_mem_max=52428800`
 
 ## Development environment
 
