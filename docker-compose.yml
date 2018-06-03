@@ -13,9 +13,9 @@ services:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
 
-  pdsnekbox:
+  pdsnk:
     privileged: true
-    hostname: "pdsnekbox"
+    hostname: "pdsnk"
     image: pythondiscord/snekbox:latest
     networks:
       - sneknet
@@ -24,8 +24,8 @@ services:
       RMQ_USERNAME: guest
       RMQ_PASSWORD: guest
 
-  pdsnekboxweb:
-    hostname: "pdsnekboxweb"
+  pdsnkweb:
+    hostname: "pdsnkweb"
     image: pythondiscord/snekboxweb:latest
     networks:
       - sneknet

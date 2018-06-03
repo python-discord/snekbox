@@ -50,7 +50,6 @@ class SnekTests(unittest.TestCase):
                 'while 1:\n'
                 '    os.fork()')
         result = snek.python3(code)
-
         self.assertIn('(PIDs left: 0)', result.strip())
 
 

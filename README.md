@@ -95,7 +95,7 @@ rabbitmq webinterface: `http://localhost:15672`
 start the webserver
 
 ```bash
-docker-compose up -d pdsnekboxweb
+docker-compose up -d pdsnkweb
 netstat -plnt
 # tcp    0.0.0.0:5000    LISTEN
 ```
@@ -105,7 +105,7 @@ netstat -plnt
 ```bash
 pipenv run snekbox # for debugging
 # or
-docker-compose up pdsnekbox # for running the container
+docker-compose up pdsnk # for running the container
 ```
 
 ________________________________________

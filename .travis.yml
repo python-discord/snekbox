@@ -32,7 +32,7 @@ script:
   - chmod +x scripts/ci.sh
   - bash scripts/ci.sh
   - pipenv run lint
-  - pipenv run test
+  - sudo pipenv run test
 #after_success:
 #  - bash scripts/deploy.sh
 
