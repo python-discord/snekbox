@@ -8,8 +8,7 @@ from rmq import Rmq
 
 r = Rmq()
 
-nsjail = os.sep.join([os.getcwd(), f'binaries{os.sep}nsjail2.6-ubuntu-x86_64'])
-snek = Snekbox(nsjail_binary=nsjail)
+snek = Snekbox()
 
 
 class SnekTests(unittest.TestCase):

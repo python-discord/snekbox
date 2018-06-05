@@ -4,7 +4,8 @@ variables:
   DOCKER_DRIVER: overlay
 
 services:
-- docker:dind
+  - docker:dind
+  - rabbitmq:3.7.5-alpine
 
 stages:
   - build
