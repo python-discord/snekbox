@@ -3,8 +3,8 @@ image: pythondiscord/snekbox-ci:latest
 variables:
   DOCKER_DRIVER: overlay
 
-services:
-  - docker:dind
+#services:
+#  - docker:dind
 
 stages:
   - build
