@@ -1,4 +1,4 @@
-image: python:3.6-alpine3.7
+image: pythondiscord/snekbox-base:latest
 
 variables:
   DOCKER_DRIVER: overlay
@@ -9,16 +9,10 @@ services:
 stages:
   - build
 
-variables:
-  PIPENV_VENV_IN_PROJECT: 1
-  PIPENV_IGNORE_VIRTUALENVS: 1
-  PIPENV_NOSPIN: 1
-  PIPENV_HIDE_EMOJIS: 1
-
-
 build:
   stage: build
   script:
-    - pip install pipenv
-    - pipenv sync
+    - chmod +x scripts/ci.sh
+    - bash scripts/ci.sh
     - pipenv run lint
+    - pipenv run test

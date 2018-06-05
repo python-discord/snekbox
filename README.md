@@ -1,10 +1,7 @@
-| CI | STATUS |
-|----|--------|
-| GITLAB | [![pipeline status](https://gitlab.com/discord-python/projects/snekbox/badges/master/pipeline.svg)](https://gitlab.com/discord-python/projects/snekbox/commits/master) |
-| TRAVIS | [![Build Status](https://travis-ci.com/discord-python/snekbox.svg?branch=master)](https://travis-ci.com/discord-python/snekbox) |
- 
+[![pipeline status](https://gitlab.com/discord-python/projects/snekbox/badges/master/pipeline.svg)](https://gitlab.com/discord-python/projects/snekbox/commits/master) [![coverage report](https://gitlab.com/discord-python/projects/snekbox/badges/master/coverage.svg)](https://gitlab.com/discord-python/projects/snekbox/commits/master)
 
 # snekbox
+
 Python sandbox runners for executing code in isolation aka snekbox
 
 The user sends a piece of python code to a snekbox, the snekbox executes the code and sends the result back to the users.

@@ -25,9 +25,13 @@ python_version = "3.6"
 lint = "flake8"
 test = "py.test tests --cov . --cov-report term-missing -v"
 report = "py.test tests --cov . --cov-report=html"
+
 snekbox = "python snekbox.py"
 snekweb = "gunicorn -w 2 -b 0.0.0.0:5000 --log-level debug -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker snekweb:app"
+
 buildbox = "docker build -t pythondiscord/snekbox:latest -f docker/Dockerfile ."
-buildweb = "docker build -t pythondiscord/snekboxweb:latest -f docker/Dockerfile.webapp ."
 pushbox = "docker push pythondiscord/snekbox:latest"
+pushboxbase = "docker push pythondiscord/snekbox-base:latest"
+
+buildweb = "docker build -t pythondiscord/snekboxweb:latest -f docker/Dockerfile.webapp ."
 pushweb = "docker push pythondiscord/snekboxweb:latest"
