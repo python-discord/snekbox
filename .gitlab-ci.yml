@@ -12,6 +12,7 @@ stages:
 build:
   stage: build
   script:
+    - cd /snekbox
     - pwd
     - ls -lah
     - pipenv run lint
