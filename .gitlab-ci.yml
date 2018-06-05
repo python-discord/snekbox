@@ -1,0 +1,24 @@
+image: python:3.6-alpine3.7
+
+variables:
+  DOCKER_DRIVER: overlay
+
+services:
+- docker:dind
+
+stages:
+  - build
+
+variables:
+  PIPENV_VENV_IN_PROJECT=1
+  PIPENV_IGNORE_VIRTUALENVS=1
+  PIPENV_NOSPIN=1
+  PIPENV_HIDE_EMOJIS=1
+
+
+build:
+  stage: build
+  script:
+    - pip install pipenv
+    - pipenv sync
+    - pipenv run lint
