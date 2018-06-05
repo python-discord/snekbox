@@ -1,4 +1,4 @@
-image: pythondiscord/snekbox-base:latest
+image: pythondiscord/snekbox-ci:latest
 
 variables:
   DOCKER_DRIVER: overlay
@@ -12,8 +12,8 @@ stages:
 build:
   stage: build
   script:
-    - cd /snekbox
-    - pwd
-    - ls -lah
+    - pipenv sync --dev
     - pipenv run lint
     - pipenv run test
+    - pipenv run buildbox
+    - pipenv run pushbox
