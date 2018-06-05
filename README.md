@@ -1,4 +1,9 @@
-[![Build Status](https://travis-ci.com/discord-python/snekbox.svg?branch=master)](https://travis-ci.com/discord-python/snekbox)
+| CI | STATUS |
+|----|--------|
+| GITLAB | [![pipeline status](https://gitlab.com/discord-python/projects/snekbox/badges/master/pipeline.svg)](https://gitlab.com/discord-python/projects/snekbox/commits/master) |
+| TRAVIS | [![Build Status](https://travis-ci.com/discord-python/snekbox.svg?branch=master)](https://travis-ci.com/discord-python/snekbox) |
+ 
+
 # snekbox
 Python sandbox runners for executing code in isolation aka snekbox
 
