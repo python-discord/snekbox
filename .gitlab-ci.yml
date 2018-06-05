@@ -16,7 +16,6 @@ stages:
 build:
   stage: build
   script:
-    - docker ps
     - pipenv sync --dev
     - pipenv run lint
     - pipenv run test
