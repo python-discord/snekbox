@@ -3,8 +3,9 @@ image: pythondiscord/snekbox-ci:latest
 variables:
   DOCKER_DRIVER: overlay
 
-#services:
-#  - docker:dind
+services:
+  - docker:dind
+  - rabbitmq:3.7.5-alpine
 
 stages:
   - build
@@ -12,6 +13,7 @@ stages:
 build:
   stage: build
   script:
+    - docker ps
     - pipenv sync --dev
     - pipenv run lint
     - pipenv run test
