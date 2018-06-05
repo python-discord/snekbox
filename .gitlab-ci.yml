@@ -13,6 +13,6 @@ build:
   stage: build
   script:
     - chmod +x scripts/ci.sh
-    - bash scripts/ci.sh
+    - sh scripts/ci.sh
     - pipenv run lint
     - pipenv run test
