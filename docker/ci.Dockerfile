@@ -1,7 +1,6 @@
 FROM python:3.6-alpine3.7
 
-RUN apk add --no-cache libstdc++ protobuf
-RUN apk add --update build-base
+RUN apk add --no-cache libstdc++ protobuf build-base docker
 
 ENV PIPENV_VENV_IN_PROJECT=1
 ENV PIPENV_IGNORE_VIRTUALENVS=1
