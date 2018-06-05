@@ -2,10 +2,13 @@ image: pythondiscord/snekbox-ci:latest
 
 variables:
   DOCKER_DRIVER: overlay
+  RMQ_HOST: rabbit
 
 services:
   - docker:dind
-  - rabbitmq:3.7.5-alpine
+  - name: rabbitmq:3.7.5-alpine
+    alias: rabbit
+
 
 stages:
   - build

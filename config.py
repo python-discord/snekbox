@@ -5,7 +5,7 @@ import traceback
 
 
 def autodiscover():
-    container_names = ["rmq", "pdrmq", "snekbox_pdrmq_1", "pdrmq-ci"]
+    container_names = ["rmq", "pdrmq", "snekbox_pdrmq_1"]
 
     client = docker.from_env()
     for name in container_names:
