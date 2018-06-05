@@ -12,5 +12,6 @@ stages:
 build:
   stage: build
   script:
+    - ls -lah
     - pipenv run lint
     - pipenv run test
