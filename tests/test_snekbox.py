@@ -16,12 +16,13 @@ class SnekTests(unittest.TestCase):
         result = snek.python3('print("test")')
         self.assertEquals(result.strip(), 'test')
 
-    # def test_memory_error(self):
-    #     code = ('x = "*"\n'
-    #             'while True:\n'
-    #             '    x = x * 99\n')
-    #     result = snek.python3(code)
-    #     self.assertEquals(result.strip(), 'timed out or memory limit exceeded')
+    def test_memory_error(self):
+        code = ('x = "*"\n'
+                'while True:\n'
+                '    x = x * 99\n')
+        result = snek.python3(code)
+
+        self.assertEquals(result.strip(), 'timed out or memory limit exceeded')
 
     def test_timeout(self):
         code = ('x = "*"\n'

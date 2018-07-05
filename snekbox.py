@@ -42,7 +42,7 @@ class Snekbox(object):
                 '--disable_proc',
                 '--iface_no_lo',
                 '--cgroup_pids_max=1',
-                '--cgroup_mem_max=52428800'
+                '--cgroup_mem_max=52428800',
                 '--quiet', '--',
                 self.python_binary, '-ISq', '-c', cmd]
 
