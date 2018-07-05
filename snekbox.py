@@ -67,6 +67,9 @@ class Snekbox(object):
             except IndexError:
                 output = ''
 
+        elif proc.returncode == 11:
+            output = 'segfaulted, nice work!'
+
         elif proc.returncode == 109:
             output = 'timed out or memory limit exceeded'
 
