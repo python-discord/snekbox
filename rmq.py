@@ -116,10 +116,6 @@ class Rmq(object):
                     properties=self.properties)
 
                 if result:
-                    log.info((f"published: {self.host} "
-                              f"queue: {queue} "
-                              f"message: {message}"))
-
                     return result
 
                 else:

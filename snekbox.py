@@ -60,7 +60,11 @@ class Snekbox(object):
 
         elif proc.returncode == 1:
             try:
-                output = stderr.split('\n')[-2]
+                filtered = []
+                for line in stderr.split('\n'):
+                    if not line.startswith('['):
+                        filtered.append(line)
+                output = '\n'.join(filtered)
             except IndexError:
                 output = ''
 
@@ -71,22 +75,18 @@ class Snekbox(object):
             output = 'permission denied (root required)'
 
         else:
-            log.debug(stderr)
             output = 'unknown error'
 
         return output
 
     def execute(self, body):
         msg = body.decode('utf-8')
-        log.info(f'incoming: {msg}')
         result = ''
         snek_msg = json.loads(msg)
         snekid = snek_msg['snekid']
         snekcode = snek_msg['message'].strip()
 
         result = self.python3(snekcode)
-
-        log.info(f'outgoing: {result}')
 
         rmq.publish(result,
                     queue=snekid,

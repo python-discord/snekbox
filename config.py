@@ -19,7 +19,8 @@ def autodiscover():
             continue
 
         except Exception:
-            print(traceback.format_exc())
+            pass
+            #print(traceback.format_exc())
 
     return '127.0.0.1'
 
