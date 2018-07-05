@@ -4,7 +4,6 @@ import subprocess
 import os
 import sys
 
-from logs import log
 from rmq import Rmq
 
 

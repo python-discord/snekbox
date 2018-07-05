@@ -1,7 +1,7 @@
 import os
 import docker
 from docker.errors import NotFound
-import traceback
+# import traceback
 
 
 def autodiscover():
@@ -20,7 +20,7 @@ def autodiscover():
 
         except Exception:
             pass
-            #print(traceback.format_exc())
+            # print(traceback.format_exc())
 
     return '127.0.0.1'
 
