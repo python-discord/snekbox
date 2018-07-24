@@ -45,13 +45,15 @@ class Snekbox(object):
                 '--cgroup_mem_max=52428800',
                 '--quiet', '--',
                 self.python_binary, '-ISq', '-c', cmd]
-
-        proc = subprocess.Popen(args,
+        try:
+            proc = subprocess.Popen(args,
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
                                 env=self.env,
                                 universal_newlines=True)
+        except ValueError:
+            return 'ValueError: embedded null byte'
 
         stdout, stderr = proc.communicate()
         if proc.returncode == 0:
@@ -67,17 +69,17 @@ class Snekbox(object):
             except IndexError:
                 output = ''
 
-        elif proc.returncode == 11:
-            output = 'segfaulted, nice work!'
-
         elif proc.returncode == 109:
-            output = 'timed out or memory limit exceeded'
+            return 'timed out or memory limit exceeded'
 
         elif proc.returncode == 255:
-            output = 'permission denied (root required)'
+            return 'permission denied (root required)'
+
+        elif proc.returncode:
+            return f'unknown error, code: {proc.returncode}'
 
         else:
-            output = 'unknown error'
+            return 'unknown error, no error code'
 
         return output
 

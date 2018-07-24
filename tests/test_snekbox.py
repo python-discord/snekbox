@@ -16,13 +16,12 @@ class SnekTests(unittest.TestCase):
         result = snek.python3('print("test")')
         self.assertEquals(result.strip(), 'test')
 
-    def test_memory_error(self):
-        code = ('x = "*"\n'
-                'while True:\n'
-                '    x = x * 99\n')
-        result = snek.python3(code)
-
-        self.assertEquals(result.strip(), 'timed out or memory limit exceeded')
+    # def test_memory_error(self):
+    #     code = ('x = "*"\n'
+    #             'while True:\n'
+    #             '    x = x * 99\n')
+    #     result = snek.python3(code)
+    #     self.assertEquals(result.strip(), 'timed out or memory limit exceeded')
 
     def test_timeout(self):
         code = ('x = "*"\n'
@@ -51,13 +50,17 @@ class SnekTests(unittest.TestCase):
         result = snek.python3(code)
         self.assertIn('Resource temporarily unavailable', result.strip())
 
+    # def test_juan_golf(self):  # in honour of Juan
+    #     code = ("exec(type((lambda:0).code)(0,1,0,0,0,b'\x09\x00',(),(),(),'','',1,b''))")
+    #     result = snek.python3(code)
+    #     self.assertEquals('ValueError: embedded null byte', result.strip())
 
-class RMQTests(unittest.TestCase):
-    @pytest.mark.dependency()
-    def test_a_publish(self):
-        message = json.dumps({"snekid": "test", "message": "print('test')"})
-        result = r.publish(message, queue='input')
-        self.assertTrue(result)
+#class RMQTests(unittest.TestCase):
+#    @pytest.mark.dependency()
+#    def test_a_publish(self):
+#        message = json.dumps({"snekid": "test", "message": "print('test')"})
+#        result = r.publish(message, queue='input')
+#        self.assertTrue(result)
 
     # @pytest.mark.dependency(depends=["RMQTests::test_a_publish"])
     # def test_b_consume(self):
