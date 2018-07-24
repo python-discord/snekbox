@@ -9,11 +9,12 @@ services:
 #  - name: rabbitmq:3.7.5-alpine
 #    alias: rabbit
 
-
 stages:
   - build
 
 build:
+  tags:
+    - docker
   stage: build
   script:
     - pipenv sync --dev
