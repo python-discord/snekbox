@@ -47,11 +47,11 @@ class Snekbox(object):
                 self.python_binary, '-ISq', '-c', cmd]
         try:
             proc = subprocess.Popen(args,
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE,
-                                env=self.env,
-                                universal_newlines=True)
+                                    stdin=subprocess.PIPE,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE,
+                                    env=self.env,
+                                    universal_newlines=True)
         except ValueError:
             return 'ValueError: embedded null byte'
 

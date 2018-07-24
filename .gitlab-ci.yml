@@ -6,8 +6,8 @@ variables:
 
 services:
   - docker:dind
-  - name: rabbitmq:3.7.5-alpine
-    alias: rabbit
+#  - name: rabbitmq:3.7.5-alpine
+#    alias: rabbit
 
 
 stages:
