@@ -23,5 +23,3 @@ build:
     - pipenv install --dev --deploy
     - pipenv run lint
     - pipenv run test
-    - pipenv run buildbox
-    - pipenv run pushbox
