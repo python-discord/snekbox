@@ -1,4 +1,4 @@
-FROM python:3.6.6-alpine3.8
+FROM python:3.6.6-alpine3.7
 
 RUN apk add --no-cache libstdc++ protobuf
 RUN apk add --update build-base
