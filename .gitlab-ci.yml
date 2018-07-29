@@ -23,3 +23,5 @@ build:
     - pipenv install --dev --deploy
     - pipenv run lint
     - pipenv run test
+    - chmod +x scripts/deploy.sh
+    - scripts/deploy.sh
