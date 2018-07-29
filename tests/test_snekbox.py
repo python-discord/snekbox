@@ -50,19 +50,11 @@ class SnekTests(unittest.TestCase):
         result = snek.python3(code)
         self.assertIn('Resource temporarily unavailable', result.strip())
 
-    # def test_juan_golf(self):  # in honour of Juan
-    #     code = ("exec(type((lambda:0).code)(0,1,0,0,0,b'\x09\x00',(),(),(),'','',1,b''))")
-    #     result = snek.python3(code)
-    #     self.assertEquals('ValueError: embedded null byte', result.strip())
+    def test_juan_golf(self):  # in honour of Juan
+        code = ("func = lambda: None\n"
+                "CodeType = type(func.__code__)\n"
+                "bytecode = CodeType(0,1,0,0,0,b'',(),(),(),'','',1,b'')\n"
+                "exec(bytecode)")
 
-#class RMQTests(unittest.TestCase):
-#    @pytest.mark.dependency()
-#    def test_a_publish(self):
-#        message = json.dumps({"snekid": "test", "message": "print('test')"})
-#        result = r.publish(message, queue='input')
-#        self.assertTrue(result)
-
-    # @pytest.mark.dependency(depends=["RMQTests::test_a_publish"])
-    # def test_b_consume(self):
-    #     result = r.consume(callback=snek.message_handler, queue='input', run_once=True)
-    #     self.assertEquals(result[2], b'{"snekid": "test", "message": "print(\'test\')"}')
+        result = snek.python3(code)
+        self.assertEquals('unknown error, code: 111', result.strip())
