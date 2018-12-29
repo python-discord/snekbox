@@ -44,7 +44,7 @@ class Snekbox(object):
                 '--cgroup_pids_max=1',
                 '--cgroup_mem_max=52428800',
                 '--quiet', '--',
-                self.python_binary, '-ISq', '-c', cmd]
+                self.python_binary, '-ISq', '/snekbox/executor.py', cmd]
         try:
             proc = subprocess.Popen(args,
                                     stdin=subprocess.PIPE,
