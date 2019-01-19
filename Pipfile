@@ -17,6 +17,7 @@ gunicorn = "*"
 pytest = "*"
 pytest-cov = "*"
 pytest-dependency = "*"
+pre-commit = "*"
 
 [requires]
 python_version = "3.6"
@@ -25,18 +26,13 @@ python_version = "3.6"
 lint = "flake8"
 test = "py.test tests --cov . --cov-report term-missing -v"
 report = "py.test tests --cov . --cov-report=html"
-
 snekbox = "python snekbox.py"
 snekweb = "gunicorn -w 2 -b 0.0.0.0:5000 --log-level debug -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker snekweb:app"
-
 buildbox = "docker build -t pythondiscord/snekbox:latest -f docker/Dockerfile ."
 pushbox = "docker push pythondiscord/snekbox:latest"
-
 buildboxbase = "docker build -t pythondiscord/snekbox-base:latest -f docker/base.Dockerfile ."
 pushboxbase = "docker push pythondiscord/snekbox-base:latest"
-
 buildci = "docker build -t pythondiscord/snekbox-ci:latest -f docker/ci.Dockerfile ."
 pushci = "docker push pythondiscord/snekbox-ci:latest"
-
 buildweb = "docker build -t pythondiscord/snekboxweb:latest -f docker/Dockerfile.webapp ."
 pushweb = "docker push pythondiscord/snekboxweb:latest"
