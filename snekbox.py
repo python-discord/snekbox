@@ -1,17 +1,14 @@
-import json
-import multiprocessing
 import subprocess
 import os
 import sys
 
-from rmq import Rmq
+from flask import Flask, render_template, request, jsonify
 
 
 class Snekbox(object):
     def __init__(self,
                  nsjail_binary='nsjail',
                  python_binary=os.path.dirname(sys.executable)+os.sep+'python3.6'):
-
         self.nsjail_binary = nsjail_binary
         self.python_binary = python_binary
         self.nsjail_workaround()
@@ -83,34 +80,32 @@ class Snekbox(object):
 
         return output
 
-    def execute(self, body):
-        msg = body.decode('utf-8')
-        result = ''
-        snek_msg = json.loads(msg)
-        snekid = snek_msg['snekid']
-        snekcode = snek_msg['message'].strip()
 
-        result = self.python3(snekcode)
+snekbox = Snekbox()
 
-        rmq.publish(result,
-                    queue=snekid,
-                    routingkey=snekid,
-                    exchange=snekid)
-        exit(0)
+# Load app
+app = Flask(__name__)
+app.use_reloader = False
 
-    def message_handler(self, ch, method, properties, body, thread_ws=None):
-        p = multiprocessing.Process(target=self.execute, args=(body,))
-        p.daemon = True
-        p.start()
-
-        ch.basic_ack(delivery_tag=method.delivery_tag)
+# Logging
+log = app.logger
 
 
-if __name__ == '__main__':
-    try:
-        rmq = Rmq()
-        snkbx = Snekbox()
-        rmq.consume(callback=snkbx.message_handler)
-    except KeyboardInterrupt:
-        print('Exited')
-        exit(0)
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+
+@app.route('/result', methods=["POST", "GET"])
+def result():
+    if request.method == "POST":
+        code = request.form["Code"]
+        output = snekbox.python3(code)
+        return render_template('result.html', code=code, result=output)
+
+
+@app.route('/input', methods=["POST"])
+def code_input():
+    body = request.get_json()
+    output = snekbox.python3(body["code"])
+    return jsonify(input=body["code"], output=output)
