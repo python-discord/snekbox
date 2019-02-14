@@ -17,7 +17,10 @@ class Snekbox(object):
         self.nsjail_workaround()
 
     env = {
-        'PATH': '/snekbox/.venv/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+        'PATH': (
+            '/snekbox/.venv/bin:/usr/local/bin:/usr/local/'
+            'sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+        ),
         'LANG': 'en_US.UTF-8',
         'PYTHON_VERSION': '3.6.5',
         'PYTHON_PIP_VERSION': '10.0.1',

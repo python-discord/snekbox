@@ -12,7 +12,8 @@ def autodiscover():
         try:
             container = client.containers.get(name)
             if container.status == "running":
-                host = list(container.attrs.get('NetworkSettings').get('Networks').values())[0]['IPAddress']
+                host = list(container.attrs.get('NetworkSettings').get('Networks').values())
+                host = host[0]['IPAddress']
                 return host
 
         except NotFound:
