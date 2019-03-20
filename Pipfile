@@ -13,11 +13,12 @@ flask-sockets = "*"
 gevent = "==1.2.2"
 gevent-websocket = "*"
 gunicorn = "*"
-"flake8" = "*"
 pytest = "*"
 pytest-cov = "*"
 pytest-dependency = "*"
 pre-commit = "*"
+flake8 = "*"
+flake8-docstrings = "*"
 
 [requires]
 python_version = "3.6"
