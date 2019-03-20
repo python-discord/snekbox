@@ -16,7 +16,8 @@ from config import EXCHANGE
 from logs import log
 
 
-class Rmq(object):
+class Rmq:
+    """Rabbit MQ (RMQ) implementation used for communication with the bot."""
 
     def __init__(self,
                  username=USERNAME,
@@ -42,6 +43,7 @@ class Rmq(object):
             auto_delete=True)                    # Delete queue when all connection are closed
 
     def consume(self, queue=QUEUE, callback=None, thread_ws=None, run_once=False):
+        """Subscribe to read from a RMQ channel."""
         while True:
             try:
                 connection = pika.BlockingConnection(self.con_params)
@@ -86,11 +88,8 @@ class Rmq(object):
 
             time.sleep(2)
 
-    def publish(self,
-                message,
-                queue=QUEUE,
-                routingkey=ROUTING_KEY,
-                exchange=EXCHANGE):
+    def publish(self, message, queue=QUEUE, routingkey=ROUTING_KEY, exchange=EXCHANGE):
+        """Open a connection to publish (write) to a RMQ channel."""
 
         try:
             connection = pika.BlockingConnection(self.con_params)

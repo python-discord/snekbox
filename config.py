@@ -1,10 +1,10 @@
 import os
 import docker
 from docker.errors import NotFound
-# import traceback
 
 
 def autodiscover():
+    """Search for the snekbox container and return it's IPv4 address."""
     container_names = ["rmq", "pdrmq", "snekbox_pdrmq_1"]
 
     client = docker.from_env()
@@ -15,13 +15,10 @@ def autodiscover():
                 host = list(container.attrs.get('NetworkSettings').get('Networks').values())
                 host = host[0]['IPAddress']
                 return host
-
         except NotFound:
             continue
-
         except Exception:
             pass
-            # print(traceback.format_exc())
 
     return '127.0.0.1'
 

@@ -7,14 +7,16 @@ import sys
 from rmq import Rmq
 
 
-class Snekbox(object):
+class Snekbox:
+    """Core snekbox functionality, providing safe execution of Python code."""
+
     def __init__(self,
                  nsjail_binary='nsjail',
                  python_binary=os.path.dirname(sys.executable)+os.sep+'python3.6'):
 
         self.nsjail_binary = nsjail_binary
         self.python_binary = python_binary
-        self.nsjail_workaround()
+        self._nsjail_workaround()
 
     env = {
         'PATH': (
@@ -27,13 +29,23 @@ class Snekbox(object):
         'PYTHONDONTWRITEBYTECODE': '1',
     }
 
-    def nsjail_workaround(self):
+    def _nsjail_workaround(self):
         dirs = ['/sys/fs/cgroup/pids/NSJAIL', '/sys/fs/cgroup/memory/NSJAIL']
         for d in dirs:
             if not os.path.exists(d):
                 os.makedirs(d)
 
     def python3(self, cmd):
+        """
+        Execute Python 3 code in a isolated environment.
+
+        The value of ``cmd`` is passed using '-c' to a Python
+        interpreter that is started in a ``nsjail``, isolating it
+        from the rest of the system.
+
+        Returns the output of executing the command (stdout) if
+        successful, or a error message if the execution failed.
+        """
         args = [self.nsjail_binary, '-Mo',
                 '--rlimit_as', '700',
                 '--chroot', '/',
@@ -87,6 +99,15 @@ class Snekbox(object):
         return output
 
     def execute(self, body):
+        """
+        Handles execution of a raw JSON-formatted RMQ message, contained in ``body``.
+
+        The message metadata, including the Python code to be executed, is
+        extracted from the message body. The code is then executed in the
+        isolated environment, and the results of the execution published
+        to RMQ. Once published, the system exits, since the snekboxes
+        are created and disposed of per-execution.
+        """
         msg = body.decode('utf-8')
         result = ''
         snek_msg = json.loads(msg)
@@ -102,6 +123,7 @@ class Snekbox(object):
         exit(0)
 
     def message_handler(self, ch, method, properties, body, thread_ws=None):
+        """Spawns a daemon process that handles RMQ messages."""
         p = multiprocessing.Process(target=self.execute, args=(body,))
         p.daemon = True
         p.start()

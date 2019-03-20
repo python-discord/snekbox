@@ -24,11 +24,13 @@ log = app.logger
 
 @app.route('/')
 def index():
+    """Root path returns standard index.html."""
     return render_template('index.html')
 
 
 @sockets.route('/ws/<snekboxid>')
 def websocket_route(ws, snekboxid):
+    """Opens a websocket that spawns and connects to a snekbox daemon."""
     localdata = threading.local()
     localdata.thread_ws = ws
 
