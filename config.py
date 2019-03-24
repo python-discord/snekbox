@@ -1,7 +1,7 @@
 import os
+
 import docker
 from docker.errors import NotFound
-# import traceback
 
 
 def autodiscover():

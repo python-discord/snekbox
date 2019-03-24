@@ -1,7 +1,7 @@
 import json
 import multiprocessing
-import subprocess
 import os
+import subprocess
 import sys
 
 from rmq import Rmq
