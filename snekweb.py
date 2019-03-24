@@ -3,8 +3,7 @@ import logging
 import threading
 import traceback
 
-from flask import Flask
-from flask import render_template
+from flask import Flask, render_template
 from flask_sockets import Sockets
 from rmq import Rmq
 
