@@ -1,18 +1,17 @@
-import pika
 import time
 import traceback
 
+import pika
 from pika.exceptions import ConnectionClosed
 
-from config import USERNAME
-from config import PASSWORD
-from config import HOST
-from config import PORT
+from config import EXCHANGE
 from config import EXCHANGE_TYPE
+from config import HOST
+from config import PASSWORD
+from config import PORT
 from config import QUEUE
 from config import ROUTING_KEY
-from config import EXCHANGE
-
+from config import USERNAME
 from logs import log
 
 
