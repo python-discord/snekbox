@@ -3,8 +3,7 @@ import logging
 import threading
 import traceback
 
-from flask import Flask
-from flask import render_template
+from flask import Flask, render_template
 from flask_sockets import Sockets
 from rmq import Rmq
 
@@ -22,11 +21,15 @@ log = app.logger
 
 @app.route('/')
 def index():
+    """Root path returns standard index.html."""
+
     return render_template('index.html')
 
 
 @sockets.route('/ws/<snekboxid>')
 def websocket_route(ws, snekboxid):
+    """Opens a websocket that spawns and connects to a snekbox daemon."""
+
     localdata = threading.local()
     localdata.thread_ws = ws
 
