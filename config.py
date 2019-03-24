@@ -6,6 +6,7 @@ from docker.errors import NotFound
 
 def autodiscover():
     """Search for the snekbox container and return its IPv4 address."""
+
     container_names = ["rmq", "pdrmq", "snekbox_pdrmq_1"]
 
     client = docker.from_env()

@@ -25,6 +25,7 @@ class Rmq:
 
     def consume(self, queue=QUEUE, callback=None, thread_ws=None, run_once=False):
         """Subscribe to read from a RMQ channel."""
+
         while True:
             try:
                 connection = pika.BlockingConnection(self.con_params)
