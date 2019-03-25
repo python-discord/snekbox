@@ -1,20 +1,20 @@
 import unittest
 
-from snekbox import Snekbox
+from snekbox.nsjail import NsJail
 
-snek = Snekbox()
+nsjail = NsJail()
 
 
 class SnekTests(unittest.TestCase):
     def test_nsjail(self):
-        result = snek.python3('print("test")')
+        result = nsjail.python3('print("test")')
         self.assertEquals(result.strip(), 'test')
 
     # def test_memory_error(self):
     #     code = ('x = "*"\n'
     #             'while True:\n'
     #             '    x = x * 99\n')
-    #     result = snek.python3(code)
+    #     result = nsjail.python3(code)
     #     self.assertEquals(result.strip(), 'timed out or memory limit exceeded')
 
     def test_timeout(self):
@@ -27,13 +27,13 @@ class SnekTests(unittest.TestCase):
             '        continue\n'
         )
 
-        result = snek.python3(code)
+        result = nsjail.python3(code)
         self.assertEquals(result.strip(), 'timed out or memory limit exceeded')
 
     def test_kill(self):
         code = ('import subprocess\n'
                 'print(subprocess.check_output("kill -9 6", shell=True).decode())')
-        result = snek.python3(code)
+        result = nsjail.python3(code)
         if 'ModuleNotFoundError' in result.strip():
             self.assertIn('ModuleNotFoundError', result.strip())
         else:
@@ -43,7 +43,7 @@ class SnekTests(unittest.TestCase):
         code = ('import os\n'
                 'while 1:\n'
                 '    os.fork()')
-        result = snek.python3(code)
+        result = nsjail.python3(code)
         self.assertIn('Resource temporarily unavailable', result.strip())
 
     def test_juan_golf(self):  # in honour of Juan
@@ -52,5 +52,5 @@ class SnekTests(unittest.TestCase):
                 "bytecode = CodeType(0,1,0,0,0,b'',(),(),(),'','',1,b'')\n"
                 "exec(bytecode)")
 
-        result = snek.python3(code)
+        result = nsjail.python3(code)
         self.assertEquals('unknown error, code: 111', result.strip())
