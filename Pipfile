@@ -4,9 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-docker = "*"
 flask = "*"
-gevent = "*"
 gunicorn = "*"
 
 [dev-packages]
@@ -28,8 +26,8 @@ python_version = "3.6"
 [scripts]
 lint = "flake8"
 precommit = "pre-commit install"
-test = "py.test tests --cov . --cov-report term-missing -v"
-report = "py.test tests --cov . --cov-report=html"
+test = "pytest tests --cov . --cov-report term-missing -v"
+report = "pytest tests --cov . --cov-report=html"
 snekbox = "gunicorn -w 2 -b 0.0.0.0:8060 snekbox:app"
 buildbox = "docker build -t pythondiscord/snekbox:latest -f docker/Dockerfile ."
 pushbox = "docker push pythondiscord/snekbox:latest"
