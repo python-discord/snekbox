@@ -2,7 +2,7 @@ import os
 import subprocess
 import sys
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, jsonify, render_template, request
 
 
 class Snekbox:
