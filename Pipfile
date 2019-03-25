@@ -10,16 +10,24 @@ gevent = "*"
 gunicorn = "*"
 
 [dev-packages]
-"flake8" = "*"
 pytest = "*"
 pytest-cov = "*"
 pytest-dependency = "*"
+pre-commit = "*"
+flake8 = "*"
+flake8-docstrings = "*"
+flake8-bugbear = "*"
+flake8-import-order = "*"
+flake8-tidy-imports = "*"
+flake8-todo = "*"
+flake8-string-format = "*"
 
 [requires]
 python_version = "3.6"
 
 [scripts]
 lint = "flake8"
+precommit = "pre-commit install"
 test = "py.test tests --cov . --cov-report term-missing -v"
 report = "py.test tests --cov . --cov-report=html"
 snekbox = "gunicorn -w 2 -b 0.0.0.0:8060 snekbox:app"
