@@ -25,6 +25,7 @@ flake8-tidy-imports = "*"
 flake8-todo = "*"
 flake8-string-format = "*"
 flake8-formatter-junit-xml = "*"
+flake8-junit-report = "*"
 
 [requires]
 python_version = "3.6"
