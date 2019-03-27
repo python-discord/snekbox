@@ -22,14 +22,12 @@ jobs:
 
   - script: python3 -m flake8 --format junit-xml --output-file test-lint.xml
     displayName: 'Run linter'
-    continueOnError: true
 
   - task: PublishTestResults@2
     condition: succeededOrFailed()
     inputs:
       testResultsFiles: '**/test-*.xml'
       testRunTitle: 'Snekbox Flake8 Lint Results'
-      failTaskOnFailedTests: true
 
 - job: build
   displayName: 'Build'
