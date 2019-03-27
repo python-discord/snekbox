@@ -1,4 +1,4 @@
-[![Build Status](https://dev.azure.com/python-discord/Python Discord/_apis/build/status/Snekbox?branchName=master)](https://dev.azure.com/python-discord/Python Discord/_build/latest?definitionId=13&branchName=master)
+[![Build Status](https://dev.azure.com/python-discord/Python%20Discord/_apis/build/status/Snekbox?branchName=master)](https://dev.azure.com/python-discord/Python%20Discord/_build/latest?definitionId=13&branchName=master)
 
 # snekbox
 
