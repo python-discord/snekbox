@@ -1,11 +1,11 @@
 # https://aka.ms/yaml
 
-pool:
-  vmImage: 'Ubuntu-16.04'
-
 jobs:
 - job: test
   displayName: 'Lint & Build Test'
+
+  pool:
+    vmImage: 'Ubuntu-16.04'
 
   steps:
   - script: docker build -t pythondiscord/snekbox-ci:latest -f docker/ci.Dockerfile .
