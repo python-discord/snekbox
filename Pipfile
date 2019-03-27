@@ -31,6 +31,7 @@ python_version = "3.6"
 
 [scripts]
 lint = "flake8"
+precommit = "pre-commit install"
 test = "py.test tests --cov . --cov-report term-missing -v"
 report = "py.test tests --cov . --cov-report=html"
 snekbox = "python snekbox.py"
