@@ -16,15 +16,15 @@ jobs:
   dependsOn: test
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
 
+  steps:
   - task: Docker@1
     displayName: 'Login: Docker Hub'
 
-  inputs:
-    containerregistrytype: 'Container Registry'
-    dockerRegistryEndpoint: 'DockerHub'
-    command: 'login'
+    inputs:
+      containerregistrytype: 'Container Registry'
+      dockerRegistryEndpoint: 'DockerHub'
+      command: 'login'
 
-  steps:
   - script: docker build -t pythondiscord/snekbox:latest -f docker/Dockerfile .
     displayName: 'Build Final Image'
 
