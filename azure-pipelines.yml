@@ -11,7 +11,7 @@ jobs:
   - script: docker build -t pythondiscord/snekbox-ci:latest -f docker/ci.Dockerfile .
     displayName: 'Build CI Container'
 
--job: build
+- job: build
   displayName: 'Lint & Build Test'
   dependsOn: test
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
