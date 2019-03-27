@@ -21,7 +21,6 @@ app.logger.handlers = gunicorn_logger.handlers
 app.logger.setLevel(gunicorn_logger.level)
 log = app.logger
 
-
 @app.route('/')
 def index():
     return render_template('index.html')

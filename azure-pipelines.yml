@@ -20,7 +20,7 @@ jobs:
   - script: pipenv install --dev --deploy --system
     displayName: 'Install project using pipenv'
 
-  - script: python3 -m flake8 -v
+  - script: python3 -m flake8
     displayName: 'Run linter'
 
 - job: build
