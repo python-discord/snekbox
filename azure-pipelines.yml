@@ -20,8 +20,14 @@ jobs:
   - script: pipenv install --dev --deploy --system
     displayName: 'Install project using pipenv'
 
-  - script: python3 -m flake8
+  - script: python3 -m flake8 --format junit-xml --output-file test-lint.xml
     displayName: 'Run linter'
+
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFiles: '**/test-*.xml'
+      testRunTitle: 'Publish test results for Python $(python.version)'
 
 - job: build
   displayName: 'Build'
