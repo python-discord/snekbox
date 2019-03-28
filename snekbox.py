@@ -1,10 +1,8 @@
-import json
-import multiprocessing
 import os
 import subprocess
 import sys
 
-from rmq import Rmq
+from flask import Flask, jsonify, render_template, request
 
 
 class Snekbox:
@@ -98,46 +96,38 @@ class Snekbox:
 
         return output
 
-    def execute(self, body):
-        """
-        Handles execution of a raw JSON-formatted RMQ message, contained in ``body``.
 
-        The message metadata, including the Python code to be executed, is
-        extracted from the message body. The code is then executed in the
-        isolated environment, and the results of the execution published
-        to RMQ. Once published, the system exits, since the snekboxes
-        are created and disposed of per-execution.
-        """
+snekbox = Snekbox()
 
-        msg = body.decode('utf-8')
-        result = ''
-        snek_msg = json.loads(msg)
-        snekid = snek_msg['snekid']
-        snekcode = snek_msg['message'].strip()
+# Load app
+app = Flask(__name__)
+app.use_reloader = False
 
-        result = self.python3(snekcode)
-
-        rmq.publish(result,
-                    queue=snekid,
-                    routingkey=snekid,
-                    exchange=snekid)
-        exit(0)
-
-    def message_handler(self, ch, method, properties, body, thread_ws=None):
-        """Spawns a daemon process that handles RMQ messages."""
-
-        p = multiprocessing.Process(target=self.execute, args=(body,))
-        p.daemon = True
-        p.start()
-
-        ch.basic_ack(delivery_tag=method.delivery_tag)
+# Logging
+log = app.logger
 
 
-if __name__ == '__main__':
-    try:
-        rmq = Rmq()
-        snkbx = Snekbox()
-        rmq.consume(callback=snkbx.message_handler)
-    except KeyboardInterrupt:
-        print('Exited')
-        exit(0)
+@app.route('/')
+def index():
+    """Return a page with a form for inputting code to be executed."""
+
+    return render_template('index.html')
+
+
+@app.route('/result', methods=["POST", "GET"])
+def result():
+    """Execute code and return a page displaying the results."""
+
+    if request.method == "POST":
+        code = request.form["Code"]
+        output = snekbox.python3(code)
+        return render_template('result.html', code=code, result=output)
+
+
+@app.route('/input', methods=["POST"])
+def code_input():
+    """Execute code and return the results."""
+
+    body = request.get_json()
+    output = snekbox.python3(body["code"])
+    return jsonify(input=body["code"], output=output)

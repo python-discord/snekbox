@@ -1,12 +1,6 @@
 import unittest
-import pytest
-import os
-import json
 
 from snekbox import Snekbox
-from rmq import Rmq
-
-r = Rmq()
 
 snek = Snekbox()
 
@@ -24,12 +18,14 @@ class SnekTests(unittest.TestCase):
     #     self.assertEquals(result.strip(), 'timed out or memory limit exceeded')
 
     def test_timeout(self):
-        code = ('x = "*"\n'
-        'while True:\n'
-        '    try:\n'
-        '        x = x * 99\n'
-        '    except:\n'
-        '        continue\n')
+        code = (
+            'x = "*"\n'
+            'while True:\n'
+            '    try:\n'
+            '        x = x * 99\n'
+            '    except:\n'
+            '        continue\n'
+        )
 
         result = snek.python3(code)
         self.assertEquals(result.strip(), 'timed out or memory limit exceeded')

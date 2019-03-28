@@ -7,21 +7,18 @@ Python sandbox runners for executing code in isolation aka snekbox
 The user sends a piece of python code to a snekbox, the snekbox executes the code and sends the result back to the users.
 
 ```
-          +-------------+           +------------+         +-----------+
- input -> |             |---------->|            |-------->|           | >----------+
-          |  WEBSERVER  |           |  RABBITMQ  |         |  SNEKBOX  |  execution |
-result <- |             |<----------|            |<--------|           | <----------+
-          +-------------+           +------------+         +-----------+
-             ^                         ^                      ^
-             |                         |                      |- Executes python code
-             |                         |                      |- Returns result
-             |                         |                      +-----------------------
-             |                         |
-             |                         |- Message queues opens on demand and closes automatically
-             |                         +---------------------------------------------------------
+          +-------------+           +-----------+
+ input -> |             |---------->|           | >----------+
+          |  HTTP POST  |           |  SNEKBOX  |  execution |
+result <- |             |<----------|           | <----------+
+          +-------------+           +-----------+
+             ^                         ^
+             |                         |- Executes python code
+             |                         |- Returns result
+             |                         +-----------------------
              |
-             |- Uses websockets for asynchronous connection between webui and webserver
-             +-------------------------------------------------------------------------
+             |- HTTP POST Endpoint receives request and returns result
+             +---------------------------------------------------------
 
 ```
 
@@ -36,6 +33,8 @@ result <- |             |<----------|            |<--------|           | <------
 | docker         | 18.03.1-ce           |
 | docker-compose | 1.21.2               |
 | nsjail         | 2.5                  |
+| flask          | 1.0.2                |
+| gunicorn       | 19.9                 |
 
 _________________________________________
 ## Setup local test
@@ -83,37 +82,19 @@ python3.6 -ISq -c "print('test')"
 
 ## Development environment
 
-Start a rabbitmq instance and get the container IP
+Start the webserver with docker:
 
 ```bash
-docker-compose up -d pdrmq
-docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' rmq
-# expected output with default setting: 172.17.0.2
-# If not, change the config.py file to match
+docker-compose up -d
 ```
 
-rabbitmq webinterface: `http://localhost:15672`
-
-start the webserver
-
-```bash
-docker-compose up -d pdsnkweb
-netstat -plnt
-# tcp    0.0.0.0:5000    LISTEN
-```
-
-`http://localhost:5000`
-
+Run locally with pipenv:
 ```bash
 pipenv run snekbox # for debugging
-# or
-docker-compose up pdsnk # for running the container
 ```
-
+Visit: `http://localhost:8060`
 ________________________________________
 ## Unit testing and lint
-
-Make sure rabbitmq is running before running tests
 
 ```bash
 pipenv run lint
@@ -126,11 +107,6 @@ ________________________________________
 ```bash
 # Build
 pipenv run buildbox
-pipenv run buildweb
-
 # Push
 pipenv run pushbox
-pipenv run pushweb
 ```
-
-
