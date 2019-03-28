@@ -1,4 +1,4 @@
-[![pipeline status](https://gitlab.com/discord-python/projects/snekbox/badges/master/pipeline.svg)](https://gitlab.com/discord-python/projects/snekbox/commits/master) [![coverage report](https://gitlab.com/discord-python/projects/snekbox/badges/master/coverage.svg)](https://gitlab.com/discord-python/projects/snekbox/commits/master)
+[![Build Status](https://dev.azure.com/python-discord/Python%20Discord/_apis/build/status/Snekbox?branchName=master)](https://dev.azure.com/python-discord/Python%20Discord/_build/latest?definitionId=13&branchName=master)
 
 # snekbox
 

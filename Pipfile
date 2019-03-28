@@ -19,6 +19,7 @@ flake8-import-order = "*"
 flake8-tidy-imports = "*"
 flake8-todo = "*"
 flake8-string-format = "*"
+flake8-formatter-junit-xml = "*"
 
 [requires]
 python_version = "3.6"
@@ -33,5 +34,3 @@ buildbox = "docker build -t pythondiscord/snekbox:latest -f docker/Dockerfile ."
 pushbox = "docker push pythondiscord/snekbox:latest"
 buildboxbase = "docker build -t pythondiscord/snekbox-base:latest -f docker/base.Dockerfile ."
 pushboxbase = "docker push pythondiscord/snekbox-base:latest"
-buildci = "docker build -t pythondiscord/snekbox-ci:latest -f docker/ci.Dockerfile ."
-pushci = "docker push pythondiscord/snekbox-ci:latest"

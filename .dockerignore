@@ -16,4 +16,3 @@ docker
 docker-compose.yml
 LICENSE
 README.md
-tox.ini
