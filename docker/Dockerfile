@@ -1,13 +1,7 @@
-FROM pythondiscord/snekbox-base:latest
+FROM pythondiscord/snekbox-venv:latest
 
-RUN apk add --update tini
+ENTRYPOINT ["pipenv", "run"]
+CMD ["snekbox"]
 
-RUN mkdir -p /snekbox
 COPY . /snekbox
 WORKDIR /snekbox
-
-RUN pipenv --rm
-RUN pipenv sync
-
-ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["pipenv", "run", "snekbox"]
