@@ -43,8 +43,34 @@ jobs:
       dockerRegistryEndpoint: 'DockerHub'
       command: 'login'
 
+  - script: |
+      if [[ -n "$(git diff HEAD~ -- docker/base.Dockerfile)" ]]; then
+        echo "##vso[task.setvariable variable=BASE_CHANGED]1"
+      fi
+
+      if [[ -n "$(git diff HEAD~ -- Pipfile* docker/venv.Dockerfile)" ]]; then
+        echo "##vso[task.setvariable variable=VENV_CHANGED]1"
+      fi
+    displayName: 'Check Changed Files'
+
+  - script: docker build -t pythondiscord/snekbox-base:latest -f docker/base.Dockerfile .
+    displayName: 'Build Base Image'
+    condition: and(succeeded(), variables.BASE_CHANGED)
+
+  - script: docker build -t pythondiscord/snekbox-venv:latest -f docker/venv.Dockerfile .
+    displayName: 'Build Virtual Environment Image'
+    condition: and(succeeded(), or(variables.BASE_CHANGED, variables.VENV_CHANGED))
+
   - script: docker build -t pythondiscord/snekbox:latest -f docker/Dockerfile .
     displayName: 'Build Final Image'
 
+  - script: docker push pythondiscord/snekbox-base:latest
+    displayName: 'Push Base Image to Dockerhub'
+    condition: and(succeeded(), variables.BASE_CHANGED)
+
+  - script: docker push pythondiscord/snekbox-venv:latest
+    displayName: 'Push Virtual Environment Image to Dockerhub'
+    condition: and(succeeded(), or(variables.BASE_CHANGED, variables.VENV_CHANGED))
+
   - script: docker push pythondiscord/snekbox:latest
-    displayName: 'Push Image to Dockerhub'
+    displayName: 'Push Final Image to Dockerhub'
