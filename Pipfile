@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 pika = "*"
 docker = "*"
+urllib3 = ">=1.24.2,<1.25"
 
 [dev-packages]
 flask = "*"
