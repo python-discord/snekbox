@@ -45,7 +45,6 @@ class Snekbox:
         Returns the output of executing the command (stdout) if
         successful, or a error message if the execution failed.
         """
-
         args = [self.nsjail_binary, '-Mo',
                 '--rlimit_as', '700',
                 '--chroot', '/',
@@ -108,7 +107,6 @@ class Snekbox:
         to RMQ. Once published, the system exits, since the snekboxes
         are created and disposed of per-execution.
         """
-
         msg = body.decode('utf-8')
         result = ''
         snek_msg = json.loads(msg)
@@ -125,7 +123,6 @@ class Snekbox:
 
     def message_handler(self, ch, method, properties, body, thread_ws=None):
         """Spawns a daemon process that handles RMQ messages."""
-
         p = multiprocessing.Process(target=self.execute, args=(body,))
         p.daemon = True
         p.start()
