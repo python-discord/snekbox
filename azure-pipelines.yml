@@ -34,6 +34,9 @@ jobs:
   dependsOn: test
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
 
+  variables:
+    - group: snekbox
+
   steps:
   - task: Docker@1
     displayName: 'Login: Docker Hub'
@@ -44,11 +47,11 @@ jobs:
       command: 'login'
 
   - script: |
-      if [[ -n "$(git diff HEAD~ -- docker/base.Dockerfile)" ]]; then
+      if [[ -z $COMMIT_HASH ]] || [[ -n "$(git diff $COMMIT_HASH -- docker/base.Dockerfile)" ]]; then
         echo "##vso[task.setvariable variable=BASE_CHANGED]1"
       fi
 
-      if [[ -n "$(git diff HEAD~ -- Pipfile* docker/venv.Dockerfile)" ]]; then
+      if [[ -z $COMMIT_HASH ]] || [[ -n "$(git diff $COMMIT_HASH -- Pipfile* docker/venv.Dockerfile)" ]]; then
         echo "##vso[task.setvariable variable=VENV_CHANGED]1"
       fi
     displayName: 'Check Changed Files'
@@ -71,6 +74,9 @@ jobs:
   - script: docker push pythondiscord/snekbox-venv:latest
     displayName: 'Push Virtual Environment Image to Dockerhub'
     condition: and(succeeded(), or(variables.BASE_CHANGED, variables.VENV_CHANGED))
+
+  - script: echo "##vso[task.setvariable variable=COMMIT_HASH]$Build.SourceVersion"
+    displayName: 'Update Saved Commit Hash'
 
   - script: docker push pythondiscord/snekbox:latest
     displayName: 'Push Final Image to Dockerhub'
