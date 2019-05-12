@@ -33,9 +33,6 @@ jobs:
   displayName: 'Build'
   dependsOn: test
 
-  variables:
-    - group: snekbox
-
   steps:
   - task: Docker@1
     displayName: 'Login: Docker Hub'
@@ -46,11 +43,19 @@ jobs:
       command: 'login'
 
   - script: |
-      if [[ -z $COMMIT_HASH ]] || [[ -n "$(git diff $COMMIT_HASH -- docker/base.Dockerfile)" ]]; then
+      REQUEST_URL="https://dev.azure.com/python-discord/${SYSTEM_TEAMPROJECTID}/_apis/build/builds?queryOrder=finishTimeDescending&resultFilter=succeeded&\$top=1&repositoryType=${BUILD_REPOSITORY_PROVIDER}&repositoryId=${BUILD_REPOSITORY_NAME}&branchName=${SYSTEM_PULLREQUEST_TARGETBRANCH:-BUILD_SOURCEBRANCH}&api-version=5.0"
+      echo "Retrieving previous build's commit using $REQUEST_URL"
+
+      PREV_COMMIT="$(curl -sSL "${REQUEST_URL}" | grep -Po '"sourceVersion":"\K.*?[^\\](?=",)')"
+      echo "Retrieved $PREV_COMMIT as previous build's commit."
+
+      if [[ -z $PREV_COMMIT ]] || [[ -n "$(git diff $PREV_COMMIT -- docker/base.Dockerfile)" ]]; then
+        echo "Detected changes in docker/base.Dockerfile"
         echo "##vso[task.setvariable variable=BASE_CHANGED]1"
       fi
 
-      if [[ -z $COMMIT_HASH ]] || [[ -n "$(git diff $COMMIT_HASH -- Pipfile* docker/venv.Dockerfile)" ]]; then
+      if [[ -z $PREV_COMMIT ]] || [[ -n "$(git diff $PREV_COMMIT -- Pipfile* docker/venv.Dockerfile)" ]]; then
+        echo "Detected changes in Pipfile, Pipfile.lock, and/or docker/venv.Dockerfile"
         echo "##vso[task.setvariable variable=VENV_CHANGED]1"
       fi
     displayName: 'Check Changed Files'
@@ -73,9 +78,6 @@ jobs:
   - script: echo "Venv image push simulation"
     displayName: 'Push Virtual Environment Image to Dockerhub'
     condition: and(succeeded(), or(variables.BASE_CHANGED, variables.VENV_CHANGED))
-
-  - script: echo "##vso[task.setvariable variable=COMMIT_HASH]$Build.SourceVersion"
-    displayName: 'Update Saved Commit Hash'
 
   - script: echo "Final image push simulation"
     displayName: 'Push Final Image to Dockerhub'
