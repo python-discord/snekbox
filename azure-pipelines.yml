@@ -32,6 +32,7 @@ jobs:
 - job: build
   displayName: 'Build'
   dependsOn: test
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
 
   variables:
     BASE_CHANGED: true
@@ -89,13 +90,13 @@ jobs:
   - script: docker build -t pythondiscord/snekbox:latest -f docker/Dockerfile .
     displayName: 'Build Final Image'
 
-  - script: echo "Base image push simulation"
+  - script: docker push pythondiscord/snekbox-base:latest
     displayName: 'Push Base Image to Dockerhub'
     condition: and(succeeded(), eq(variables.BASE_CHANGED, 'true'))
 
-  - script: echo "Venv image push simulation"
+  - script: docker push pythondiscord/snekbox-venv:latest
     displayName: 'Push Virtual Environment Image to Dockerhub'
     condition: and(succeeded(), or(eq(variables.BASE_CHANGED, 'true'), eq(variables.VENV_CHANGED, 'true')))
 
-  - script: echo "Final image push simulation"
+  - script: docker push pythondiscord/snekbox:latest
     displayName: 'Push Final Image to Dockerhub'
