@@ -32,11 +32,11 @@ jobs:
 - job: build
   displayName: 'Build'
   dependsOn: test
-  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
 
   variables:
     BASE_CHANGED: true
     VENV_CHANGED: true
+    PIPFILE_CHANGED: true
 
   steps:
   - task: Docker@1
@@ -70,9 +70,14 @@ jobs:
           echo "##vso[task.setvariable variable=BASE_CHANGED]false"
         fi
 
-        if [[ -z "$(git diff $PREV_COMMIT -- Pipfile* docker/venv.Dockerfile)" ]]; then
-          echo "No changes detected in Pipfile, Pipfile.lock, or docker/venv.Dockerfile. The venv image will not be built."
+        if [[ -z "$(git diff $PREV_COMMIT -- docker/venv.Dockerfile)" ]]; then
+          echo "No changes detected in docker/venv.Dockerfile. The venv image will not be built."
           echo "##vso[task.setvariable variable=VENV_CHANGED]false"
+        fi
+
+        if [[ -z "$(git diff $PREV_COMMIT -- Pipfile*)" ]]; then
+          echo "No changes detected in Pipfile or Pipfile.lock. The venv image will not be built unless its Dockerfile changed."
+          echo "##vso[task.setvariable variable=PIPFILE_CHANGED]false"
         fi
       else
         echo "No previous commit was retrieved. Either the previous build is too old and was deleted or the branch was empty before this build. All images will be built."
@@ -85,18 +90,19 @@ jobs:
 
   - script: docker build -t pythondiscord/snekbox-venv:latest -f docker/venv.Dockerfile .
     displayName: 'Build Virtual Environment Image'
-    condition: and(succeeded(), or(eq(variables.BASE_CHANGED, 'true'), eq(variables.VENV_CHANGED, 'true')))
+    condition: and(succeeded(), or(eq(variables.BASE_CHANGED, 'true'), eq(variables.VENV_CHANGED, 'true'), and(eq(variables.PIPFILE_CHANGED, 'true'), ne(variables['Build.Reason'], 'PullRequest'))))
 
   - script: docker build -t pythondiscord/snekbox:latest -f docker/Dockerfile .
     displayName: 'Build Final Image'
 
   - script: docker push pythondiscord/snekbox-base:latest
     displayName: 'Push Base Image to Dockerhub'
-    condition: and(succeeded(), eq(variables.BASE_CHANGED, 'true'))
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables.BASE_CHANGED, 'true'))
 
   - script: docker push pythondiscord/snekbox-venv:latest
     displayName: 'Push Virtual Environment Image to Dockerhub'
-    condition: and(succeeded(), or(eq(variables.BASE_CHANGED, 'true'), eq(variables.VENV_CHANGED, 'true')))
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), or(eq(variables.BASE_CHANGED, 'true'), eq(variables.VENV_CHANGED, 'true'), eq(variables.PIPFILE_CHANGED, 'true')))
 
   - script: docker push pythondiscord/snekbox:latest
     displayName: 'Push Final Image to Dockerhub'
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
