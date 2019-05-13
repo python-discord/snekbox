@@ -42,6 +42,10 @@ jobs:
       dockerRegistryEndpoint: 'DockerHub'
       command: 'login'
 
+    variables:
+      BASE_CHANGED: 1
+      VENV_CHANGED: 1
+
   - script: |
       BUILD_SOURCEBRANCH=refs/heads/"${BUILD_SOURCEBRANCH#refs/heads/}"
       REQUEST_URL="https://dev.azure.com/python-discord/${SYSTEM_TEAMPROJECTID}/_apis/build/builds?queryOrder=finishTimeDescending&resultFilter=succeeded&\$top=1&repositoryType=${BUILD_REPOSITORY_PROVIDER}&repositoryId=${BUILD_REPOSITORY_NAME}&branchName=${BUILD_SOURCEBRANCH}&api-version=5.0"
@@ -55,14 +59,18 @@ jobs:
         echo "Retrieved $PREV_COMMIT as previous build's commit."
       fi
 
-      if [[ -z $PREV_COMMIT ]] || [[ -n "$(git diff $PREV_COMMIT -- docker/base.Dockerfile)" ]]; then
-        echo "Detected changes in docker/base.Dockerfile"
-        echo "##vso[task.setvariable variable=BASE_CHANGED]1"
-      fi
+      if [[ -n $PREV_COMMIT ]]; then
+        if [[ -z "$(git diff $PREV_COMMIT -- docker/base.Dockerfile)" ]]; then
+          echo "No changes detected in docker/base.Dockerfile. The base image will not be built."
+          echo "##vso[task.setvariable variable=BASE_CHANGED]0"
+        fi
 
-      if [[ -z $PREV_COMMIT ]] || [[ -n "$(git diff $PREV_COMMIT -- Pipfile* docker/venv.Dockerfile)" ]]; then
-        echo "Detected changes in Pipfile, Pipfile.lock, and/or docker/venv.Dockerfile"
-        echo "##vso[task.setvariable variable=VENV_CHANGED]1"
+        if [[ -z "$(git diff $PREV_COMMIT -- Pipfile* docker/venv.Dockerfile)" ]]; then
+          echo "No changes detected in Pipfile, Pipfile.lock, or docker/venv.Dockerfile. The venv image will not be built."
+          echo "##vso[task.setvariable variable=VENV_CHANGED]0"
+        fi
+      else
+        echo "No previous commit was retrieved. Either the previous build is too old and was deleted or the branch was empty before this build. All images will be built."
       fi
     displayName: 'Check Changed Files'
 
