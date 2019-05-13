@@ -43,14 +43,17 @@ jobs:
       command: 'login'
 
   - script: |
-      SYSTEM_PULLREQUEST_TARGETBRANCH=refs/heads/"${SYSTEM_PULLREQUEST_TARGETBRANCH#refs/heads/}"
       BUILD_SOURCEBRANCH=refs/heads/"${BUILD_SOURCEBRANCH#refs/heads/}"
-
-      REQUEST_URL="https://dev.azure.com/python-discord/${SYSTEM_TEAMPROJECTID}/_apis/build/builds?queryOrder=finishTimeDescending&resultFilter=succeeded&\$top=1&repositoryType=${BUILD_REPOSITORY_PROVIDER}&repositoryId=${BUILD_REPOSITORY_NAME}&branchName=${SYSTEM_PULLREQUEST_TARGETBRANCH:-BUILD_SOURCEBRANCH}&api-version=5.0"
+      REQUEST_URL="https://dev.azure.com/python-discord/${SYSTEM_TEAMPROJECTID}/_apis/build/builds?queryOrder=finishTimeDescending&resultFilter=succeeded&\$top=1&repositoryType=${BUILD_REPOSITORY_PROVIDER}&repositoryId=${BUILD_REPOSITORY_NAME}&branchName=${BUILD_SOURCEBRANCH}&api-version=5.0"
       echo "Retrieving previous build's commit using $REQUEST_URL"
 
       PREV_COMMIT="$(curl -sSL "${REQUEST_URL}" | grep -Po '"sourceVersion":"\K.*?[^\\](?=",)')"
-      echo "Retrieved $PREV_COMMIT as previous build's commit."
+      if [[ -z $PREV_COMMIT ]]; then
+        echo "Could not retrieve the previous build's commit. Falling back to the head of the target branch."
+        PREV_COMMIT=$SYSTEM_PULLREQUEST_TARGETBRANCH
+      else
+        echo "Retrieved $PREV_COMMIT as previous build's commit."
+      fi
 
       if [[ -z $PREV_COMMIT ]] || [[ -n "$(git diff $PREV_COMMIT -- docker/base.Dockerfile)" ]]; then
         echo "Detected changes in docker/base.Dockerfile"
