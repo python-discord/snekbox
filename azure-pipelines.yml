@@ -56,6 +56,7 @@ jobs:
         if [[ -z $PREV_COMMIT ]]; then
           echo "Could not retrieve the previous build's commit. Falling back to the head of the target branch."
           PREV_COMMIT="origin/$SYSTEM_PULLREQUEST_TARGETBRANCH"
+        fi
       else
         PREV_COMMIT="$(echo "${RESPONSE}" | grep -Po '"sourceVersion":"\K.*?[^\\](?=",)')"
       fi
