@@ -54,7 +54,7 @@ jobs:
       PREV_COMMIT="$(curl -sSL "${REQUEST_URL}" | grep -Po '"sourceVersion":"\K.*?[^\\](?=",)')"
       if [[ -z $PREV_COMMIT ]]; then
         echo "Could not retrieve the previous build's commit. Falling back to the head of the target branch."
-        PREV_COMMIT=$SYSTEM_PULLREQUEST_TARGETBRANCH
+        PREV_COMMIT="origin/$SYSTEM_PULLREQUEST_TARGETBRANCH"
       else
         echo "Retrieved $PREV_COMMIT as previous build's commit."
       fi
