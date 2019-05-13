@@ -9,4 +9,4 @@ ENV PIP_NO_CACHE_DIR=false \
 COPY Pipfile Pipfile.lock /snekbox/
 WORKDIR /snekbox
 
-RUN pipenv sync --dev
+RUN pipenv sync
