@@ -65,19 +65,25 @@ jobs:
       if [[ -n $PREV_COMMIT ]]; then
         echo "Using $PREV_COMMIT to compare diffs."
 
-        if [[ -z "$(git diff $PREV_COMMIT -- docker/base.Dockerfile)" ]]; then
+        if [[ -z "$(docker images -q pythondiscord/snekbox-base:latest)" ]]; then
+          echo "The base image does not exist so it will be built."
+        elif [[ -z "$(git diff $PREV_COMMIT -- docker/base.Dockerfile)" ]]; then
           echo "No changes detected in docker/base.Dockerfile. The base image will not be built."
           echo "##vso[task.setvariable variable=BASE_CHANGED]false"
         fi
 
-        if [[ -z "$(git diff $PREV_COMMIT -- docker/venv.Dockerfile)" ]]; then
-          echo "No changes detected in docker/venv.Dockerfile. The venv image will not be built."
-          echo "##vso[task.setvariable variable=VENV_CHANGED]false"
-        fi
+        if [[ -z "$(docker images -q pythondiscord/snekbox-venv:latest)" ]]; then
+            echo "The venv image does not exist so it will be built."
+        else
+          if [[ -z "$(git diff $PREV_COMMIT -- docker/venv.Dockerfile)" ]]; then
+            echo "No changes detected in docker/venv.Dockerfile. The venv image will not be built."
+            echo "##vso[task.setvariable variable=VENV_CHANGED]false"
+          fi
 
-        if [[ -z "$(git diff $PREV_COMMIT -- Pipfile*)" ]]; then
-          echo "No changes detected in Pipfile or Pipfile.lock. The venv image will not be built unless its Dockerfile changed."
-          echo "##vso[task.setvariable variable=PIPFILE_CHANGED]false"
+          if [[ -z "$(git diff $PREV_COMMIT -- Pipfile*)" ]]; then
+            echo "No changes detected in Pipfile or Pipfile.lock. The venv image will not be built, unless venv.Dockerfile changed or the image doesn't exist."
+            echo "##vso[task.setvariable variable=PIPFILE_CHANGED]false"
+          fi
         fi
       else
         echo "No previous commit was retrieved. Either the previous build is too old and was deleted or the branch was empty before this build. All images will be built."
