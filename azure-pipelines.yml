@@ -47,7 +47,6 @@ jobs:
       command: 'login'
 
   - script: |
-      BUILD_SOURCEBRANCH=refs/heads/"${BUILD_SOURCEBRANCH#refs/heads/}"
       REQUEST_URL="https://dev.azure.com/python-discord/${SYSTEM_TEAMPROJECTID}/_apis/build/builds?queryOrder=finishTimeDescending&resultFilter=succeeded&\$top=1&repositoryType=${BUILD_REPOSITORY_PROVIDER}&repositoryId=${BUILD_REPOSITORY_NAME}&branchName=${BUILD_SOURCEBRANCH}&api-version=5.0"
       echo "Retrieving previous build's commit using $REQUEST_URL"
 
