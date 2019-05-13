@@ -33,6 +33,10 @@ jobs:
   displayName: 'Build'
   dependsOn: test
 
+  variables:
+    BASE_CHANGED: 1
+    VENV_CHANGED: 1
+
   steps:
   - task: Docker@1
     displayName: 'Login: Docker Hub'
@@ -41,10 +45,6 @@ jobs:
       containerregistrytype: 'Container Registry'
       dockerRegistryEndpoint: 'DockerHub'
       command: 'login'
-
-    variables:
-      BASE_CHANGED: 1
-      VENV_CHANGED: 1
 
   - script: |
       BUILD_SOURCEBRANCH=refs/heads/"${BUILD_SOURCEBRANCH#refs/heads/}"
