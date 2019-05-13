@@ -34,8 +34,8 @@ jobs:
   dependsOn: test
 
   variables:
-    BASE_CHANGED: 1
-    VENV_CHANGED: 1
+    BASE_CHANGED: true
+    VENV_CHANGED: true
 
   steps:
   - task: Docker@1
@@ -62,12 +62,12 @@ jobs:
       if [[ -n $PREV_COMMIT ]]; then
         if [[ -z "$(git diff $PREV_COMMIT -- docker/base.Dockerfile)" ]]; then
           echo "No changes detected in docker/base.Dockerfile. The base image will not be built."
-          echo "##vso[task.setvariable variable=BASE_CHANGED]0"
+          echo "##vso[task.setvariable variable=BASE_CHANGED]false"
         fi
 
         if [[ -z "$(git diff $PREV_COMMIT -- Pipfile* docker/venv.Dockerfile)" ]]; then
           echo "No changes detected in Pipfile, Pipfile.lock, or docker/venv.Dockerfile. The venv image will not be built."
-          echo "##vso[task.setvariable variable=VENV_CHANGED]0"
+          echo "##vso[task.setvariable variable=VENV_CHANGED]false"
         fi
       else
         echo "No previous commit was retrieved. Either the previous build is too old and was deleted or the branch was empty before this build. All images will be built."
