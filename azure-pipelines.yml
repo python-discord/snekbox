@@ -80,22 +80,22 @@ jobs:
 
   - script: docker build -t pythondiscord/snekbox-base:latest -f docker/base.Dockerfile .
     displayName: 'Build Base Image'
-    condition: and(succeeded(), variables.BASE_CHANGED)
+    condition: and(succeeded(), eq(variables['BASE_CHANGED'], 'true'))
 
   - script: docker build -t pythondiscord/snekbox-venv:latest -f docker/venv.Dockerfile .
     displayName: 'Build Virtual Environment Image'
-    condition: and(succeeded(), or(variables.BASE_CHANGED, variables.VENV_CHANGED))
+    condition: and(succeeded(), or(eq(variables['BASE_CHANGED'], 'true'), eq(variables['VENV_CHANGED'], 'true')))
 
   - script: docker build -t pythondiscord/snekbox:latest -f docker/Dockerfile .
     displayName: 'Build Final Image'
 
   - script: echo "Base image push simulation"
     displayName: 'Push Base Image to Dockerhub'
-    condition: and(succeeded(), variables.BASE_CHANGED)
+    condition: and(succeeded(), eq(variables['BASE_CHANGED'], 'true'))
 
   - script: echo "Venv image push simulation"
     displayName: 'Push Virtual Environment Image to Dockerhub'
-    condition: and(succeeded(), or(variables.BASE_CHANGED, variables.VENV_CHANGED))
+    condition: and(succeeded(), or(eq(variables['BASE_CHANGED'], 'true'), eq(variables['VENV_CHANGED'], 'true')))
 
   - script: echo "Final image push simulation"
     displayName: 'Push Final Image to Dockerhub'
