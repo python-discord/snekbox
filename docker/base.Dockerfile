@@ -15,6 +15,7 @@ WORKDIR /nsjail
 RUN make
 
 FROM python:3.7.3-alpine3.9
+ENV PIP_NO_CACHE_DIR=false
 RUN apk add --no-cache --update \
         libnl3 \
         libstdc++ \
