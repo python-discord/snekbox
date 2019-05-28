@@ -22,7 +22,7 @@ flake8-string-format = "*"
 flake8-formatter-junit-xml = "*"
 
 [requires]
-python_version = "3.6"
+python_version = "3.7"
 
 [scripts]
 lint = "flake8"

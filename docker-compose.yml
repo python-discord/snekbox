@@ -1,7 +1,8 @@
-version: '3'
+version: "3.7"
 services:
   pdsnk:
     hostname: "pdsnk"
     privileged: true
     image: pythondiscord/snekbox:latest
     network_mode: "host"
+    init: true

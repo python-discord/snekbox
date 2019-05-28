@@ -11,7 +11,7 @@ jobs:
   - task: UsePythonVersion@0
     displayName: 'Set Python version'
     inputs:
-      versionSpec: '3.6.x'
+      versionSpec: '3.7.x'
       addToPath: true
 
   - script: pip3 install pipenv
@@ -32,7 +32,10 @@ jobs:
 - job: build
   displayName: 'Build'
   dependsOn: test
-  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+
+  variables:
+    BASE_CHANGED: true
+    VENV_CHANGED: true
 
   steps:
   - task: Docker@1
@@ -43,8 +46,58 @@ jobs:
       dockerRegistryEndpoint: 'DockerHub'
       command: 'login'
 
+  - script: |
+      REQUEST_URL="https://dev.azure.com/python-discord/${SYSTEM_TEAMPROJECTID}/_apis/build/builds?queryOrder=finishTimeDescending&resultFilter=succeeded&\$top=1&repositoryType=${BUILD_REPOSITORY_PROVIDER}&repositoryId=${BUILD_REPOSITORY_NAME}&branchName=${BUILD_SOURCEBRANCH}&api-version=5.0"
+      echo "Retrieving previous build's commit using $REQUEST_URL"
+      RESPONSE="$(curl -sSL "${REQUEST_URL}")"
+
+      if [[ $BUILD_REASON = "PullRequest" ]]; then
+        PREV_COMMIT="$(echo "${RESPONSE}" | grep -Po '"pr\.sourceSha"\s*:\s*"\K.*?[^\\](?="\s*[,}])')"
+        if [[ -z $PREV_COMMIT ]]; then
+          echo "Could not retrieve the previous build's commit. Falling back to the head of the target branch."
+          PREV_COMMIT="origin/$SYSTEM_PULLREQUEST_TARGETBRANCH"
+        fi
+      else
+        PREV_COMMIT="$(echo "${RESPONSE}" | grep -Po '"sourceVersion"\s*:\s*"\K.*?[^\\](?="\s*[,}])')"
+      fi
+
+      if [[ -n $PREV_COMMIT ]]; then
+        echo "Using $PREV_COMMIT to compare diffs."
+
+        if [[ -z "$(git diff $PREV_COMMIT -- docker/base.Dockerfile)" ]]; then
+          echo "No changes detected in docker/base.Dockerfile. The base image will not be built."
+          echo "##vso[task.setvariable variable=BASE_CHANGED]false"
+        fi
+
+        if [[ -z "$(git diff $PREV_COMMIT -- docker/venv.Dockerfile Pipfile*)" ]]; then
+          echo "No changes detected in docker/venv.Dockerfile or the Pipfiles. The venv image will not be built."
+          echo "##vso[task.setvariable variable=VENV_CHANGED]false"
+        fi
+      else
+        echo "No previous commit was retrieved. Either the previous build is too old and was deleted or the branch was empty before this build. All images will be built."
+      fi
+    displayName: 'Check Changed Files'
+
+  - script: docker build -t pythondiscord/snekbox-base:latest -f docker/base.Dockerfile .
+    displayName: 'Build Base Image'
+    condition: and(succeeded(), eq(variables.BASE_CHANGED, 'true'))
+
+  - script: docker build -t pythondiscord/snekbox-venv:latest -f docker/venv.Dockerfile .
+    displayName: 'Build Virtual Environment Image'
+    condition: and(succeeded(), or(eq(variables.BASE_CHANGED, 'true'), eq(variables.VENV_CHANGED, 'true')))
+
   - script: docker build -t pythondiscord/snekbox:latest -f docker/Dockerfile .
     displayName: 'Build Final Image'
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+
+  - script: docker push pythondiscord/snekbox-base:latest
+    displayName: 'Push Base Image to Dockerhub'
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables.BASE_CHANGED, 'true'))
+
+  - script: docker push pythondiscord/snekbox-venv:latest
+    displayName: 'Push Virtual Environment Image to Dockerhub'
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), or(eq(variables.BASE_CHANGED, 'true'), eq(variables.VENV_CHANGED, 'true')))
 
   - script: docker push pythondiscord/snekbox:latest
-    displayName: 'Push Image to Dockerhub'
+    displayName: 'Push Final Image to Dockerhub'
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
