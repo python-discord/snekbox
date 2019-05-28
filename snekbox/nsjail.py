@@ -41,7 +41,6 @@ class NsJail:
         Returns the output of executing the command (stdout) if
         successful, or a error message if the execution failed.
         """
-
         args = [self.nsjail_binary, '-Mo',
                 '--rlimit_as', '700',
                 '--chroot', '/',

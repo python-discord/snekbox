@@ -15,14 +15,12 @@ log = app.logger
 @app.route('/')
 def index():
     """Return a page with a form for inputting code to be executed."""
-
     return render_template('index.html')
 
 
 @app.route('/result', methods=["POST", "GET"])
 def result():
     """Execute code and return a page displaying the results."""
-
     if request.method == "POST":
         code = request.form["Code"]
         output = nsjail.python3(code)
@@ -32,7 +30,6 @@ def result():
 @app.route('/input', methods=["POST"])
 def code_input():
     """Execute code and return the results."""
-
     body = request.get_json()
     output = nsjail.python3(body["code"])
     return jsonify(input=body["code"], output=output)
