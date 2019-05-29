@@ -1,6 +1,3 @@
-import falcon
+from . import SnekAPI
 
-from .resources import EvalResource
-
-api = falcon.API()
-api.add_route("/eval", EvalResource())
+application = SnekAPI()
