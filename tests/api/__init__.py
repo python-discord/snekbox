@@ -2,6 +2,8 @@ from unittest import mock
 
 from falcon import testing
 
+from snekbox.api import SnekAPI
+
 
 class SnekAPITestCase(testing.TestCase):
     def setUp(self):
@@ -12,5 +14,4 @@ class SnekAPITestCase(testing.TestCase):
         self.mock_nsjail.return_value.python3.return_value = "test output"
         self.addCleanup(self.patcher.stop)
 
-        from snekbox.api import SnekAPI
         self.app = SnekAPI()
