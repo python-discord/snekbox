@@ -10,19 +10,12 @@ log = logging.getLogger(__name__)
 
 class EvalResource:
     """
-    JSON API for the evaluation of Python code.
+    Evaluation of Python code.
 
     Supported methods:
 
     - POST /eval
         Evaluate Python code and return the result
-
-    Error response format:
-
-    >>> {
-    ...     "title": "Unsupported media type",
-    ...     "description": "application/xml is an unsupported media type."
-    ... }
     """
 
     REQ_SCHEMA = {
