@@ -26,7 +26,13 @@ flake8-quotes = "*"
 python_version = "3.7"
 
 [scripts]
-lint = "flake8"
+lint = """
+python -c
+\"import subprocess, sys
+files = subprocess.check_output(('git', 'ls-files', '--', '*.py')).decode('UTF-8').strip()
+args = ['pre-commit', 'run', 'flake8', '--files'] + files.split('\\n')
+subprocess.run(args, stdout=sys.stdout, stderr=sys.stderr)\"
+"""
 precommit = "pre-commit install"
 test = "pytest tests --cov . --cov-report term-missing -v"
 report = "pytest tests --cov . --cov-report=html"
