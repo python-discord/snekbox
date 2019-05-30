@@ -9,6 +9,22 @@ log = logging.getLogger(__name__)
 
 
 class EvalResource:
+    """
+    JSON API for the evaluation of Python code.
+
+    Supported methods:
+
+    - POST /eval
+        Evaluate Python code and return the result
+
+    Error response format:
+
+    >>> {
+    ...     "title": "Unsupported media type",
+    ...     "description": "application/xml is an unsupported media type."
+    ... }
+    """
+
     REQ_SCHEMA = {
         "type": "object",
         "properties": {
@@ -26,6 +42,31 @@ class EvalResource:
 
     @validate(REQ_SCHEMA)
     def on_post(self, req, resp):
+        """
+        Evaluate Python code and return the result.
+
+        Request body:
+
+        >>> {
+        ...     "input": "print(1 + 1)"
+        ... }
+
+        Response format:
+
+        >>> {
+        ...     "input": "print(1 + 1)",
+        ...     "output": "2\\n"
+        ... }
+
+        Status codes:
+
+        - 200
+            Successful evaluation; not indicative that the input code itself works
+        - 400
+           Input's JSON schema is invalid
+        - 415
+            Unsupported content type; only application/JSON is supported
+        """
         code = req.media["input"]
 
         try:
