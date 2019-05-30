@@ -16,3 +16,4 @@ exclude=
     venv,.venv,
     tests
 import-order-style=pycharm
+inline-quotes = "
