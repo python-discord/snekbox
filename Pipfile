@@ -4,8 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-flask = "*"
+falcon = "*"
 gunicorn = "*"
+jsonschema = "*"
 
 [dev-packages]
 pytest = "*"
@@ -30,7 +31,7 @@ lint = "flake8"
 precommit = "pre-commit install"
 test = "pytest tests --cov . --cov-report term-missing -v"
 report = "pytest tests --cov . --cov-report=html"
-snekbox = "gunicorn -w 2 -b 0.0.0.0:8060 --logger-class snekbox.GunicornLogger --access-logfile - snekbox.site.snekapp:app"
+snekbox = "gunicorn -w 2 -b 0.0.0.0:8060 --logger-class snekbox.GunicornLogger --access-logfile - snekbox.api.app"
 buildbox = "docker build -t pythondiscord/snekbox:latest -f docker/Dockerfile ."
 pushbox = "docker push pythondiscord/snekbox:latest"
 buildboxbase = "docker build -t pythondiscord/snekbox-base:latest -f docker/base.Dockerfile ."
