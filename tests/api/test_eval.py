@@ -26,7 +26,7 @@ class TestEvalResource(SnekAPITestCase):
         self.assertEqual(expected, result.json)
 
     def test_post_invalid_content_type_415(self):
-        body = "{\"input\": \"foo\"}"
+        body = "{'input': 'foo'}"
         headers = {"Content-Type": "application/xml"}
         result = self.simulate_post(self.PATH, body=body, headers=headers)
 

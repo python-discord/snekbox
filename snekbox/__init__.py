@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 
 from gunicorn import glogging
 
@@ -22,3 +23,12 @@ class GunicornLogger(glogging.Logger):
             self.loglevel = self.LOG_LEVELS.get(cfg.loglevel.lower(), logging.INFO)
 
         self.error_log.setLevel(self.loglevel)
+
+
+log = logging.getLogger("snekbox")
+log.setLevel(logging.DEBUG if DEBUG else logging.INFO)
+log.propagate = True
+formatter = logging.Formatter(GunicornLogger.error_fmt, GunicornLogger.datefmt)
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(formatter)
+log.addHandler(handler)
