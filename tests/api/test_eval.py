@@ -9,8 +9,9 @@ class TestEvalResource(SnekAPITestCase):
         result = self.simulate_post(self.PATH, json=body)
 
         self.assertEqual(result.status_code, 200)
-        self.assertEqual(body["input"], result.json["input"])
-        self.assertEqual("test output", result.json["output"])
+        self.assertEqual("output", result.json["stdout"])
+        self.assertEqual("error", result.json["stderr"])
+        self.assertEqual(0, result.json["returncode"])
 
     def test_post_invalid_schema_400(self):
         body = {"stuff": "foo"}

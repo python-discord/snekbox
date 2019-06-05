@@ -100,8 +100,8 @@ class NsJail:
                 # Treat fatal as error.
                 log.error(msg)
 
-    def python3(self, code: str) -> str:
-        """Execute Python 3 code in an isolated environment and return stdout or an error."""
+    def python3(self, code: str) -> subprocess.CompletedProcess:
+        """Execute Python 3 code in an isolated environment and return the completed process."""
         with NamedTemporaryFile() as nsj_log:
             args = (
                 self.nsjail_binary, "-Mo",
@@ -125,29 +125,16 @@ class NsJail:
                 self.python_binary, "-ISq", "-c", code
             )
 
-            try:
-                msg = "Executing code..."
-                if DEBUG:
-                    msg = f"{msg[:-3]}:\n{textwrap.indent(code, '    ')}"
-                log.info(msg)
+            msg = "Executing code..."
+            if DEBUG:
+                msg = f"{msg[:-3]}:\n{textwrap.indent(code, '    ')}"
+            log.info(msg)
 
-                proc = subprocess.run(args, capture_output=True, env=ENV, text=True)
+            try:
+                result = subprocess.run(args, capture_output=True, env=ENV, text=True)
             except ValueError:
-                return "ValueError: embedded null byte"
+                return subprocess.CompletedProcess(args, None, "", "ValueError: embedded null byte")
 
             self._parse_log(nsj_log)
 
-        if proc.returncode == 0:
-            output = proc.stdout
-        elif proc.returncode == 1:
-            output = proc.stderr
-        elif proc.returncode == 109:
-            return "timed out or memory limit exceeded"
-        elif proc.returncode == 255:
-            return "permission denied (root required)"
-        elif proc.returncode:
-            return f"unknown error, code: {proc.returncode}"
-        else:
-            return "unknown error, no error code"
-
-        return output
+        return result
