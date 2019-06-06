@@ -56,9 +56,10 @@ devsh = """
             --network host \
             -h pdsnk-dev \
             -e PIPENV_PIPFILE="/snekbox/Pipfile" \
+            -e ENV="/snekbox-local/docker/.profile" \
             -v "$(pwd)":/snekbox-local \
             -w "/snekbox-local" \
-            --entrypoint /bin/sh \
+            --entrypoint /bin/ash \
             pythondiscord/snekbox-venv:dev
     '
 """

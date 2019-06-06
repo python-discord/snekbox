@@ -2,6 +2,7 @@
 *
 
 # Make exceptions for what's needed
+!docker/.profile
 !snekbox
 !tests
 !Pipfile
