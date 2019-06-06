@@ -3,6 +3,7 @@
 
 # Make exceptions for what's needed
 !snekbox
+!tests
 !Pipfile
 !Pipfile.lock
 !LICENSE

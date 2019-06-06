@@ -32,13 +32,35 @@ precommit = "pre-commit install"
 test = "pytest tests --cov . --cov-report term-missing -v"
 report = "pytest tests --cov . --cov-report=html"
 snekbox = """
-    gunicorn
-        -w 2
-        -b 0.0.0.0:8060
-        --logger-class snekbox.GunicornLogger
-        --access-logformat '%(m)s %(U)s%(q)s %(s)s %(b)s %(L)ss'
-        --access-logfile -
+    gunicorn \
+        -w 2 \
+        -b 0.0.0.0:8060 \
+        --logger-class snekbox.GunicornLogger \
+        --access-logformat '%(m)s %(U)s%(q)s %(s)s %(b)s %(L)ss' \
+        --access-logfile - \
         snekbox.api.app
+"""
+build-venv-dev = """
+    docker build \
+        -t pythondiscord/snekbox-venv:dev \
+        -f docker/venv.Dockerfile
+        --build-arg DEV=1 \
+        .
+"""
+devsh = """
+    /usr/bin/env sh -c '
+        docker run \
+            -it \
+            --rm \
+            --privileged \
+            --network host \
+            -h pdsnk-dev \
+            -e PIPENV_PIPFILE="/snekbox/Pipfile" \
+            -v "$(pwd)":/snekbox-local \
+            -w "/snekbox-local" \
+            --entrypoint /bin/sh \
+            pythondiscord/snekbox-venv:dev
+    '
 """
 buildbox = "docker build -t pythondiscord/snekbox:latest -f docker/Dockerfile ."
 pushbox = "docker push pythondiscord/snekbox:latest"
