@@ -40,29 +40,7 @@ snekbox = """
         --access-logfile - \
         snekbox.api.app
 """
-build-venv-dev = """
-    docker build \
-        -t pythondiscord/snekbox-venv:dev \
-        -f docker/venv.Dockerfile
-        --build-arg DEV=1 \
-        .
-"""
-devsh = """
-    /usr/bin/env sh -c '
-        docker run \
-            -it \
-            --rm \
-            --privileged \
-            --network host \
-            -h pdsnk-dev \
-            -e PIPENV_PIPFILE="/snekbox/Pipfile" \
-            -e ENV="/snekbox-local/docker/.profile" \
-            -v "$(pwd)":/snekbox-local \
-            -w "/snekbox-local" \
-            --entrypoint /bin/ash \
-            pythondiscord/snekbox-venv:dev
-    '
-"""
+devsh = "scripts/dev.sh"
 buildbox = "docker build -t pythondiscord/snekbox:latest -f docker/Dockerfile ."
 pushbox = "docker push pythondiscord/snekbox:latest"
 buildboxbase = "docker build -t pythondiscord/snekbox-base:latest -f docker/base.Dockerfile ."
