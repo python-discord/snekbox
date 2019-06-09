@@ -36,7 +36,16 @@ class EvalResource:
     @validate(REQ_SCHEMA)
     def on_post(self, req, resp):
         """
-        Evaluate Python code and return the result.
+        Evaluate Python code and return stdout, stderr, and the return code.
+
+        The return codes mostly resemble those of a Unix shell. Some noteworthy cases:
+
+        - None
+            The NsJail process failed to launch
+        - 137 (SIGKILL)
+            Typically because NsJail killed the Python process due to time or memory constraints
+        - 255
+            NsJail encountered a fatal error
 
         Request body:
 
@@ -47,8 +56,9 @@ class EvalResource:
         Response format:
 
         >>> {
-        ...     "input": "print(1 + 1)",
-        ...     "output": "2\\n"
+        ...     "stdout": "2\\n",
+        ...     "stderr": "",
+        ...     "returncode": 0
         ... }
 
         Status codes:
@@ -63,12 +73,13 @@ class EvalResource:
         code = req.media["input"]
 
         try:
-            output = self.nsjail.python3(code)
+            result = self.nsjail.python3(code)
         except Exception:
             log.exception("An exception occurred while trying to process the request")
             raise falcon.HTTPInternalServerError
 
         resp.media = {
-            "input": code,
-            "output": output
+            "stdout": result.stdout,
+            "stderr": result.stderr,
+            "returncode": result.returncode
         }

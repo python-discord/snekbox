@@ -1,3 +1,4 @@
+from subprocess import CompletedProcess
 from unittest import mock
 
 from falcon import testing
@@ -11,7 +12,12 @@ class SnekAPITestCase(testing.TestCase):
 
         self.patcher = mock.patch("snekbox.api.resources.eval.NsJail", autospec=True)
         self.mock_nsjail = self.patcher.start()
-        self.mock_nsjail.return_value.python3.return_value = "test output"
+        self.mock_nsjail.return_value.python3.return_value = CompletedProcess(
+            args=[],
+            returncode=0,
+            stdout="output",
+            stderr="error"
+        )
         self.addCleanup(self.patcher.stop)
 
         self.app = SnekAPI()
