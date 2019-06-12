@@ -9,9 +9,7 @@ gunicorn = "*"
 jsonschema = "*"
 
 [dev-packages]
-pytest = "*"
-pytest-cov = "*"
-pytest-dependency = "*"
+coverage = "*"
 pre-commit = "*"
 flake8 = "*"
 flake8-docstrings = "*"
@@ -29,8 +27,8 @@ python_version = "3.7"
 [scripts]
 lint = "flake8"
 precommit = "pre-commit install"
-test = "pytest tests --cov . --cov-report term-missing -v"
-report = "pytest tests --cov . --cov-report=html"
+test = "scripts/dev.sh -c 'pipenv run coverage run -m unittest'"
+report = "coverage html"
 snekbox = """
     gunicorn \
         -w 2 \
