@@ -131,9 +131,15 @@ class NsJail:
             log.info(msg)
 
             try:
-                result = subprocess.run(args, capture_output=True, env=ENV, text=True)
+                result = subprocess.run(
+                    args,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    env=ENV,
+                    text=True
+                )
             except ValueError:
-                return subprocess.CompletedProcess(args, None, "", "ValueError: embedded null byte")
+                return subprocess.CompletedProcess(args, None, "ValueError: embedded null byte", "")
 
             self._parse_log(nsj_log)
 

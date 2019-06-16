@@ -10,7 +10,6 @@ class TestEvalResource(SnekAPITestCase):
 
         self.assertEqual(result.status_code, 200)
         self.assertEqual("output", result.json["stdout"])
-        self.assertEqual("error", result.json["stderr"])
         self.assertEqual(0, result.json["returncode"])
 
     def test_post_invalid_schema_400(self):
