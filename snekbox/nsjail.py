@@ -6,6 +6,7 @@ import sys
 import textwrap
 from pathlib import Path
 from tempfile import NamedTemporaryFile
+from typing import List
 
 from snekbox import DEBUG
 
@@ -62,9 +63,9 @@ class NsJail:
         mem.mkdir(parents=True, exist_ok=True)
 
     @staticmethod
-    def _parse_log(log_file):
+    def _parse_log(log_lines: List[str]):
         """Parse and log NsJail's log messages."""
-        for line in log_file.read().decode("UTF-8").splitlines():
+        for line in log_lines:
             match = LOG_PATTERN.fullmatch(line)
             if match is None:
                 log.warning(f"Failed to parse log line '{line}'")
@@ -131,6 +132,11 @@ class NsJail:
             except ValueError:
                 return subprocess.CompletedProcess(args, None, "ValueError: embedded null byte", "")
 
-            self._parse_log(nsj_log)
+            log_lines = nsj_log.read().decode("UTF-8").splitlines()
+            if not log_lines and result.returncode == 255:
+                # NsJail probably failed to parse arguments so log output will still be in stdout
+                log_lines = result.stdout.splitlines()
+
+            self._parse_log(log_lines)
 
         return result
