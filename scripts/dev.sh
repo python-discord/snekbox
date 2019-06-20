@@ -31,7 +31,7 @@ fi
 
 docker run \
     -it \
-    --rm \
+    --name snekbox_test \
     --privileged \
     --network host \
     -h pdsnk-dev \
@@ -43,3 +43,12 @@ docker run \
     --entrypoint /bin/ash \
     pythondiscord/snekbox-venv:dev \
     "$@"
+
+# Fix ownership of coverage file
+docker start snekbox_test >/dev/null
+docker exec \
+    -it \
+    snekbox_test \
+    /bin/ash \
+    -c 'chown "$(stat -c "%u:%g" "/snekbox-local")" /snekbox-local/.coverage'
+docker rm -f snekbox_test >/dev/null
