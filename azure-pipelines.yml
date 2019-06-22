@@ -2,32 +2,55 @@
 
 jobs:
 - job: test
-  displayName: 'Lint'
+  displayName: 'Lint & Test'
 
   pool:
     vmImage: 'Ubuntu-16.04'
 
   steps:
   - task: UsePythonVersion@0
-    displayName: 'Set Python version'
+    displayName: 'Set Python Version'
     inputs:
       versionSpec: '3.7.x'
       addToPath: true
 
   - script: pip3 install pipenv
-    displayName: 'Install pipenv'
+    displayName: 'Install Pipenv'
 
   - script: pipenv install --dev --deploy --system
-    displayName: 'Install project using pipenv'
+    displayName: 'Install Dependencies with Pipenv'
 
   - script: python3 -m flake8 --format junit-xml --output-file test-lint.xml
-    displayName: 'Run linter'
+    displayName: 'Run Linter'
 
   - task: PublishTestResults@2
     condition: succeededOrFailed()
+    displayName: 'Publish Lint Results'
     inputs:
-      testResultsFiles: '**/test-*.xml'
-      testRunTitle: 'Snekbox Flake8 Lint Results'
+      testResultsFiles: 'test-lint.xml'
+      testRunTitle: 'Lint Results'
+
+  - script: coverage run -m xmlrunner
+    displayName: 'Run Unit Tests'
+
+  - task: PublishTestResults@2
+      condition: succeededOrFailed()
+      displayName: 'Publish Test Results'
+      inputs:
+        testResultsFiles: '**/TEST-*.xml'
+        testRunTitle: 'Lint Results'
+
+  - script: |
+      coverage xml
+      coverage report
+    displayName: 'Generate Coverage Report'
+
+  - task: PublishCodeCoverageResults@1
+    displayName: 'Publish Coverage Results'
+    inputs:
+      codeCoverageTool: Cobertura
+      summaryFileLocation: '**/coverage.xml'
+      reportDirectory: '**/htmlcov'
 
 - job: build
   displayName: 'Build'

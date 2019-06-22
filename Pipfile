@@ -20,6 +20,7 @@ flake8-todo = "*"
 flake8-string-format = "*"
 flake8-formatter-junit-xml = "*"
 flake8-quotes = "*"
+unittest-xml-reporting = "*"
 
 [requires]
 python_version = "3.7"
