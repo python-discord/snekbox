@@ -29,26 +29,35 @@ if [ "$1" = "--build" ]; then
     fi
 fi
 
+# Keep the container up in the background so it doesn't have to be restarted
+# for the ownership fix.
+# The volume is mounted to same the path in the container as the source
+# directory on the host to ensure coverage can find the source files.
 docker run \
-    -it \
+    -td \
     --name snekbox_test \
     --privileged \
     --network host \
     -h pdsnk-dev \
     -e PYTHONDONTWRITEBYTECODE=1 \
     -e PIPENV_PIPFILE="/snekbox/Pipfile" \
-    -e ENV="/snekbox-local/scripts/.profile" \
-    -v "${PWD}":/snekbox-local \
-    -w "/snekbox-local" \
+    -e ENV="${PWD}/scripts/.profile" \
+    -v "${PWD}":"${PWD}" \
+    -w "${PWD}"\
     --entrypoint /bin/ash \
     pythondiscord/snekbox-venv:dev \
-    "$@"
+    >/dev/null \
+
+# Execute the given command(s)
+docker exec -it snekbox_test /bin/ash "$@"
 
 # Fix ownership of coverage file
-docker start snekbox_test >/dev/null
+# BusyBox doesn't support --reference for chown
 docker exec \
     -it \
+    -e CWD="${PWD}" \
     snekbox_test \
     /bin/ash \
-    -c 'chown "$(stat -c "%u:%g" "/snekbox-local")" /snekbox-local/.coverage'
-docker rm -f snekbox_test >/dev/null
+    -c 'chown "$(stat -c "%u:%g" "${CWD}")" "${CWD}/.coverage"'
+
+docker rm -f snekbox_test >/dev/null # Stop and remove the container
