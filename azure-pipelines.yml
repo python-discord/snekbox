@@ -27,18 +27,18 @@ jobs:
     condition: succeededOrFailed()
     displayName: 'Publish Lint Results'
     inputs:
-      testResultsFiles: 'test-lint.xml'
+      testResultsFiles: '**/test-lint.xml'
       testRunTitle: 'Lint Results'
 
   - script: coverage run -m xmlrunner
     displayName: 'Run Unit Tests'
 
   - task: PublishTestResults@2
-      condition: succeededOrFailed()
-      displayName: 'Publish Test Results'
-      inputs:
-        testResultsFiles: '**/TEST-*.xml'
-        testRunTitle: 'Lint Results'
+    condition: succeededOrFailed()
+    displayName: 'Publish Test Results'
+    inputs:
+      testResultsFiles: '**/TEST-*.xml'
+      testRunTitle: 'Test Results'
 
   - script: |
       coverage xml
@@ -47,6 +47,7 @@ jobs:
 
   - task: PublishCodeCoverageResults@1
     displayName: 'Publish Coverage Results'
+    condition: succeededOrFailed()
     inputs:
       codeCoverageTool: Cobertura
       summaryFileLocation: '**/coverage.xml'
