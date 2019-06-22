@@ -57,7 +57,6 @@ class EvalResource:
 
         >>> {
         ...     "stdout": "2\\n",
-        ...     "stderr": "",
         ...     "returncode": 0
         ... }
 
@@ -80,6 +79,5 @@ class EvalResource:
 
         resp.media = {
             "stdout": result.stdout,
-            "stderr": result.stderr,
             "returncode": result.returncode
         }

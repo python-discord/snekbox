@@ -1,4 +1,5 @@
 import logging
+import os
 import re
 import subprocess
 import sys
@@ -20,16 +21,7 @@ LOG_BLACKLIST = ("Process will be ",)
 CGROUP_PIDS_PARENT = Path("/sys/fs/cgroup/pids/NSJAIL")
 CGROUP_MEMORY_PARENT = Path("/sys/fs/cgroup/memory/NSJAIL")
 
-ENV = {
-    "PATH": (
-        "/snekbox/.venv/bin:/usr/local/bin:/usr/local/"
-        "sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-    ),
-    "LANG": "en_US.UTF-8",
-    "PYTHON_VERSION": "3.7.3",
-    "PYTHON_PIP_VERSION": "19.0.3",
-    "PYTHONDONTWRITEBYTECODE": "1",
-}
+NSJAIL_PATH = os.getenv("NSJAIL_PATH", "/usr/sbin/nsjail")
 
 
 class NsJail:
@@ -50,10 +42,9 @@ class NsJail:
     - Isolated mode
         - Neither the script's directory nor the user's site packages are in sys.path
         - All PYTHON* environment variables are ignored
-    - Import of the site module is disabled
     """
 
-    def __init__(self, nsjail_binary="nsjail", python_binary=sys.executable):
+    def __init__(self, nsjail_binary: str = NSJAIL_PATH, python_binary: str = sys.executable):
         self.nsjail_binary = nsjail_binary
         self.python_binary = python_binary
 
@@ -122,7 +113,7 @@ class NsJail:
                 "--cgroup_pids_mount", str(CGROUP_PIDS_PARENT.parent),
                 "--cgroup_pids_parent", CGROUP_PIDS_PARENT.name,
                 "--",
-                self.python_binary, "-ISq", "-c", code
+                self.python_binary, "-Iq", "-c", code
             )
 
             msg = "Executing code..."
@@ -131,9 +122,14 @@ class NsJail:
             log.info(msg)
 
             try:
-                result = subprocess.run(args, capture_output=True, env=ENV, text=True)
+                result = subprocess.run(
+                    args,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True
+                )
             except ValueError:
-                return subprocess.CompletedProcess(args, None, "", "ValueError: embedded null byte")
+                return subprocess.CompletedProcess(args, None, "ValueError: embedded null byte", "")
 
             self._parse_log(nsj_log)
 
