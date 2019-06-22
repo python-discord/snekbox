@@ -5,6 +5,7 @@ import subprocess
 import sys
 import textwrap
 from pathlib import Path
+from subprocess import CompletedProcess
 from tempfile import NamedTemporaryFile
 from typing import List
 
@@ -92,7 +93,7 @@ class NsJail:
                 # Treat fatal as error.
                 log.error(msg)
 
-    def python3(self, code: str) -> subprocess.CompletedProcess:
+    def python3(self, code: str) -> CompletedProcess:
         """Execute Python 3 code in an isolated environment and return the completed process."""
         with NamedTemporaryFile() as nsj_log:
             args = (
@@ -130,7 +131,7 @@ class NsJail:
                     text=True
                 )
             except ValueError:
-                return subprocess.CompletedProcess(args, None, "ValueError: embedded null byte", "")
+                return CompletedProcess(args, None, "ValueError: embedded null byte", None)
 
             log_lines = nsj_log.read().decode("UTF-8").splitlines()
             if not log_lines and result.returncode == 255:
