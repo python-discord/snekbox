@@ -10,6 +10,7 @@ class NsJailTests(unittest.TestCase):
         super().setUp()
 
         self.nsjail = NsJail()
+        self.nsjail.DEBUG = False
         self.logger = logging.getLogger("snekbox.nsjail")
 
     def test_print_returns_0(self):
@@ -75,3 +76,32 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.returncode, None)
         self.assertEqual(result.stdout, "ValueError: embedded null byte")
         self.assertEqual(result.stderr, None)
+
+    def test_log_parser(self):
+        log_lines = (
+            "[D][2019-06-22T20:07:00+0000][16] void foo::bar()():100 This is a debug message.",
+            "[I][2019-06-22T20:07:48+0000] pid=20 ([STANDALONE MODE]) "
+            "exited with status: 2, (PIDs left: 0)",
+            "[W][2019-06-22T20:06:04+0000][14] void cmdline::logParams(nsjconf_t*)():250 "
+            "Process will be UID/EUID=0 in the global user namespace, and will have user "
+            "root-level access to files",
+            "[W][2019-06-22T20:07:00+0000][16] void foo::bar()():100 This is a warning!",
+            "[E][2019-06-22T20:07:00+0000][16] bool "
+            "cmdline::setupArgv(nsjconf_t*, int, char**, int)():316 No command-line provided",
+            "[F][2019-06-22T20:07:00+0000][16] int main(int, char**)():204 "
+            "Couldn't parse cmdline options",
+            "Invalid Line"
+        )
+
+        with self.assertLogs(self.logger, logging.DEBUG) as log:
+            self.nsjail._parse_log(log_lines)
+
+        self.assertIn("DEBUG:snekbox.nsjail:This is a debug message.", log.output)
+        self.assertIn("ERROR:snekbox.nsjail:Couldn't parse cmdline options", log.output)
+        self.assertIn("ERROR:snekbox.nsjail:No command-line provided", log.output)
+        self.assertIn("WARNING:snekbox.nsjail:Failed to parse log line 'Invalid Line'", log.output)
+        self.assertIn("WARNING:snekbox.nsjail:This is a warning!", log.output)
+        self.assertIn(
+            "INFO:snekbox.nsjail:pid=20 ([STANDALONE MODE]) exited with status: 2, (PIDs left: 0)",
+            log.output
+        )

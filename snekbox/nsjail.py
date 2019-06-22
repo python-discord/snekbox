@@ -7,7 +7,7 @@ import textwrap
 from pathlib import Path
 from subprocess import CompletedProcess
 from tempfile import NamedTemporaryFile
-from typing import List
+from typing import Iterable
 
 from snekbox import DEBUG
 
@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 
 # [level][timestamp][PID]? function_signature:line_no? message
 LOG_PATTERN = re.compile(
-    r"\[(?P<level>(I)|[WEF])\]\[.+?\](?(2)|(?P<func>\[\d+\] .+?:\d+ )) ?(?P<msg>.+)"
+    r"\[(?P<level>(I)|[DWEF])\]\[.+?\](?(2)|(?P<func>\[\d+\] .+?:\d+ )) ?(?P<msg>.+)"
 )
 LOG_BLACKLIST = ("Process will be ",)
 
@@ -64,7 +64,7 @@ class NsJail:
         mem.mkdir(parents=True, exist_ok=True)
 
     @staticmethod
-    def _parse_log(log_lines: List[str]):
+    def _parse_log(log_lines: Iterable[str]):
         """Parse and log NsJail's log messages."""
         for line in log_lines:
             match = LOG_PATTERN.fullmatch(line)
