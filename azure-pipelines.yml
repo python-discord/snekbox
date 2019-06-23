@@ -57,7 +57,7 @@ jobs:
 
   - script: |
       docker exec snekbox_test /bin/ash -c \
-        'pipenv run coverage xml && pipenv run coverage html'
+        'pipenv run coverage xml'
     displayName: 'Generate Coverage Report'
 
   - task: PublishCodeCoverageResults@1
@@ -66,7 +66,6 @@ jobs:
     inputs:
       codeCoverageTool: Cobertura
       summaryFileLocation: '**/coverage.xml'
-      reportDirectory: '**/htmlcov'
 
 - job: build
   displayName: 'Build'
