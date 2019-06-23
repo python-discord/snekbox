@@ -60,9 +60,9 @@ jobs:
         project: $(System.TeamProject)
         pipeline: $(System.DefinitionId)
         runVersion: 'specific'
-        buildId: "$(PREV_BUILD)"
+        buildId: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         artifactName: 'BaseId'
-      displayName: 'Download Base ID Artifact'
+      displayName: 'Download Base ID Artifact $(PREV_BUILD)'
 
     - script: |
         base_id="$(cat "${SYSTEM_ARTIFACTSDIRECTORY}"/base.sha256)"
