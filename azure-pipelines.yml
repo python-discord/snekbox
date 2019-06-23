@@ -7,10 +7,6 @@ jobs:
   pool:
     vmImage: 'Ubuntu-16.04'
 
-  variables:
-    PREV_COMMIT: 'foo'
-    PREV_BUILD: 'bar'
-
   steps:
     - script: |
         set -euo pipefail
@@ -39,7 +35,7 @@ jobs:
 
         prev_build="$(printf '%s' "${response}" | jq -re '.value[0].id')"
         printf '%s\n' "Most recent successful build: ${prev_build}"
-        printf '%s\n' "##vso[task.setvariable variable=PREV_BUILD]${prev_build}"
+        printf '%s\n' "##vso[task.setvariable variable=prevBuild;isOutput=true]${prev_build}"
 
         if [[ "${BUILD_REASON}" = "PullRequest" ]]; then
             key='triggerInfo."pr.sourceSha"'
@@ -49,10 +45,10 @@ jobs:
 
         prev_commit="$(printf '%s' "${response}" | jq -re ".value[0].${key}")"
         printf '%s\n' "Previous commit: ${prev_commit}"
-        printf '%s\n' "##vso[task.setvariable variable=PREV_COMMIT]${prev_commit}"
-      displayName: 'Get Previous Successful Build'
+        printf '%s\n' "##vso[task.setvariable variable=PREV_COMMIT;isOutput=true]${prev_commit}"
+      displayName: 'setvarStep'
 
-    - script: echo $(PREV_BUILD) && echo $(PREV_COMMIT)
+#    - script: echo $(PREV_BUILD) && echo $(PREV_COMMIT)
 
     - task: DownloadPipelineArtifact@1
       inputs:
@@ -60,9 +56,9 @@ jobs:
         project: $(System.TeamProject)
         pipeline: $(System.DefinitionId)
         runVersion: 'specific'
-        buildId: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        buildId: $(setvarStep.prevBuild)
         artifactName: 'BaseId'
-      displayName: 'Download Base ID Artifact $(PREV_BUILD)'
+      displayName: 'Download Base ID Artifact $(setvarStep.prevBuild)'
 
     - script: |
         base_id="$(cat "${SYSTEM_ARTIFACTSDIRECTORY}"/base.sha256)"
