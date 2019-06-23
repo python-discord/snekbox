@@ -9,6 +9,8 @@ jobs:
 
   steps:
     - script: |
+        set -euo pipefail
+
         REQUEST_URL="https://dev.azure.com/\
         python-discord/${SYSTEM_TEAMPROJECTID}/_apis/build/builds?\
         queryOrder=finishTimeDescending&\
@@ -22,25 +24,31 @@ jobs:
         printf '%s\n' "Retrieving latest successful build using ${REQUEST_URL}"
         response="$(curl -sSL "${REQUEST_URL}")"
 
+        if [[ "$(printf '%s' "${response}" | jq -re '.count')" = 0 ]]; then
+            (>&2 echo \
+                "No previous build was found." \
+                "Either the previous build is too old and was deleted" \
+                "or the branch was empty before this build."
+            )
+            exit 0
+        fi
+
         prev_build="$(printf '%s' "${response}" | jq -re '.value[0].id')"
-        printf '%s\n' "Most recent successful build found: ${prev_build}"
+        printf '%s\n' "Most recent successful build: ${prev_build}"
         printf '%s\n' "##vso[task.setvariable variable=PREV_BUILD]${prev_build}"
 
         if [[ "${BUILD_REASON}" = "PullRequest" ]]; then
-            prev_commit="$(printf '%s' "${response}" | jq -re '.value[0]."pr.sourceSha"')"
-
-            if [[ -z "${prev_commit}" ]]; then
-                echo "Could not retrieve the previous build's commit. \
-                Falling back to the head of the target branch."
-
-                prev_commit="origin/${SYSTEM_PULLREQUEST_TARGETBRANCH}"
-            fi
+            key='triggerInfo."pr.sourceSha"'
         else
-            prev_commit="$(printf '%s' "${response}" | jq -re '.value[0].sourceVersion')"
+            key='sourceVersion'
         fi
 
+        prev_commit="$(printf '%s' "${response}" | jq -re ".value[0].${key}")"
+        printf '%s\n' "Previous commit: ${prev_commit}"
         printf '%s\n' "##vso[task.setvariable variable=PREV_COMMIT]${prev_commit}"
       displayName: 'Get Previous Successful Build'
+
+    - script: echo $(PREV_BUILD) && echo $(PREV_COMMIT)
 
     - task: DownloadPipelineArtifact@1
       inputs:
