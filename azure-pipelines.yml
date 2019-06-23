@@ -8,137 +8,18 @@ jobs:
     vmImage: 'Ubuntu-16.04'
 
   steps:
-  - script: docker build -t pythondiscord/snekbox-base:latest -f docker/base.Dockerfile .
-    displayName: 'Build Base Image'
+    - script: docker build -t pythondiscord/snekbox-base:latest -f docker/base.Dockerfile .
+      displayName: 'Build Base Image'
 
-  - script: |
-      docker build -t pythondiscord/snekbox-venv:dev -f docker/venv.Dockerfile --build-arg DEV=1 .
-    displayName: 'Build Development Image'
-
-  - script: |
-      docker run \
-        -td \
-        --name snekbox_test \
-        --privileged \
-        --network host \
-        -h pdsnk-dev \
-        -e PYTHONDONTWRITEBYTECODE=1 \
-        -e PIPENV_PIPFILE="/snekbox/Pipfile" \
-        -e ENV="${PWD}/scripts/.profile" \
-        -v "${PWD}":"${PWD}" \
-        -w "${PWD}"\
-        --entrypoint /bin/ash \
-        pythondiscord/snekbox-venv:dev
-    displayName: 'Start Container'
-
-  - script: |
-      docker exec snekbox_test /bin/ash -c \
-        'pipenv run lint --format junit-xml --output-file test-lint.xml'
-    displayName: 'Run Linter'
-
-  - task: PublishTestResults@2
-    condition: succeededOrFailed()
-    displayName: 'Publish Lint Results'
-    inputs:
-      testResultsFiles: '**/test-lint.xml'
-      testRunTitle: 'Lint Results'
-
-  - script: sudo swapoff -a
-    displayName: 'Disable swap memory'
-
-  - script: |
-      docker exec snekbox_test /bin/ash -c \
-        'pipenv run coverage run -m xmlrunner'
-    displayName: 'Run Unit Tests'
-
-  - task: PublishTestResults@2
-    condition: succeededOrFailed()
-    displayName: 'Publish Test Results'
-    inputs:
-      testResultsFiles: '**/TEST-*.xml'
-      testRunTitle: 'Test Results'
-
-  - script: |
-      docker exec snekbox_test /bin/ash -c \
-        'pipenv run coverage xml'
-    displayName: 'Generate Coverage Report'
-
-  - task: PublishCodeCoverageResults@1
-    displayName: 'Publish Coverage Results'
-    condition: succeededOrFailed()
-    inputs:
-      codeCoverageTool: Cobertura
-      summaryFileLocation: '**/coverage.xml'
-
-- job: build
-  displayName: 'Build'
-  dependsOn: test
-
-  variables:
-    BASE_CHANGED: true
-    VENV_CHANGED: true
-
-  steps:
-  - task: Docker@1
-    displayName: 'Login: Docker Hub'
-
-    inputs:
-      containerregistrytype: 'Container Registry'
-      dockerRegistryEndpoint: 'DockerHub'
-      command: 'login'
-
-  - script: |
-      REQUEST_URL="https://dev.azure.com/python-discord/${SYSTEM_TEAMPROJECTID}/_apis/build/builds?queryOrder=finishTimeDescending&resultFilter=succeeded&\$top=1&repositoryType=${BUILD_REPOSITORY_PROVIDER}&repositoryId=${BUILD_REPOSITORY_NAME}&branchName=${BUILD_SOURCEBRANCH}&api-version=5.0"
-      echo "Retrieving previous build's commit using $REQUEST_URL"
-      RESPONSE="$(curl -sSL "${REQUEST_URL}")"
-
-      if [[ $BUILD_REASON = "PullRequest" ]]; then
-        PREV_COMMIT="$(echo "${RESPONSE}" | grep -Po '"pr\.sourceSha"\s*:\s*"\K.*?[^\\](?="\s*[,}])')"
-        if [[ -z $PREV_COMMIT ]]; then
-          echo "Could not retrieve the previous build's commit. Falling back to the head of the target branch."
-          PREV_COMMIT="origin/$SYSTEM_PULLREQUEST_TARGETBRANCH"
-        fi
-      else
-        PREV_COMMIT="$(echo "${RESPONSE}" | grep -Po '"sourceVersion"\s*:\s*"\K.*?[^\\](?="\s*[,}])')"
-      fi
-
-      if [[ -n $PREV_COMMIT ]]; then
-        echo "Using $PREV_COMMIT to compare diffs."
-
-        if [[ -z "$(git diff $PREV_COMMIT -- docker/base.Dockerfile)" ]]; then
-          echo "No changes detected in docker/base.Dockerfile. The base image will not be built."
-          echo "##vso[task.setvariable variable=BASE_CHANGED]false"
+    - script: |
+        id="$(docker images -q --no-trunc pythondiscord/snekbox-base:latest)"
+        if [[ -z "${id}" ]]; then
+          (>&2 echo 'failed to get ID of pythondiscord/snekbox-base:latest')
+            exit 1
         fi
 
-        if [[ -z "$(git diff $PREV_COMMIT -- docker/venv.Dockerfile Pipfile*)" ]]; then
-          echo "No changes detected in docker/venv.Dockerfile or the Pipfiles. The venv image will not be built."
-          echo "##vso[task.setvariable variable=VENV_CHANGED]false"
-        fi
-      else
-        echo "No previous commit was retrieved. Either the previous build is too old and was deleted or the branch was empty before this build. All images will be built."
-      fi
-    displayName: 'Check Changed Files'
+        printf '%s' "${id}" >> base.sha256
+      displayName: 'Create Digest Artifact'
 
-  - script: docker build -t pythondiscord/snekbox-base:latest -f docker/base.Dockerfile .
-    displayName: 'Build Base Image'
-    condition: and(succeeded(), eq(variables.BASE_CHANGED, 'true'))
-
-  - script: docker build -t pythondiscord/snekbox-venv:latest -f docker/venv.Dockerfile .
-    displayName: 'Build Virtual Environment Image'
-    condition: and(succeeded(), or(eq(variables.BASE_CHANGED, 'true'), eq(variables.VENV_CHANGED, 'true')))
-
-  - script: docker build -t pythondiscord/snekbox:latest -f docker/Dockerfile .
-    displayName: 'Build Final Image'
-    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
-
-  - script: docker push pythondiscord/snekbox-base:latest
-    displayName: 'Push Base Image to Dockerhub'
-    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables.BASE_CHANGED, 'true'))
-
-  - script: docker push pythondiscord/snekbox-venv:latest
-    displayName: 'Push Virtual Environment Image to Dockerhub'
-    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), or(eq(variables.BASE_CHANGED, 'true'), eq(variables.VENV_CHANGED, 'true')))
-
-  - script: docker push pythondiscord/snekbox:latest
-    displayName: 'Push Final Image to Dockerhub'
-    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    - publish: base.sha256
+      artifact: base_id
