@@ -60,7 +60,7 @@ jobs:
         project: $(System.TeamProject)
         pipeline: $(System.DefinitionId)
         runVersion: 'specific'
-        buildId: $(PREV_BUILD)
+        buildId: "$(PREV_BUILD)"
         artifactName: 'BaseId'
       displayName: 'Download Base ID Artifact'
 
