@@ -37,7 +37,9 @@ jobs:
         buildVersionToDownload: 'specific'
         buildId: 2434
         artifactName: 'base_id'
-        downloadPath: .
 
     - script: |
-        cat base.sha256
+        ls -la $(System.ArtifactsDirectory)
+
+    - script: |
+        cat $(System.ArtifactsDirectory)/base.sha256
