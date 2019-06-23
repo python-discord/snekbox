@@ -32,7 +32,7 @@ jobs:
     displayName: 'Start Container'
 
   - script: |
-      docker exec -it snekbox_test /bin/ash -c \
+      docker exec snekbox_test /bin/ash -c \
         'pipenv run lint --format junit-xml --output-file test-lint.xml'
     displayName: 'Run Linter'
 
@@ -44,7 +44,7 @@ jobs:
       testRunTitle: 'Lint Results'
 
   - script: |
-      docker exec -it snekbox_test /bin/ash -c \
+      docker exec snekbox_test /bin/ash -c \
         'pipenv run coverage run -m xmlrunner'
     displayName: 'Run Unit Tests'
 
@@ -56,7 +56,7 @@ jobs:
       testRunTitle: 'Test Results'
 
   - script: |
-      docker exec -it snekbox_test /bin/ash -c \
+      docker exec snekbox_test /bin/ash -c \
         'pipenv run coverage xml && pipenv run coverage html'
     displayName: 'Generate Coverage Report'
 
