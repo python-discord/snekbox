@@ -33,7 +33,7 @@ jobs:
       inputs:
         buildType: 'specific'
         project: $(System.TeamProject)
-        pipelineId: $(System.DefinitionId)
+        pipeline: $(System.DefinitionId)
         buildVersionToDownload: 'latest'
-        runId: 2434
-        artifactName: base_id
+        buildId: 2434
+        artifactName: 'base_id'
