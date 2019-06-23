@@ -29,11 +29,11 @@ jobs:
         artifact: base_id
       enabled: false
 
-    - task: DownloadPipelineArtifact@2
+    - task: DownloadPipelineArtifact@1
       inputs:
         buildType: 'specific'
         project: $(System.TeamProject)
         pipelineId: $(System.DefinitionId)
+        buildVersionToDownload: 'latest'
         runId: 2434
         artifactName: base_id
-        downloadPath: .
