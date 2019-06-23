@@ -21,7 +21,7 @@ jobs:
         printf '%s' "${id}" >> base.sha256
       displayName: 'Create Digest Artifact'
 
-    - task: PublishPipelineArtifact@2
+    - task: PublishPipelineArtifact@1
       inputs:
         path: base.sha256
         artifact: base_id
