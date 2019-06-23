@@ -7,6 +7,7 @@ jobs:
   pool:
     vmImage: 'Ubuntu-16.04'
 
+  steps:
   - script: docker build -t pythondiscord/snekbox-base:latest -f docker/base.Dockerfile .
     displayName: 'Build Base Image'
 
