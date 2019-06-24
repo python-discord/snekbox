@@ -48,14 +48,14 @@ jobs:
         printf '%s\n' "##vso[task.setvariable variable=PREV_COMMIT;isOutput=true]${prev_commit}"
       displayName: 'Get Previous Successful Build'
 
-    - task: DownloadPipelineArtifact@2
+    - task: DownloadPipelineArtifact@1
       inputs:
-        source: 'specific'
+        buildType: 'specific'
         project: $(System.TeamProject)
         pipeline: $(System.DefinitionId)
-        runVersion: 'specific'
-        buildId: 2434
-        artifactName: 'BaseId'
+        buildVersionToDownload: 'latest'
+        buildId: $(PREV_BUILD)
+        artifactName: 'base_id'
       displayName: 'Download Base ID Artifact'
 
     - script: |
