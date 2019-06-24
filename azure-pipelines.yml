@@ -7,8 +7,8 @@ jobs:
   pool:
     vmImage: 'Ubuntu-16.04'
 
-  variables:
-    PREV_BUILD: 1
+#  variables:
+#    PREV_BUILD: 1
 
   steps:
     - script: |
@@ -54,7 +54,7 @@ jobs:
     - task: ShellScript@2
       inputs:
         scriptPath: './scripts/test.sh'
-        args: '$(PREV_BUILD)'
+        args: variables['PREV_COMMIT']
       displayName: 'Print PREV_BUILD'
 
     - task: DownloadPipelineArtifact@2
@@ -63,7 +63,7 @@ jobs:
         project: $(System.TeamProjectId)
         pipeline: $(System.DefinitionId)
         buildVersionToDownload: 'specific'
-        buildId: $(PREV_BUILD)
+        buildId: variables['PREV_COMMIT']
         artifactName: 'base_id'
       displayName: 'Download Base ID Artifact'
 
