@@ -8,7 +8,7 @@ jobs:
     vmImage: 'Ubuntu-16.04'
 
   variables:
-    PREV_BUILD: 2434
+    PREV_BUILD: 1
 
   steps:
     - script: |
@@ -50,6 +50,12 @@ jobs:
         printf '%s\n' "Previous commit: ${prev_commit}"
         printf '%s\n' "##vso[task.setvariable variable=PREV_COMMIT;isOutput=true]${prev_commit}"
       displayName: 'Get Previous Successful Build'
+
+    - task: ShellScript@2
+      inputs:
+        scriptPath: './scripts/test.sh'
+        args: '$(PREV_BUILD)'
+      displayName: 'Print PREV_BUILD'
 
     - task: DownloadPipelineArtifact@2
       inputs:
