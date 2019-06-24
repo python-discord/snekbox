@@ -12,7 +12,7 @@ jobs:
 
   steps:
     - script: |
-        set -euo pipefail
+        set -euxo pipefail
 
         REQUEST_URL="${API_BASE_URL}/build/builds?\
         queryOrder=finishTimeDescending&\
