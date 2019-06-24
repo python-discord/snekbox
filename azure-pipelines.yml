@@ -7,12 +7,14 @@ jobs:
   pool:
     vmImage: 'Ubuntu-16.04'
 
+  variables:
+    API_BASE_URL: 'https://dev.azure.com/$(System.CollectionId)/$(System.TeamProject)/_apis'
+
   steps:
     - script: |
         set -euo pipefail
 
-        REQUEST_URL="https://dev.azure.com/\
-        python-discord/${SYSTEM_TEAMPROJECTID}/_apis/build/builds?\
+        REQUEST_URL="${API_BASE_URL}/build/builds?\
         queryOrder=finishTimeDescending&\
         resultFilter=succeeded&\
         \$top=1&\
@@ -35,7 +37,7 @@ jobs:
 
         prev_build="$(printf '%s' "${response}" | jq -re '.value[0].id')"
         printf '%s\n' "Most recent successful build: ${prev_build}"
-        printf '%s\n' "##vso[task.setvariable variable=prevBuild;isOutput=true]${prev_build}"
+        printf '%s\n' "##vso[task.setvariable variable=PREV_BUILD;isOutput=true]${prev_build}"
 
         if [[ "${BUILD_REASON}" = "PullRequest" ]]; then
             key='triggerInfo."pr.sourceSha"'
@@ -46,9 +48,7 @@ jobs:
         prev_commit="$(printf '%s' "${response}" | jq -re ".value[0].${key}")"
         printf '%s\n' "Previous commit: ${prev_commit}"
         printf '%s\n' "##vso[task.setvariable variable=PREV_COMMIT;isOutput=true]${prev_commit}"
-      displayName: 'setvarStep'
-
-#    - script: echo $(PREV_BUILD) && echo $(PREV_COMMIT)
+      displayName: 'Get Previous Successful Build'
 
     - task: DownloadPipelineArtifact@1
       inputs:
@@ -56,9 +56,9 @@ jobs:
         project: $(System.TeamProject)
         pipeline: $(System.DefinitionId)
         runVersion: 'specific'
-        buildId: $(setvarStep.prevBuild)
+        buildId: "2434"
         artifactName: 'BaseId'
-      displayName: 'Download Base ID Artifact $(setvarStep.prevBuild)'
+      displayName: 'Download Base ID Artifact'
 
     - script: |
         base_id="$(cat "${SYSTEM_ARTIFACTSDIRECTORY}"/base.sha256)"
@@ -83,3 +83,4 @@ jobs:
         path: base.sha256
         artifact: BaseId
       displayName: 'Publish Base ID Artifact'
+      enabled: false
