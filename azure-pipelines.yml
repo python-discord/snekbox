@@ -35,7 +35,7 @@ jobs:
 
         prev_build="$(printf '%s' "${response}" | jq -re '.value[0].id')"
         printf '%s\n' "Most recent successful build: ${prev_build}"
-        printf '%s\n' "##vso[task.setvariable variable=PREV_BUILD;isOutput=true]${prev_build}"
+        printf '%s\n' "##vso[task.setvariable variable=PREV_BUILD]${prev_build}"
 
         if [[ "${BUILD_REASON}" = "PullRequest" ]]; then
             key='triggerInfo."pr.sourceSha"'
@@ -45,7 +45,7 @@ jobs:
 
         prev_commit="$(printf '%s' "${response}" | jq -re ".value[0].${key}")"
         printf '%s\n' "Previous commit: ${prev_commit}"
-        printf '%s\n' "##vso[task.setvariable variable=PREV_COMMIT;isOutput=true]${prev_commit}"
+        printf '%s\n' "##vso[task.setvariable variable=PREV_COMMIT]${prev_commit}"
       displayName: 'Get Previous Successful Build'
 
     - script: echo '$(PREV_BUILD)'
