@@ -54,7 +54,7 @@ jobs:
     - task: ShellScript@2
       inputs:
         scriptPath: './scripts/test.sh'
-        args: variables['PREV_COMMIT']
+        args: $[ format('{0}', variables['PREV_COMMIT']) ]
       displayName: 'Print PREV_BUILD'
 
     - task: DownloadPipelineArtifact@2
