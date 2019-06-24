@@ -56,7 +56,7 @@ jobs:
         runVersion: 'specific'
         buildId: "2434"
         artifactName: 'BaseId'
-      displayName: 'Download Base ID Artifact $(PREV_BUILD)'
+      displayName: 'Download Base ID Artifact'
 
     - script: |
         base_id="$(cat "${SYSTEM_ARTIFACTSDIRECTORY}"/base.sha256)"
