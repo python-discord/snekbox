@@ -7,9 +7,6 @@ jobs:
   pool:
     vmImage: 'Ubuntu-16.04'
 
-  variables:
-    PREV_BUILD: 1
-
   steps:
     - script: |
         set -euo pipefail
