@@ -48,7 +48,7 @@ jobs:
         printf '%s\n' "##vso[task.setvariable variable=PREV_COMMIT;isOutput=true]${prev_commit}"
       displayName: 'Get Previous Successful Build'
 
-    - script: echo $(PREV_BUILD)
+    - script: echo '$(PREV_BUILD)'
 
     - task: ShellScript@2
       inputs:
