@@ -54,7 +54,7 @@ jobs:
         project: $(System.TeamProject)
         pipeline: $(System.DefinitionId)
         buildVersionToDownload: 'specific'
-        buildId: $(PREV_BUILD)
+        buildId: 2434
         artifactName: 'base_id'
       displayName: 'Download Base ID Artifact'
 
