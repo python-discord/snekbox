@@ -7,14 +7,12 @@ jobs:
   pool:
     vmImage: 'Ubuntu-16.04'
 
-  variables:
-    API_BASE_URL: 'https://dev.azure.com/$(System.CollectionId)/$(System.TeamProject)/_apis'
-
   steps:
     - script: |
-        set -euxo pipefail
+        set -euo pipefail
 
-        REQUEST_URL="${API_BASE_URL}/build/builds?\
+        REQUEST_URL="https://dev.azure.com/\
+        python-discord/${SYSTEM_TEAMPROJECTID}/_apis/build/builds?\
         queryOrder=finishTimeDescending&\
         resultFilter=succeeded&\
         \$top=1&\
@@ -58,7 +56,7 @@ jobs:
         runVersion: 'specific'
         buildId: "2434"
         artifactName: 'BaseId'
-      displayName: 'Download Base ID Artifact'
+      displayName: 'Download Base ID Artifact $(PREV_BUILD)'
 
     - script: |
         base_id="$(cat "${SYSTEM_ARTIFACTSDIRECTORY}"/base.sha256)"
