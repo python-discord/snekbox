@@ -54,7 +54,7 @@ jobs:
         project: $(System.TeamProject)
         pipeline: $(System.DefinitionId)
         buildVersionToDownload: 'specific'
-        buildId: 2434
+        buildId: '2434'
         artifactName: 'base_id'
       displayName: 'Download Base ID Artifact'
 
@@ -73,6 +73,7 @@ jobs:
             exit 1
         fi
 
+        printf '%s\n' "Base ID is ${id}"
         printf '%s' "${id}" >> base.sha256
       displayName: 'Create Base ID Artifact'
 
