@@ -48,13 +48,7 @@ jobs:
         printf '%s\n' "##vso[task.setvariable variable=PREV_COMMIT]${prev_commit}"
       displayName: 'Get Previous Successful Build'
 
-    - script: echo '$(PREV_BUILD)'
-
-    - task: ShellScript@2
-      inputs:
-        scriptPath: './scripts/test.sh'
-        args: $(PREV_BUILD)
-      displayName: 'Print PREV_BUILD'
+    - script: echo "${BASH_VERSION}"
 
     - task: DownloadPipelineArtifact@2
       inputs:
@@ -63,7 +57,7 @@ jobs:
         pipeline: $(System.DefinitionId)
         buildVersionToDownload: 'specific'
         buildId: $(PREV_BUILD)
-        artifactName: 'base_id'
+        artifactName: 'BaseId'
       displayName: 'Download Base ID Artifact'
 
     - script: |
@@ -90,4 +84,3 @@ jobs:
         path: base.sha256
         artifact: BaseId
       displayName: 'Publish Base ID Artifact'
-      enabled: false
