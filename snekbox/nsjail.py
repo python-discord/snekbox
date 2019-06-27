@@ -71,9 +71,15 @@ class NsJail:
         with (mem / "memory.limit_in_bytes").open("w", encoding="utf=8") as f:
             f.write(str(MEM_MAX))
 
-        # Swap limit is specified as the sum of the memory and swap limits.
-        with (mem / "memory.memsw.limit_in_bytes").open("w", encoding="utf=8") as f:
-            f.write(str(MEM_MAX))
+        try:
+            # Swap limit is specified as the sum of the memory and swap limits.
+            with (mem / "memory.memsw.limit_in_bytes").open("w", encoding="utf=8") as f:
+                f.write(str(MEM_MAX))
+        except PermissionError:
+            log.info(
+                "Failed to disable memory swapping in the cgroup. "
+                "This is probably because CONFIG_MEMCG_SWAP_ENABLED is unset."
+            )
 
     @staticmethod
     def _parse_log(log_lines: Iterable[str]):
