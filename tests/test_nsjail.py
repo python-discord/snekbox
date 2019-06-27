@@ -2,7 +2,7 @@ import logging
 import unittest
 from textwrap import dedent
 
-from snekbox.nsjail import NsJail
+from snekbox.nsjail import MEM_MAX, NsJail
 
 
 class NsJailTests(unittest.TestCase):
@@ -21,12 +21,8 @@ class NsJailTests(unittest.TestCase):
 
     def test_timeout_returns_137(self):
         code = dedent("""
-            x = '*'
             while True:
-                try:
-                    x = x * 99
-                except:
-                    continue
+                pass
         """).strip()
 
         with self.assertLogs(self.logger) as log:
@@ -36,6 +32,17 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.stdout, "")
         self.assertEqual(result.stderr, None)
         self.assertIn("run time >= time limit", "\n".join(log.output))
+
+    def test_memory_returns_137(self):
+        # Add a kilobyte just to be safe.
+        code = dedent(f"""
+            x = ' ' * {MEM_MAX + 1000}
+        """).strip()
+
+        result = self.nsjail.python3(code)
+        self.assertEqual(result.returncode, 137)
+        self.assertEqual(result.stdout, "")
+        self.assertEqual(result.stderr, None)
 
     def test_subprocess_resource_unavailable(self):
         code = dedent("""

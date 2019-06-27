@@ -24,6 +24,7 @@ CGROUP_PIDS_PARENT = Path("/sys/fs/cgroup/pids/NSJAIL")
 CGROUP_MEMORY_PARENT = Path("/sys/fs/cgroup/memory/NSJAIL")
 
 NSJAIL_PATH = os.getenv("NSJAIL_PATH", "/usr/sbin/nsjail")
+MEM_MAX = 52428800
 
 
 class NsJail:
@@ -59,9 +60,20 @@ class NsJail:
 
         NsJail doesn't do this automatically because it requires privileges NsJail usually doesn't
         have.
+
+        Disables memory swapping.
         """
         pids.mkdir(parents=True, exist_ok=True)
         mem.mkdir(parents=True, exist_ok=True)
+
+        # Swap limit cannot be set to a value lower than memory.limit_in_bytes.
+        # Therefore, this must be set first.
+        with (mem / "memory.limit_in_bytes").open("w", encoding="utf=8") as f:
+            f.write(str(MEM_MAX))
+
+        # Swap limit is specified as the sum of the memory and swap limits.
+        with (mem / "memory.memsw.limit_in_bytes").open("w", encoding="utf=8") as f:
+            f.write(str(MEM_MAX))
 
     @staticmethod
     def _parse_log(log_lines: Iterable[str]):
@@ -108,7 +120,7 @@ class NsJail:
                 "--disable_proc",
                 "--iface_no_lo",
                 "--log", nsj_log.name,
-                "--cgroup_mem_max=52428800",
+                f"--cgroup_mem_max={MEM_MAX}",
                 "--cgroup_mem_mount", str(CGROUP_MEMORY_PARENT.parent),
                 "--cgroup_mem_parent", CGROUP_MEMORY_PARENT.name,
                 "--cgroup_pids_max=1",
