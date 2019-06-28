@@ -55,6 +55,16 @@ class NsJailTests(unittest.TestCase):
         self.assertIn("Resource temporarily unavailable", result.stdout)
         self.assertEqual(result.stderr, None)
 
+    def test_read_only_file_system(self):
+        code = dedent("""
+            open('hello', 'w').write('world')
+        """).strip()
+
+        result = self.nsjail.python3(code)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("Read-only file system", result.stdout)
+        self.assertEqual(result.stderr, None)
+
     def test_forkbomb_resource_unavailable(self):
         code = dedent("""
             import os
