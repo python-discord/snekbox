@@ -76,9 +76,10 @@ class NsJail:
             with (mem / "memory.memsw.limit_in_bytes").open("w", encoding="utf=8") as f:
                 f.write(str(MEM_MAX))
         except PermissionError:
-            log.info(
-                "Failed to disable memory swapping in the cgroup. "
-                "This is probably because CONFIG_MEMCG_SWAP_ENABLED is unset."
+            log.warning(
+                "Failed to set the memory swap limit for the cgroup. "
+                "This is probably because CONFIG_MEMCG_SWAP or CONFIG_MEMCG_SWAP_ENABLED is unset. "
+                "Please ensure swap memory is disabled on the system."
             )
 
     @staticmethod

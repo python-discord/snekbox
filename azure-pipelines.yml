@@ -43,6 +43,9 @@ jobs:
       testResultsFiles: '**/test-lint.xml'
       testRunTitle: 'Lint Results'
 
+  - script: sudo swapoff -a
+    displayName: 'Disable swap memory'
+
   - script: |
       docker exec snekbox_test /bin/ash -c \
         'pipenv run coverage run -m xmlrunner'
