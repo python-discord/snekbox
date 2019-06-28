@@ -12,6 +12,13 @@ jobs:
       inputs:
         scriptPath: scripts/check_dockerfiles.sh
       displayName: 'Check If Images Need to Be Built'
+      enabled: false
+
+    - script: cat /proc/meminfo
+      displayName: 'meminfo'
+
+    - script: cat /proc/swaps
+      displayName: 'swaps'
 
     - task: DownloadPipelineArtifact@2
       inputs:
@@ -22,14 +29,17 @@ jobs:
         buildId: $(PREV_BUILD)
         artifactName: 'BaseId'
       displayName: 'Download Base ID Artifact'
+      enabled: false
 
     - script: |
         base_id="$(cat "${SYSTEM_ARTIFACTSDIRECTORY}"/base.sha256)"
         printf '%s\n' "##vso[task.setvariable variable=BASE_ID]${base_id}"
       displayName: 'Write Base ID to Variable'
+      enabled: false
 
     - script: docker build -t pythondiscord/snekbox-base:latest -f docker/base.Dockerfile .
       displayName: 'Build Base Image'
+      enabled: false
 
     - script: |
         id="$(docker images -q --no-trunc pythondiscord/snekbox-base:latest)"
@@ -41,9 +51,11 @@ jobs:
         printf '%s\n' "Base ID is ${id}"
         printf '%s' "${id}" >> base.sha256
       displayName: 'Create Base ID Artifact'
+      enabled: false
 
     - task: PublishPipelineArtifact@1
       inputs:
         path: base.sha256
         artifact: BaseId
       displayName: 'Publish Base ID Artifact'
+      enabled: false
