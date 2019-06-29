@@ -68,13 +68,11 @@ class NsJail:
 
         # Swap limit cannot be set to a value lower than memory.limit_in_bytes.
         # Therefore, this must be set first.
-        with (mem / "memory.limit_in_bytes").open("w", encoding="utf=8") as f:
-            f.write(str(MEM_MAX))
+        (mem / "memory.limit_in_bytes").write_text(str(MEM_MAX), encoding="utf-8")
 
         try:
             # Swap limit is specified as the sum of the memory and swap limits.
-            with (mem / "memory.memsw.limit_in_bytes").open("w", encoding="utf=8") as f:
-                f.write(str(MEM_MAX))
+            (mem / "memory.memsw.limit_in_bytes").write_text(str(MEM_MAX), encoding="utf-8")
         except PermissionError:
             log.warning(
                 "Failed to set the memory swap limit for the cgroup. "
@@ -152,7 +150,7 @@ class NsJail:
             except ValueError:
                 return CompletedProcess(args, None, "ValueError: embedded null byte", None)
 
-            log_lines = nsj_log.read().decode("UTF-8").splitlines()
+            log_lines = nsj_log.read().decode("utf-8").splitlines()
             if not log_lines and result.returncode == 255:
                 # NsJail probably failed to parse arguments so log output will still be in stdout
                 log_lines = result.stdout.splitlines()
