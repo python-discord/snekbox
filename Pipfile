@@ -9,9 +9,7 @@ gunicorn = "*"
 jsonschema = "*"
 
 [dev-packages]
-pytest = "*"
-pytest-cov = "*"
-pytest-dependency = "*"
+coverage = "*"
 pre-commit = "*"
 flake8 = "*"
 flake8-docstrings = "*"
@@ -22,6 +20,7 @@ flake8-todo = "*"
 flake8-string-format = "*"
 flake8-formatter-junit-xml = "*"
 flake8-quotes = "*"
+unittest-xml-reporting = "*"
 
 [requires]
 python_version = "3.7"
@@ -29,17 +28,18 @@ python_version = "3.7"
 [scripts]
 lint = "flake8"
 precommit = "pre-commit install"
-test = "pytest tests --cov . --cov-report term-missing -v"
-report = "pytest tests --cov . --cov-report=html"
+test = "scripts/dev.sh -c 'pipenv run coverage run -m unittest'"
+report = "coverage html"
 snekbox = """
-    gunicorn
-        -w 2
-        -b 0.0.0.0:8060
-        --logger-class snekbox.GunicornLogger
-        --access-logformat '%(m)s %(U)s%(q)s %(s)s %(b)s %(L)ss'
-        --access-logfile -
+    gunicorn \
+        -w 2 \
+        -b 0.0.0.0:8060 \
+        --logger-class snekbox.GunicornLogger \
+        --access-logformat '%(m)s %(U)s%(q)s %(s)s %(b)s %(L)ss' \
+        --access-logfile - \
         snekbox.api.app
 """
+devsh = "scripts/dev.sh"
 buildbox = "docker build -t pythondiscord/snekbox:latest -f docker/Dockerfile ."
 pushbox = "docker push pythondiscord/snekbox:latest"
 buildboxbase = "docker build -t pythondiscord/snekbox-base:latest -f docker/base.Dockerfile ."

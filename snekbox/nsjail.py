@@ -5,7 +5,9 @@ import subprocess
 import sys
 import textwrap
 from pathlib import Path
+from subprocess import CompletedProcess
 from tempfile import NamedTemporaryFile
+from typing import Iterable
 
 from snekbox import DEBUG
 
@@ -13,7 +15,7 @@ log = logging.getLogger(__name__)
 
 # [level][timestamp][PID]? function_signature:line_no? message
 LOG_PATTERN = re.compile(
-    r"\[(?P<level>(I)|[WEF])\]\[.+?\](?(2)|(?P<func>\[\d+\] .+?:\d+ )) ?(?P<msg>.+)"
+    r"\[(?P<level>(I)|[DWEF])\]\[.+?\](?(2)|(?P<func>\[\d+\] .+?:\d+ )) ?(?P<msg>.+)"
 )
 LOG_BLACKLIST = ("Process will be ",)
 
@@ -22,6 +24,7 @@ CGROUP_PIDS_PARENT = Path("/sys/fs/cgroup/pids/NSJAIL")
 CGROUP_MEMORY_PARENT = Path("/sys/fs/cgroup/memory/NSJAIL")
 
 NSJAIL_PATH = os.getenv("NSJAIL_PATH", "/usr/sbin/nsjail")
+MEM_MAX = 52428800
 
 
 class NsJail:
@@ -57,14 +60,30 @@ class NsJail:
 
         NsJail doesn't do this automatically because it requires privileges NsJail usually doesn't
         have.
+
+        Disables memory swapping.
         """
         pids.mkdir(parents=True, exist_ok=True)
         mem.mkdir(parents=True, exist_ok=True)
 
+        # Swap limit cannot be set to a value lower than memory.limit_in_bytes.
+        # Therefore, this must be set first.
+        (mem / "memory.limit_in_bytes").write_text(str(MEM_MAX), encoding="utf-8")
+
+        try:
+            # Swap limit is specified as the sum of the memory and swap limits.
+            (mem / "memory.memsw.limit_in_bytes").write_text(str(MEM_MAX), encoding="utf-8")
+        except PermissionError:
+            log.warning(
+                "Failed to set the memory swap limit for the cgroup. "
+                "This is probably because CONFIG_MEMCG_SWAP or CONFIG_MEMCG_SWAP_ENABLED is unset. "
+                "Please ensure swap memory is disabled on the system."
+            )
+
     @staticmethod
-    def _parse_log(log_file):
+    def _parse_log(log_lines: Iterable[str]):
         """Parse and log NsJail's log messages."""
-        for line in log_file.read().decode("UTF-8").splitlines():
+        for line in log_lines:
             match = LOG_PATTERN.fullmatch(line)
             if match is None:
                 log.warning(f"Failed to parse log line '{line}'")
@@ -91,7 +110,7 @@ class NsJail:
                 # Treat fatal as error.
                 log.error(msg)
 
-    def python3(self, code: str) -> subprocess.CompletedProcess:
+    def python3(self, code: str) -> CompletedProcess:
         """Execute Python 3 code in an isolated environment and return the completed process."""
         with NamedTemporaryFile() as nsj_log:
             args = (
@@ -100,13 +119,13 @@ class NsJail:
                 "--chroot", "/",
                 "-E", "LANG=en_US.UTF-8",
                 "-R/usr", "-R/lib", "-R/lib64",
-                "--user", "nobody",
-                "--group", "nogroup",
+                "--user", "65534",  # nobody
+                "--group", "65534",  # nobody/nogroup
                 "--time_limit", "2",
                 "--disable_proc",
                 "--iface_no_lo",
                 "--log", nsj_log.name,
-                "--cgroup_mem_max=52428800",
+                f"--cgroup_mem_max={MEM_MAX}",
                 "--cgroup_mem_mount", str(CGROUP_MEMORY_PARENT.parent),
                 "--cgroup_mem_parent", CGROUP_MEMORY_PARENT.name,
                 "--cgroup_pids_max=1",
@@ -129,8 +148,13 @@ class NsJail:
                     text=True
                 )
             except ValueError:
-                return subprocess.CompletedProcess(args, None, "ValueError: embedded null byte", "")
+                return CompletedProcess(args, None, "ValueError: embedded null byte", None)
 
-            self._parse_log(nsj_log)
+            log_lines = nsj_log.read().decode("utf-8").splitlines()
+            if not log_lines and result.returncode == 255:
+                # NsJail probably failed to parse arguments so log output will still be in stdout
+                log_lines = result.stdout.splitlines()
+
+            self._parse_log(log_lines)
 
         return result
