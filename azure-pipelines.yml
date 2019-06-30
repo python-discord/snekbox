@@ -1,40 +1,54 @@
 # https://aka.ms/yaml
 
 jobs:
-- job: test
-  displayName: 'Lint & Test'
+  - job: test
+    displayName: 'Lint & Test'
 
-  pool:
-    vmImage: 'Ubuntu-16.04'
+    pool:
+      vmImage: 'Ubuntu-16.04'
 
-  steps:
-    - task: ShellScript@2
-      inputs:
-        scriptPath: scripts/check_dockerfiles.sh
-      name: check2
-      displayName: 'Check If Images Need to Be Built'
-      enabled: false
+    steps:
+      - task: ShellScript@2
+        inputs:
+          scriptPath: scripts/check_dockerfiles.sh
+        name: check2
+        displayName: 'Check If Images Need to Be Built'
+        enabled: false
 
-    - script: |
-        echo blah
-        # echo "##vso[task.setvariable variable=BASE_CHANGED;isOutput=true]false"
-        # echo "##vso[task.setvariable variable=VENV_CHANGED;isOutput=true]false"
-        # echo "##vso[task.setvariable variable=BASE_PULL;isOutput=true]true"
-      name: check
+      - script: |
+          echo "##vso[task.setvariable variable=BASE_CHANGED;isOutput=true]false"
+          echo "##vso[task.setvariable variable=VENV_CHANGED;isOutput=true]false"
+          echo "##vso[task.setvariable variable=BASE_PULL;isOutput=true]true"
+        name: check
+        displayName: 'Set Variables'
 
-    - script: echo $(check.BASE_PULL)
+      - script: echo $(check.BASE_PULL)
+        displayName: 'Echo Output Variable in Same Job'
 
-- job: build
-  displayName: 'Build'
-  dependsOn: test
+      - script: echo foo
+        condition: and(succeeded(), eq(check.BASE_PULL, 'true'))
+        displayName: 'Use Output Variable in Condition'
 
-  variables:
-    BASE_CHANGED: $[ coalesce(dependencies.test.outputs['check.BASE_CHANGED'], true) ]
-    VENV_CHANGED: $[ coalesce(dependencies.test.outputs['check.VENV_CHANGED'], true) ]
-    BASE_PULL: $[ coalesce(dependencies.test.outputs['check.BASE_PULL'], false) ]
+  - job: build
+    displayName: 'Build'
+    dependsOn: test
 
-  steps:
-    - script: |
-        echo "${BASE_CHANGED}"
-        echo "${VENV_CHANGED}"
-        echo "${BASE_PULL}"
+    variables:
+      BASE_CHANGED: $[ coalesce(dependencies.test.outputs['check.BASE_CHANGED'], true) ]
+      VENV_CHANGED: $[ coalesce(dependencies.test.outputs['check.VENV_CHANGED'], true) ]
+      BASE_PULL: $[ coalesce(dependencies.test.outputs['check.BASE_PULL'], false) ]
+
+    steps:
+      - script: |
+          echo "${BASE_CHANGED}"
+          echo "${VENV_CHANGED}"
+          echo "${BASE_PULL}"
+        displayName: 'Echo All Variables'
+
+      - script: echo bar
+        condition: and(succeeded(), eq(variables.BASE_PULL, 'true'))
+        displayName: 'Compare String'
+
+      - script: echo baz
+        condition: and(succeeded(), variables.BASE_PULL)
+        displayName: 'Compare Implicit Cast'
