@@ -89,6 +89,15 @@ jobs:
 
   - job: build
     displayName: 'Build'
+    condition: >
+      and(
+        succeeded(),
+        or(
+          ne(variables['Build.Reason'], 'PullRequest'),
+          eq(coalesce(dependencies.test.outputs['check.BASE_CHANGED'], True), True),
+          eq(coalesce(dependencies.test.outputs['check.VENV_CHANGED'], True), True)
+        )
+      )
     dependsOn: test
 
     variables:
