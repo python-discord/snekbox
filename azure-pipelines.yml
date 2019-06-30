@@ -139,7 +139,14 @@ jobs:
 
       - task: Docker@2
         displayName: 'Build Virtual Environment Image'
-        condition: and(succeeded(), or(eq(variables.BASE_CHANGED, True), eq(variables.VENV_CHANGED, True))
+        condition: >
+          and(
+            succeeded(),
+            or(
+              eq(variables.BASE_CHANGED, True),
+              eq(variables.VENV_CHANGED, True)
+            )
+          )
         inputs:
           command: build
           repository: pythondiscord/snekbox-venv
@@ -157,7 +164,12 @@ jobs:
 
       - task: Docker@2
         displayName: 'Push Base Image'
-        condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables.BASE_CHANGED, True))
+        condition: >
+          and(
+            succeeded(),
+            ne(variables['Build.Reason'], 'PullRequest'),
+            eq(variables.BASE_CHANGED, True)
+          )
         inputs:
           command: push
           repository: pythondiscord/snekbox-base
@@ -165,7 +177,15 @@ jobs:
 
       - task: Docker@2
         displayName: 'Push Virtual Environment Image'
-        condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), or(eq(variables.BASE_CHANGED, True), eq(variables.VENV_CHANGED, True)))
+        condition: >
+          and(
+            succeeded(),
+            ne(variables['Build.Reason'], 'PullRequest'),
+            or(
+              eq(variables.BASE_CHANGED, True),
+              eq(variables.VENV_CHANGED, True)
+            )
+          )
         inputs:
           command: push
           repository: pythondiscord/snekbox-venv
