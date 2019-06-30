@@ -34,7 +34,7 @@ jobs:
     condition: >
       and(
         succeeded(),
-        eq(variables.BASE_CHANGED, True)
+        eq(dependencies.test.outputs['check.BASE_CHANGED'], True)
       )
     dependsOn: test
 
