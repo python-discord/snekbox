@@ -18,7 +18,7 @@ jobs:
       - script: |
           echo "##vso[task.setvariable variable=BASE_CHANGED;isOutput=true]False"
           echo "##vso[task.setvariable variable=VENV_CHANGED;isOutput=true]False"
-          echo "##vso[task.setvariable variable=BASE_PULL;isOutput=true]False"
+          echo "##vso[task.setvariable variable=BASE_PULL;isOutput=true]True"
         name: check
         displayName: 'Set Variables'
 
@@ -48,6 +48,14 @@ jobs:
       - script: echo bar
         condition: and(succeeded(), eq(variables.BASE_PULL, True))
         displayName: 'Compare String'
+
+      - script: echo bar
+        condition: and(succeeded(), eq(True, variables.BASE_PULL))
+        displayName: 'Compare String Reverse'
+
+      - script: echo bar
+        condition: and(succeeded(), eq('True', variables.BASE_PULL))
+        displayName: 'Compare String to String'
 
       - script: echo baz
         condition: and(succeeded(), variables.BASE_PULL)
