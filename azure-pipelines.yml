@@ -46,7 +46,12 @@ jobs:
         displayName: 'Echo All Variables'
 
       - script: echo bar
-        condition: and(succeeded(), eq(variables.BASE_PULL, True))
+        condition: and(
+          succeeded(),
+          eq(variables.BASE_CHANGED, False),
+          eq(variables.VENV_CHANGED, False),
+          eq(variables.BASE_PULL, True)
+        )
         displayName: 'Compare String'
 
       - script: echo bar
