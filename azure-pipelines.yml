@@ -32,8 +32,8 @@ jobs:
     VENV_CHANGED: $[ coalesce(dependencies.test.outputs['check.VENV_CHANGED'], true) ]
     BASE_PULL: $[ coalesce(dependencies.test.outputs['check.BASE_PULL'], false) ]
 
-  - steps:
-      - script: |
-          echo "${BASE_CHANGED}"
-          echo "${VENV_CHANGED}"
-          echo "${BASE_PULL}"
+  steps:
+    - script: |
+        echo "${BASE_CHANGED}"
+        echo "${VENV_CHANGED}"
+        echo "${BASE_PULL}"
