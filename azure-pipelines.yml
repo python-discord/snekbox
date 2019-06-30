@@ -26,7 +26,7 @@ jobs:
         displayName: 'Echo Output Variable in Same Job'
 
       - script: echo foo
-        condition: and(succeeded(), eq($(check.BASE_PULL), 'true'))
+        condition: and(succeeded(), eq(variables['check.BASE_PULL'], 'true'))
         displayName: 'Use Output Variable in Condition'
 
   - job: build
