@@ -24,7 +24,8 @@ get_build() {
     response="$(curl -sSL "${url}")"
 
     if [[ -z "${response}" ]] \
-        || ! printf '%s' "${response}" | jq -re '.count'
+        || ! count="$(printf '%s' "${response}" | jq -re '.count')" \
+        || (( "${count}" < 1 ))
     then
         return 1
     else
