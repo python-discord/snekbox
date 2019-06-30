@@ -8,8 +8,15 @@ jobs:
       vmImage: 'ubuntu-16.04'
 
     steps:
+      - task: ShellScript@2
+        displayName: 'Check If Images Need to Be Built'
+        name: check
+        inputs:
+          scriptPath: scripts/check_dockerfiles.sh
+
       - task: Docker@2
         displayName: 'Build Base Image'
+        condition: and(succeeded(), ne(variables['check.BASE_PULL'], True))
         inputs:
           command: build
           repository: pythondiscord/snekbox-base
@@ -85,8 +92,9 @@ jobs:
     dependsOn: test
 
     variables:
-      BASE_CHANGED: true
-      VENV_CHANGED: true
+      BASE_CHANGED: $[ coalesce(dependencies.test.outputs['check.BASE_CHANGED'], True) ]
+      VENV_CHANGED: $[ coalesce(dependencies.test.outputs['check.VENV_CHANGED'], True) ]
+      BASE_PULL: $[ coalesce(dependencies.test.outputs['check.BASE_PULL'], False) ]
 
     steps:
       - task: Docker@1
@@ -96,14 +104,14 @@ jobs:
           dockerRegistryEndpoint: 'DockerHub'
           command: 'login'
 
-      - task: ShellScript@2
-        displayName: 'Check If Images Need to Be Built'
-        inputs:
-          scriptPath: scripts/check_dockerfiles.sh
-
       - task: Docker@2
         displayName: 'Build Base Image'
-        condition: and(succeeded(), eq(variables.BASE_CHANGED, True))
+        condition: >
+          and(
+            succeeded(),
+            ne(variables.BASE_PULL, True),
+            eq(variables.BASE_CHANGED, True)
+          )
         inputs:
           command: build
           repository: pythondiscord/snekbox-base
@@ -141,6 +149,7 @@ jobs:
           and(
             succeeded(),
             ne(variables['Build.Reason'], 'PullRequest'),
+            ne(variables.BASE_PULL, True),
             eq(variables.BASE_CHANGED, True)
           )
         inputs:
