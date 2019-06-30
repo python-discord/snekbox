@@ -11,54 +11,29 @@ jobs:
     - task: ShellScript@2
       inputs:
         scriptPath: scripts/check_dockerfiles.sh
+      name: check2
       displayName: 'Check If Images Need to Be Built'
       enabled: false
 
-    - script: sudo swapoff -a
-      displayName: 'Disable swap'
-
-    - script: cat /proc/meminfo
-      displayName: 'meminfo'
-
-    - script: cat /proc/swaps
-      displayName: 'swaps'
-
-    - task: DownloadPipelineArtifact@2
-      inputs:
-        buildType: 'specific'
-        project: $(System.TeamProjectId)
-        pipeline: $(System.DefinitionId)
-        buildVersionToDownload: 'specific'
-        buildId: $(PREV_BUILD)
-        artifactName: 'BaseId'
-      displayName: 'Download Base ID Artifact'
-      enabled: false
-
     - script: |
-        base_id="$(cat "${SYSTEM_ARTIFACTSDIRECTORY}"/base.sha256)"
-        printf '%s\n' "##vso[task.setvariable variable=BASE_ID]${base_id}"
-      displayName: 'Write Base ID to Variable'
-      enabled: false
+        echo "##vso[task.setvariable variable=BASE_CHANGED;isOutput=true]false"
+        echo "##vso[task.setvariable variable=VENV_CHANGED;isOutput=true]false"
+        echo "##vso[task.setvariable variable=BASE_PULL;isOutput=true]true"
+      name: check
 
-    - script: docker build -t pythondiscord/snekbox-base:latest -f docker/base.Dockerfile .
-      displayName: 'Build Base Image'
-      enabled: false
+    - script: echo $(check.BASE_PULL)
 
-    - script: |
-        id="$(docker images -q --no-trunc pythondiscord/snekbox-base:latest)"
-        if [[ -z "${id}" ]]; then
-          (>&2 echo 'failed to get ID of pythondiscord/snekbox-base:latest')
-            exit 1
-        fi
+- job: build
+  displayName: 'Build'
+  dependsOn: test
 
-        printf '%s\n' "Base ID is ${id}"
-        printf '%s' "${id}" >> base.sha256
-      displayName: 'Create Base ID Artifact'
-      enabled: false
+  variables:
+    BASE_CHANGED: $[ coalesce(dependencies.test.outputs['check.BASE_CHANGED'], true) ]
+    VENV_CHANGED: $[ coalesce(dependencies.test.outputs['check.VENV_CHANGED'], true) ]
+    BASE_PULL: $[ coalesce(dependencies.test.outputs['check.BASE_PULL'], false) ]
 
-    - task: PublishPipelineArtifact@1
-      inputs:
-        path: base.sha256
-        artifact: BaseId
-      displayName: 'Publish Base ID Artifact'
-      enabled: false
+  - steps:
+      - script: |
+          echo "${BASE_CHANGED}"
+          echo "${VENV_CHANGED}"
+          echo "${BASE_PULL}"
