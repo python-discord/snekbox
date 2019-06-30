@@ -5,15 +5,25 @@ jobs:
     displayName: 'Lint & Test'
 
     pool:
-      vmImage: 'Ubuntu-16.04'
+      vmImage: 'ubuntu-16.04'
 
     steps:
-      - script: docker build -t pythondiscord/snekbox-base:latest -f docker/base.Dockerfile .
+      - task: Docker@2
         displayName: 'Build Base Image'
+        inputs:
+          command: build
+          repository: pythondiscord/snekbox-base
+          tags: latest
+          Dockerfile: docker/base.Dockerfile
 
-      - script: |
-          docker build -t pythondiscord/snekbox-venv:dev -f docker/venv.Dockerfile --build-arg DEV=1 .
+      - task: Docker@2
         displayName: 'Build Development Image'
+        inputs:
+          command: build
+          repository: pythondiscord/snekbox-venv
+          tags: dev
+          Dockerfile: docker/venv.Dockerfile
+          arguments: --build-arg DEV=1
 
       - script: |
           docker run \
@@ -37,14 +47,14 @@ jobs:
         displayName: 'Run Linter'
 
       - task: PublishTestResults@2
-        condition: succeededOrFailed()
         displayName: 'Publish Lint Results'
+        condition: succeededOrFailed()
         inputs:
           testResultsFiles: '**/test-lint.xml'
           testRunTitle: 'Lint Results'
 
       - script: sudo swapoff -a
-        displayName: 'Disable swap memory'
+        displayName: 'Disable Swap Memory'
 
       - script: |
           docker exec snekbox_test /bin/ash -c \
@@ -52,8 +62,8 @@ jobs:
         displayName: 'Run Unit Tests'
 
       - task: PublishTestResults@2
-        condition: succeededOrFailed()
         displayName: 'Publish Test Results'
+        condition: succeededOrFailed()
         inputs:
           testResultsFiles: '**/TEST-*.xml'
           testRunTitle: 'Test Results'
@@ -81,7 +91,6 @@ jobs:
     steps:
       - task: Docker@1
         displayName: 'Login: Docker Hub'
-
         inputs:
           containerregistrytype: 'Container Registry'
           dockerRegistryEndpoint: 'DockerHub'
@@ -119,26 +128,53 @@ jobs:
           fi
         displayName: 'Check Changed Files'
 
-      - script: docker build -t pythondiscord/snekbox-base:latest -f docker/base.Dockerfile .
+      - task: Docker@2
         displayName: 'Build Base Image'
-        condition: and(succeeded(), eq(variables.BASE_CHANGED, 'true'))
+        condition: and(succeeded(), eq(variables.BASE_CHANGED, True))
+        inputs:
+          command: build
+          repository: pythondiscord/snekbox-base
+          tags: latest
+          Dockerfile: docker/base.Dockerfile
 
-      - script: docker build -t pythondiscord/snekbox-venv:latest -f docker/venv.Dockerfile .
+      - task: Docker@2
         displayName: 'Build Virtual Environment Image'
-        condition: and(succeeded(), or(eq(variables.BASE_CHANGED, 'true'), eq(variables.VENV_CHANGED, 'true')))
+        condition: and(succeeded(), or(eq(variables.BASE_CHANGED, True), eq(variables.VENV_CHANGED, True))
+        inputs:
+          command: build
+          repository: pythondiscord/snekbox-venv
+          tags: latest
+          Dockerfile: docker/venv.Dockerfile
 
-      - script: docker build -t pythondiscord/snekbox:latest -f docker/Dockerfile .
+      - task: Docker@2
         displayName: 'Build Final Image'
         condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+        inputs:
+          command: build
+          repository: pythondiscord/snekbox
+          tags: latest
+          Dockerfile: docker/Dockerfile
 
-      - script: docker push pythondiscord/snekbox-base:latest
-        displayName: 'Push Base Image to Dockerhub'
-        condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables.BASE_CHANGED, 'true'))
+      - task: Docker@2
+        displayName: 'Push Base Image'
+        condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables.BASE_CHANGED, True))
+        inputs:
+          command: push
+          repository: pythondiscord/snekbox-base
+          tags: latest
 
-      - script: docker push pythondiscord/snekbox-venv:latest
-        displayName: 'Push Virtual Environment Image to Dockerhub'
-        condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), or(eq(variables.BASE_CHANGED, 'true'), eq(variables.VENV_CHANGED, 'true')))
+      - task: Docker@2
+        displayName: 'Push Virtual Environment Image'
+        condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), or(eq(variables.BASE_CHANGED, True), eq(variables.VENV_CHANGED, True)))
+        inputs:
+          command: push
+          repository: pythondiscord/snekbox-venv
+          tags: latest
 
-      - script: docker push pythondiscord/snekbox:latest
-        displayName: 'Push Final Image to Dockerhub'
+      - task: Docker@2
+        displayName: 'Push Final Image'
         condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+        inputs:
+          command: push
+          repository: pythondiscord/snekbox
+          tags: latest
