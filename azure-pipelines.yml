@@ -22,6 +22,7 @@ jobs:
           repository: pythondiscord/snekbox-base
           tags: latest
           Dockerfile: docker/base.Dockerfile
+          buildContext: .
 
       - task: Docker@2
         displayName: 'Build Development Image'
@@ -30,6 +31,7 @@ jobs:
           repository: pythondiscord/snekbox-venv
           tags: dev
           Dockerfile: docker/venv.Dockerfile
+          buildContext: .
           arguments: --build-arg DEV=1
 
       - script: |
@@ -129,6 +131,7 @@ jobs:
           repository: pythondiscord/snekbox-base
           tags: latest
           Dockerfile: docker/base.Dockerfile
+          buildContext: .
 
       - task: Docker@2
         displayName: 'Build Virtual Environment Image'
@@ -145,6 +148,7 @@ jobs:
           repository: pythondiscord/snekbox-venv
           tags: latest
           Dockerfile: docker/venv.Dockerfile
+          buildContext: .
 
       - task: Docker@2
         displayName: 'Build Final Image'
@@ -154,6 +158,7 @@ jobs:
           repository: pythondiscord/snekbox
           tags: latest
           Dockerfile: docker/Dockerfile
+          buildContext: .
 
       - task: Docker@2
         displayName: 'Push Base Image'
