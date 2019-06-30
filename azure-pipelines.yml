@@ -31,16 +31,17 @@ jobs:
 
   - job: build
     displayName: 'Build'
+    condition: >
+      and(
+        succeeded(),
+        eq(dependencies.test.outputs['check.BASE_CHANGED'], True)
+      )
+    dependsOn: test
+
     variables:
       BASE_CHANGED: $[ coalesce(dependencies.test.outputs['check.BASE_CHANGED'], True) ]
       VENV_CHANGED: $[ coalesce(dependencies.test.outputs['check.VENV_CHANGED'], True) ]
       BASE_PULL: $[ coalesce(dependencies.test.outputs['check.BASE_PULL'], False) ]
-    condition: >
-      and(
-        succeeded(),
-        eq(variables.BASE_CHANGED, True)
-      )
-    dependsOn: test
 
     steps:
       - script: |
