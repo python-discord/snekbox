@@ -110,7 +110,10 @@ jobs:
           and(
             succeeded(),
             ne(variables.BASE_PULL, True),
-            eq(variables.BASE_CHANGED, True)
+            or(
+              eq(variables.BASE_CHANGED, True),
+              eq(variables.VENV_CHANGED, True)
+            )
           )
         inputs:
           command: build
@@ -150,7 +153,10 @@ jobs:
             succeeded(),
             ne(variables['Build.Reason'], 'PullRequest'),
             ne(variables.BASE_PULL, True),
-            eq(variables.BASE_CHANGED, True)
+            or(
+              eq(variables.BASE_CHANGED, True),
+              eq(variables.VENV_CHANGED, True)
+            )
           )
         inputs:
           command: push
