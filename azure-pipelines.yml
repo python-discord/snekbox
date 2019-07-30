@@ -14,6 +14,13 @@ jobs:
         inputs:
           scriptPath: scripts/check_dockerfiles.sh
 
+      # Without a login the following Docker build tasks won't add image tags
+      - task: Docker@2
+        displayName: 'Log into Docker Hub'
+        inputs:
+          command: login
+          containerRegistry: DockerHubV2
+
       - task: Docker@2
         displayName: 'Build Base Image'
         condition: and(succeeded(), ne(variables['check.BASE_PULL'], True))
@@ -108,12 +115,11 @@ jobs:
       BASE_PULL: $[ coalesce(dependencies.test.outputs['check.BASE_PULL'], False) ]
 
     steps:
-      - task: Docker@1
-        displayName: 'Login: Docker Hub'
+      - task: Docker@2
+        displayName: 'Log into Docker Hub'
         inputs:
-          containerregistrytype: 'Container Registry'
-          dockerRegistryEndpoint: 'DockerHub'
-          command: 'login'
+          command: login
+          containerRegistry: DockerHubV2
 
       - task: Docker@2
         displayName: 'Build Base Image'
