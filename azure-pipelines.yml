@@ -21,13 +21,44 @@ jobs:
           echo "##vso[task.setvariable variable=BASE_PULL;isOutput=true]True"
         name: check
         displayName: 'Set Variables'
+        enabled: false
 
       - script: echo $(check.BASE_PULL)
         displayName: 'Echo Output Variable in Same Job'
+        enabled: false
 
       - script: echo foo
         condition: and(succeeded(), eq(variables['check.BASE_PULL'], True))
         displayName: 'Use Output Variable in Condition'
+        enabled: false
+
+      - task: Docker@2
+        displayName: 'Build Base Image'
+        inputs:
+          command: build
+          repository: pythondiscord/snekbox-base
+          tags: foobar
+          Dockerfile: docker/base.Dockerfile
+          buildContext: .
+
+      - script: docker images -a
+        displayName: 'List Docker Images'
+
+      - script: |
+          docker run \
+            -td \
+            --name snekbox_test \
+            --privileged \
+            --network host \
+            -h pdsnk-dev \
+            -e PYTHONDONTWRITEBYTECODE=1 \
+            -e PIPENV_PIPFILE="/snekbox/Pipfile" \
+            -e ENV="${PWD}/scripts/.profile" \
+            -v "${PWD}":"${PWD}" \
+            -w "${PWD}"\
+            --entrypoint /bin/ash \
+            pythondiscord/snekbox-base:foobar
+        displayName: 'Start Container'
 
   - job: build
     displayName: 'Build'
