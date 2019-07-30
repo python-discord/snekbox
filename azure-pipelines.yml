@@ -14,13 +14,16 @@ jobs:
         inputs:
           scriptPath: scripts/check_dockerfiles.sh
 
-      # Without a login the following Docker build tasks won't add image tags
+      # Without a login the following Docker build tasks won't add image tags.
       - task: Docker@2
         displayName: 'Log into Docker Hub'
         inputs:
           command: login
           containerRegistry: DockerHubV2
 
+      # The venv image depends on this image. Build it if it can't be pulled
+      # from Docker Hub, which will be the case if the base Dockerfile has had
+      # changes.
       - task: Docker@2
         displayName: 'Build Base Image'
         condition: and(succeeded(), ne(variables['check.BASE_PULL'], True))
@@ -31,6 +34,7 @@ jobs:
           Dockerfile: docker/base.Dockerfile
           buildContext: .
 
+      # The dev image is never pushed and therefore is always built.
       - task: Docker@2
         displayName: 'Build Development Image'
         inputs:
@@ -41,18 +45,20 @@ jobs:
           buildContext: .
           arguments: --build-arg DEV=1
 
+      # The linter and all tests run inside this container.
       - script: |
           docker run \
-            -td \
+            --tty \
+            --detach \
             --name snekbox_test \
             --privileged \
             --network host \
-            -h pdsnk-dev \
+            --hostname pdsnk-dev \
             -e PYTHONDONTWRITEBYTECODE=1 \
             -e PIPENV_PIPFILE="/snekbox/Pipfile" \
             -e ENV="${PWD}/scripts/.profile" \
-            -v "${PWD}":"${PWD}" \
-            -w "${PWD}"\
+            --volume "${PWD}":"${PWD}" \
+            --workdir "${PWD}"\
             --entrypoint /bin/ash \
             pythondiscord/snekbox-venv:dev
         displayName: 'Start Container'
@@ -69,6 +75,7 @@ jobs:
           testResultsFiles: '**/test-lint.xml'
           testRunTitle: 'Lint Results'
 
+      # Memory limit tests would fail if this isn't disabled.
       - script: sudo swapoff -a
         displayName: 'Disable Swap Memory'
 
@@ -96,6 +103,9 @@ jobs:
           codeCoverageTool: Cobertura
           summaryFileLocation: '**/coverage.xml'
 
+  # When a pull request, only perform this job if images need to be built.
+  # It's always performed for non-PRs because the final image will always need
+  # to be built.
   - job: build
     displayName: 'Build'
     condition: >
@@ -109,6 +119,7 @@ jobs:
       )
     dependsOn: test
 
+    # coalesce() gives variables default values if they are null (i.e. unset).
     variables:
       BASE_CHANGED: $[ coalesce(dependencies.test.outputs['check.BASE_CHANGED'], True) ]
       VENV_CHANGED: $[ coalesce(dependencies.test.outputs['check.VENV_CHANGED'], True) ]
@@ -121,6 +132,9 @@ jobs:
           command: login
           containerRegistry: DockerHubV2
 
+      # Because this is the base image for the venv image, if the venv needs to
+      # be built, this base image must also be present. Build it if it has
+      # changed or can't be pulled from Docker Hub.
       - task: Docker@2
         displayName: 'Build Base Image'
         condition: >
@@ -139,6 +153,7 @@ jobs:
           Dockerfile: docker/base.Dockerfile
           buildContext: .
 
+      # Also build this image if base has changed - even if this image hasn't.
       - task: Docker@2
         displayName: 'Build Virtual Environment Image'
         condition: >
@@ -156,6 +171,7 @@ jobs:
           Dockerfile: docker/venv.Dockerfile
           buildContext: .
 
+      # Always build this image unless it's for a pull request.
       - task: Docker@2
         displayName: 'Build Final Image'
         condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
@@ -166,6 +182,9 @@ jobs:
           Dockerfile: docker/Dockerfile
           buildContext: .
 
+      # Push images only after they've all successfully been built.
+      # These have the same conditions as the build tasks. However, for safety,
+      # a condition for not being a pull request is added.
       - task: Docker@2
         displayName: 'Push Base Image'
         condition: >
