@@ -11,6 +11,7 @@ RUN apk add --no-cache --update  \
         make \
         protobuf-dev
 RUN git clone --depth=1 https://github.com/google/nsjail.git /nsjail \
+    && cd /nsjail \
     && git checkout 0b1d5ac03932c140f08536ed72b4b58741e7d3cf
 WORKDIR /nsjail
 RUN make
