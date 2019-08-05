@@ -91,9 +91,10 @@ jobs:
           testResultsFiles: '**/TEST-*.xml'
           testRunTitle: 'Test Results'
 
+      # Run report too because the XML report doesn't output to stdout.
       - script: |
           docker exec snekbox_test /bin/ash -c \
-            'pipenv run coverage xml'
+            'pipenv run /bin/ash -c "coverage report && coverage xml"'
         displayName: 'Generate Coverage Report'
 
       - task: PublishCodeCoverageResults@1
