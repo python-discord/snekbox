@@ -22,10 +22,6 @@ result <- |             |<----------|           | <----------+
 
 ```
 
-## Details
-
-The framework for the HTTP REST API is [Falcon](https://falconframework.org/) and the WSGI being used is [Gunicorn](https://gunicorn.org/).
-
 The code is executed in a Python process that is launched through [NsJail](https://github.com/google/nsjail), which is responsible for sandboxing the Python process. NsJail is configured as follows:
 
 * Root directory is mounted as read-only
@@ -37,16 +33,23 @@ The code is executed in a Python process that is launched through [NsJail](https
 
 The Python process is configured as follows:
 
+* Version 3.7.4
 * Isolated mode
   * Neither the script's directory nor the user's site packages are in `sys.path`
   * All `PYTHON*` environment variables are ignored
 
 
+## HTTP REST API
+
+Communication with snekbox is done over a HTTP REST API. The framework for the HTTP REST API is [Falcon](https://falconframework.org/) and the WSGI being used is [Gunicorn](https://gunicorn.org/). By default, the server is hosted on `0.0.0.0:8060` with two workers.
+
+See [`snekapi.py`](snekbox/api/snekapi.py) and [`resources`](snekbox/api/resources) for API documentation.
+
 ## Development Environment
 
 ### Initial Setup
 
-A Python 3.7 interpreter and the pipenv package are required. Once those requirements are satisfied, install the project's dependencies:
+A Python 3.7 interpreter and the [pipenv](https://docs.pipenv.org/en/latest/) package are required. Once those requirements are satisfied, install the project's dependencies:
 
 ```
 pipenv --sync
@@ -121,17 +124,17 @@ The HTML will output to `./htmlcov/` by default
 
 This script starts an `ash` shell inside the venv Docker container and attaches to it. Unlike the production image, the venv image that is built by this script contains dev dependencies too. The project directory is mounted inside the container so any filesystem changes made inside the container affect the actual local project.
 
-#### Usage
+##### Usage
 
 ```
 pipenv run devsh [--build [--clean]] [ash_args ...]
 ```
 
-* `--build` build the venv Docker image
-* `--clean` clean up dangling Docker images (only works if `--build` precedes it)
-* `ash_args` arguments to pass to `/bin/ash` (for example `-c "echo hello"`). An interactive shell is launched if no arguments are given
+* `--build` Build the venv Docker image
+* `--clean` Clean up dangling Docker images (only works if `--build` precedes it)
+* `ash_args` Arguments to pass to `/bin/ash` (for example `-c "echo hello"`). An interactive shell is launched if no arguments are given
 
-#### Invoking NsJail
+##### Invoking NsJail
 
 A shell alias named `nsjpy` is included and is basically `nsjail python -c <args>` but NsJail is configured as it would be if snekbox invoked it (such as the time and memory limits). It provides an easy way to run Python code inside NsJail without the need to run snekbox with its webserver and send HTTP requests. Example usage:
 
