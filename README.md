@@ -2,9 +2,9 @@
 
 # snekbox
 
-Python sandbox runners for executing code in isolation aka snekbox
+Python sandbox runners for executing code in isolation aka snekbox.
 
-The user sends a piece of python code to a snekbox, the snekbox executes the code and sends the result back to the users.
+A client sends Python code to a snekbox, the snekbox executes the code, and finally the results of the execution are returned to the client.
 
 ```
           +-------------+           +-----------+
@@ -22,91 +22,124 @@ result <- |             |<----------|           | <----------+
 
 ```
 
+The code is executed in a Python process that is launched through [NsJail](https://github.com/google/nsjail), which is responsible for sandboxing the Python process. NsJail is configured as follows:
 
-## Dependencies
+* Root directory is mounted as read-only
+* Time limit of 2 seconds
+* Maximum of 1 PID
+* Maximum memory of 52428800 bytes
+* Loopback interface is down
+* procfs is disabled
 
-| dep            | version (or greater) |
-|----------------|:---------------------|
-| python         | 3.6.5                |
-| pip            | 10.0.1               |
-| pipenv         | 2018.05.18           |
-| docker         | 18.03.1-ce           |
-| docker-compose | 1.21.2               |
-| nsjail         | 2.5                  |
-| flask          | 1.0.2                |
-| gunicorn       | 19.9                 |
+The Python process is configured as follows:
 
-_________________________________________
-## Setup local test
+* Version 3.7.4
+* Isolated mode
+  * Neither the script's directory nor the user's site packages are in `sys.path`
+  * All `PYTHON*` environment variables are ignored
 
-install python packages
 
-```bash
-apt-get install -y libprotobuf-dev #needed by nsjail
-pipenv sync --dev
+## HTTP REST API
+
+Communication with snekbox is done over a HTTP REST API. The framework for the HTTP REST API is [Falcon](https://falconframework.org/) and the WSGI being used is [Gunicorn](https://gunicorn.org/). By default, the server is hosted on `0.0.0.0:8060` with two workers.
+
+See [`snekapi.py`](snekbox/api/snekapi.py) and [`resources`](snekbox/api/resources) for API documentation.
+
+## Development Environment
+
+### Initial Setup
+
+A Python 3.7 interpreter and the [pipenv](https://docs.pipenv.org/en/latest/) package are required. Once those requirements are satisfied, install the project's dependencies:
+
+```
+pipenv --sync
 ```
 
-## NSJail
+Follow that up with setting up the pre-commit hook:
 
-Copy the appropriate binary to an appropriate path
-
-```bash
-cp binaries/nsjail2.6-ubuntu-x86_64 /usr/bin/nsjail
-chmod +x /usr/bin/nsjail
+```
+pipenv run precommit
 ```
 
-give nsjail a test run
+Now Flake8 will run and lint staged changes whenever an attempt to commit the changes is made. Flake8 can still be invoked manually:
 
-```bash
-# This is a workaround because nsjail can't create the directories automatically
-sudo mkdir -p /sys/fs/cgroup/pids/NSJAIL \
-  && mkdir -p /sys/fs/cgroup/memory/NSJAIL
-
-nsjail -Mo \
---rlimit_as 700 \
---chroot / \
--E LANG=en_US.UTF-8 \
--R/usr -R/lib -R/lib64 \
---user nobody \
---group nogroup \
---time_limit 2 \
---disable_proc \
---iface_no_lo \
---cgroup_pids_max=1 \
---cgroup_mem_max=52428800 \
---quiet -- \
-python3.6 -ISq -c "print('test')"
 ```
-
-> if it fails, try without the `--cgroup_pids_max=1` and `--cgroup_mem_max=52428800`
-
-## Development environment
-
-Start the webserver with docker:
-
-```bash
-docker-compose up -d
-```
-
-Run locally with pipenv:
-```bash
-pipenv run snekbox # for debugging
-```
-Visit: `http://localhost:8060`
-________________________________________
-## Unit testing and lint
-
-```bash
 pipenv run lint
+```
+
+### Running snekbox
+
+The Docker images can be built with:
+
+```
+pipenv run buildbase
+pipenv run buildvenv
+pipenv run build
+```
+
+Use Docker Compose to start snekbox:
+
+```
+docker-compose up
+```
+
+### Running Tests
+
+Tests are run through coverage.py using unittest. Before tests can run, the dev venv Docker image has to be built:
+
+```
+pipenv run builddev
+```
+
+Alternatively, the following command will build the image and then run the tests:
+
+```
+pipenv run testb
+```
+
+If the image doesn't need to be built, the tests can be run with:
+
+```
 pipenv run test
 ```
 
-________________________________________
-## Build the containers
+### Coverage
+
+To see a coverage report, run
+
+```
+pipenv run report
+```
+
+Alternatively, a report can be generated as HTML:
+
+```
+pipenv run coverage html
+```
+
+The HTML will output to `./htmlcov/` by default
+
+
+### The `devsh` Helper Script
+
+This script starts an `ash` shell inside the venv Docker container and attaches to it. Unlike the production image, the venv image that is built by this script contains dev dependencies too. The project directory is mounted inside the container so any filesystem changes made inside the container affect the actual local project.
+
+#### Usage
+
+```
+pipenv run devsh [--build [--clean]] [ash_args ...]
+```
+
+* `--build` Build the venv Docker image
+* `--clean` Clean up dangling Docker images (only works if `--build` precedes it)
+* `ash_args` Arguments to pass to `/bin/ash` (for example `-c "echo hello"`). An interactive shell is launched if no arguments are given
+
+#### Invoking NsJail
+
+A shell alias named `nsjpy` is included and is basically `nsjail python -c <args>` but NsJail is configured as it would be if snekbox invoked it (such as the time and memory limits). It provides an easy way to run Python code inside NsJail without the need to run snekbox with its webserver and send HTTP requests. Example usage:
 
 ```bash
-# Build
-pipenv run buildbox
-# Push
-pipenv run pushbox
+nsjpy "print('hello world!')"
 ```
+
+The alias can be found in `./scripts/.profile`, which is automatically added when the shell is launched in the container.

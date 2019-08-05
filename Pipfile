@@ -29,8 +29,14 @@ python_version = "3.7"
 [scripts]
 lint = "flake8"
 precommit = "pre-commit install"
-test = "scripts/dev.sh -c 'pipenv run coverage run -m unittest'"
-report = "coverage html"
+test = "sh scripts/dev.sh -c 'pipenv run coverage run -m unittest'"
+testb = """
+    sh scripts/dev.sh \
+        --build \
+        --clean \
+        -c 'pipenv run coverage run -m unittest'
+"""
+report = "coverage report"
 snekbox = """
     gunicorn \
         -w 2 \
@@ -40,8 +46,29 @@ snekbox = """
         --access-logfile - \
         snekbox.api.app
 """
-devsh = "scripts/dev.sh"
-buildbox = "docker build -t pythondiscord/snekbox:latest -f docker/Dockerfile ."
-pushbox = "docker push pythondiscord/snekbox:latest"
-buildboxbase = "docker build -t pythondiscord/snekbox-base:latest -f docker/base.Dockerfile ."
-pushboxbase = "docker push pythondiscord/snekbox-base:latest"
+devsh = "sh scripts/dev.sh"
+build = """
+    docker build \
+        -t pythondiscord/snekbox:latest \
+        -f docker/Dockerfile \
+        .
+"""
+buildbase = """
+    docker build \
+        -t pythondiscord/snekbox-base:latest \
+        -f docker/base.Dockerfile \
+        .
+"""
+buildvenv = """
+    docker build \
+        -t pythondiscord/snekbox-venv:latest \
+        -f docker/venv.Dockerfile \
+        .
+"""
+builddev = """
+    docker build \
+        -t pythondiscord/snekbox-venv:dev \
+        -f docker/venv.Dockerfile \
+        --build-arg DEV=1 \
+        .
+"""
