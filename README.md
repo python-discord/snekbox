@@ -82,11 +82,25 @@ docker-compose up
 
 ### Running Tests
 
-Tests are ran through coverage.py using unittest:
+Tests are ran through coverage.py using unittest. Before tests can run, the dev venv Docker image has to be built:
+
+```
+pipenv run builddev
+```
+
+Alternatively, the following command will build the image and then run the tests:
+
+```
+pipenv run testb
+```
+
+If the image doesn't need to be built, the tests can be ran with:
 
 ```
 pipenv run test
 ```
+
+### Coverage
 
 To see a coverage report, run
 
