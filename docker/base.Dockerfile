@@ -19,7 +19,7 @@ RUN make
 FROM python:3.7.4-alpine3.10
 ENV PIP_NO_CACHE_DIR=false
 RUN apk add --no-cache --update \
-        libnl3~-3.4 \
+        libnl3~=3.4 \
         libstdc++~=8.3 \
         protobuf~=3.6
 RUN pip install pipenv==2018.11.26
