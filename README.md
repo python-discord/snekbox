@@ -124,7 +124,7 @@ The HTML will output to `./htmlcov/` by default
 
 This script starts an `ash` shell inside the venv Docker container and attaches to it. Unlike the production image, the venv image that is built by this script contains dev dependencies too. The project directory is mounted inside the container so any filesystem changes made inside the container affect the actual local project.
 
-##### Usage
+#### Usage
 
 ```
 pipenv run devsh [--build [--clean]] [ash_args ...]
@@ -134,7 +134,7 @@ pipenv run devsh [--build [--clean]] [ash_args ...]
 * `--clean` Clean up dangling Docker images (only works if `--build` precedes it)
 * `ash_args` Arguments to pass to `/bin/ash` (for example `-c "echo hello"`). An interactive shell is launched if no arguments are given
 
-##### Invoking NsJail
+#### Invoking NsJail
 
 A shell alias named `nsjpy` is included and is basically `nsjail python -c <args>` but NsJail is configured as it would be if snekbox invoked it (such as the time and memory limits). It provides an easy way to run Python code inside NsJail without the need to run snekbox with its webserver and send HTTP requests. Example usage:
 
