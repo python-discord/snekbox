@@ -200,6 +200,7 @@ jobs:
           )
         inputs:
           command: push
+          containerRegistry: DockerHubV2
           repository: pythondiscord/snekbox-base
           tags: latest
 
@@ -216,6 +217,7 @@ jobs:
           )
         inputs:
           command: push
+          containerRegistry: DockerHubV2
           repository: pythondiscord/snekbox-venv
           tags: latest
 
@@ -224,5 +226,6 @@ jobs:
         condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
         inputs:
           command: push
+          containerRegistry: DockerHubV2
           repository: pythondiscord/snekbox
           tags: latest
