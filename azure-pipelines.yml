@@ -186,7 +186,7 @@ jobs:
       # Push images only after they've all successfully been built.
       # These have the same conditions as the build tasks. However, for safety,
       # a condition for not being a pull request is added.
-      - task: Docker@2
+      - script: docker push pythondiscord/snekbox-base:latest
         displayName: 'Push Base Image'
         condition: >
           and(
@@ -198,13 +198,8 @@ jobs:
               eq(variables.VENV_CHANGED, True)
             )
           )
-        inputs:
-          command: push
-          containerRegistry: DockerHubV2
-          repository: pythondiscord/snekbox-base
-          tags: latest
 
-      - task: Docker@2
+      - script: docker push pythondiscord/snekbox-venv:latest
         displayName: 'Push Virtual Environment Image'
         condition: >
           and(
@@ -215,17 +210,7 @@ jobs:
               eq(variables.VENV_CHANGED, True)
             )
           )
-        inputs:
-          command: push
-          containerRegistry: DockerHubV2
-          repository: pythondiscord/snekbox-venv
-          tags: latest
 
-      - task: Docker@2
+      - script: docker push pythondiscord/snekbox:latest
         displayName: 'Push Final Image'
         condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
-        inputs:
-          command: push
-          containerRegistry: DockerHubV2
-          repository: pythondiscord/snekbox
-          tags: latest
