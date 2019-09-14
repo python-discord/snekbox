@@ -1,10 +1,7 @@
-FROM pythondiscord/snekbox-base:latest
+FROM pythondiscord/snekbox-venv:latest
 
-RUN mkdir -p /snekbox
+ENTRYPOINT ["pipenv", "run"]
+CMD ["snekbox"]
+
 COPY . /snekbox
 WORKDIR /snekbox
-
-RUN pipenv --rm
-RUN pipenv sync
-
-CMD ["pipenv", "run", "snekbox"]

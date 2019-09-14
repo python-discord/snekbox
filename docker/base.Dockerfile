@@ -1,23 +1,27 @@
-FROM python:3.6.6-alpine3.7
+FROM alpine:3.10 as builder
+RUN apk add --no-cache --update  \
+        bison~=3.3 \
+        bsd-compat-headers~=0.7 \
+        flex~=2.6 \
+        g++~=8.3 \
+        gcc~=8.3 \
+        git~=2.22 \
+        libnl3-dev~=3.4 \
+        linux-headers~=4.19 \
+        make~=4.2 \
+        protobuf-dev~=3.6
+RUN git clone https://github.com/google/nsjail.git /nsjail \
+    && cd /nsjail \
+    && git checkout 0b1d5ac03932c140f08536ed72b4b58741e7d3cf
+WORKDIR /nsjail
+RUN make
 
-RUN apk add --no-cache libstdc++ protobuf
-RUN apk add --update build-base
-
-ENV PIPENV_VENV_IN_PROJECT=1
-ENV PIPENV_IGNORE_VIRTUALENVS=1
-ENV PIPENV_NOSPIN=1
-ENV PIPENV_HIDE_EMOJIS=1
-ENV PYTHONPATH=/snekbox
-
-RUN pip install pipenv
-
-RUN mkdir -p /snekbox
-COPY Pipfile /snekbox
-COPY Pipfile.lock /snekbox
-COPY . /snekbox
-WORKDIR /snekbox
-
-RUN pipenv sync --dev
-
-RUN cp binaries/nsjail2.5-alpine-x86_64 /usr/sbin/nsjail
+FROM python:3.7.4-alpine3.10
+ENV PIP_NO_CACHE_DIR=false
+RUN apk add --no-cache --update \
+        libnl3~=3.4 \
+        libstdc++~=8.3 \
+        protobuf~=3.6
+RUN pip install pipenv==2018.11.26
+COPY --from=builder /nsjail/nsjail /usr/sbin/
 RUN chmod +x /usr/sbin/nsjail

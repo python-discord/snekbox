@@ -1,10 +1,9 @@
 [run]
-omit = .venv/*,
-       tests/*,
-       snekweb.py
-       config.py
+branch = True
+include = snekbox/*
+omit = snekbox/api/app.py
 
 [report]
-exclude_lines = return jsonify,
-                raise RuntimeError,
-                return
+exclude_lines =
+    pragma: no cover
+    if DEBUG

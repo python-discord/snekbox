@@ -1,18 +1,10 @@
-.venv
-scripts
-htmlcov
-__pycache__
-.vagrant
-.pytest_cache
-.git
-.github
-.cache
-Vagrantfile
-.coverage
-.coveragerc
-.gitignore
-.travis.yml
-docker
-docker-compose.yml
-LICENSE
-README.md
+# Exclude everything
+*
+
+# Make exceptions for what's needed
+!docker/.profile
+!snekbox
+!tests
+!Pipfile
+!Pipfile.lock
+!LICENSE

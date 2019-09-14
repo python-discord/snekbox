@@ -1,43 +1,11 @@
-version: '3'
+version: "3.7"
 services:
-  pdrmq:
-    hostname: "pdrmq"
-    image: pythondiscord/rmq:latest
-    expose:
-      - "15672"
-    ports:
-       - "15672:15672"
-    networks:
-      - sneknet
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
-
   pdsnk:
-    privileged: true
     hostname: "pdsnk"
+    privileged: true
     image: pythondiscord/snekbox:latest
-    networks:
-      - sneknet
-    environment:
-      RMQ_HOST: pdrmq
-      RMQ_USERNAME: guest
-      RMQ_PASSWORD: guest
-
-  pdsnkweb:
-    hostname: "pdsnkweb"
-    image: pythondiscord/snekboxweb:latest
-    networks:
-      - sneknet
-    ports:
-       - "5000:5000"
-    expose:
-      - "5000"
-    environment:
-      RMQ_HOST: pdrmq
-      RMQ_USERNAME: guest
-      RMQ_PASSWORD: guest
-
-
-networks:
-  sneknet:
+    network_mode: "host"
+    init: true
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
