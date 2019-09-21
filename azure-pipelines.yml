@@ -14,13 +14,6 @@ jobs:
         inputs:
           scriptPath: scripts/check_dockerfiles.sh
 
-      # Without a login the following Docker build tasks won't add image tags.
-      - task: Docker@2
-        displayName: 'Log into Docker Hub'
-        inputs:
-          command: login
-          containerRegistry: DockerHubV2
-
       # The venv image depends on this image. Build it if it can't be pulled
       # from Docker Hub, which will be the case if the base Dockerfile has had
       # changes.
@@ -29,6 +22,7 @@ jobs:
         condition: and(succeeded(), ne(variables['check.BASE_PULL'], True))
         inputs:
           command: build
+          containerRegistry: DockerHub
           repository: pythondiscord/snekbox-base
           tags: latest
           Dockerfile: docker/base.Dockerfile
@@ -39,6 +33,7 @@ jobs:
         displayName: 'Build Development Image'
         inputs:
           command: build
+          containerRegistry: DockerHub
           repository: pythondiscord/snekbox-venv
           tags: dev
           Dockerfile: docker/venv.Dockerfile
@@ -131,7 +126,7 @@ jobs:
         displayName: 'Log into Docker Hub'
         inputs:
           command: login
-          containerRegistry: DockerHubV2
+          containerRegistry: DockerHub
 
       # Because this is the base image for the venv image, if the venv needs to
       # be built, this base image must also be present. Build it if it has
@@ -200,7 +195,7 @@ jobs:
           )
         inputs:
           command: push
-          containerRegistry: DockerHubV2
+          containerRegistry: DockerHub
           repository: pythondiscord/snekbox-base
           tags: latest
 
@@ -217,7 +212,7 @@ jobs:
           )
         inputs:
           command: push
-          containerRegistry: DockerHubV2
+          containerRegistry: DockerHub
           repository: pythondiscord/snekbox-venv
           tags: latest
 
@@ -226,6 +221,6 @@ jobs:
         condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
         inputs:
           command: push
-          containerRegistry: DockerHubV2
+          containerRegistry: DockerHub
           repository: pythondiscord/snekbox
           tags: latest
