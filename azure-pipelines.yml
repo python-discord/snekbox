@@ -169,7 +169,6 @@ jobs:
       # Always build this image unless it's for a pull request.
       - task: Docker@2
         displayName: 'Build Final Image'
-        condition: and(succeeded())
         inputs:
           command: build
           repository: pythondiscord/snekbox
@@ -215,7 +214,6 @@ jobs:
 
       - task: Docker@2
         displayName: 'Push Final Image'
-        condition: and(succeeded())
         inputs:
           command: push
           containerRegistry: DockerHub
