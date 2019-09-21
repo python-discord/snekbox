@@ -24,7 +24,7 @@ jobs:
           command: build
           containerRegistry: DockerHub
           repository: pythondiscord/snekbox-base
-          tags: latest
+          tags: devel
           Dockerfile: docker/base.Dockerfile
           buildContext: .
 
@@ -108,7 +108,6 @@ jobs:
       and(
         succeeded(),
         or(
-          ne(variables['Build.Reason'], 'PullRequest'),
           eq(coalesce(dependencies.test.outputs['check.BASE_CHANGED'], True), True),
           eq(coalesce(dependencies.test.outputs['check.VENV_CHANGED'], True), True)
         )
@@ -145,7 +144,7 @@ jobs:
         inputs:
           command: build
           repository: pythondiscord/snekbox-base
-          tags: latest
+          tags: devel
           Dockerfile: docker/base.Dockerfile
           buildContext: .
 
@@ -163,18 +162,18 @@ jobs:
         inputs:
           command: build
           repository: pythondiscord/snekbox-venv
-          tags: latest
+          tags: devel
           Dockerfile: docker/venv.Dockerfile
           buildContext: .
 
       # Always build this image unless it's for a pull request.
       - task: Docker@2
         displayName: 'Build Final Image'
-        condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+        condition: and(succeeded())
         inputs:
           command: build
           repository: pythondiscord/snekbox
-          tags: latest
+          tags: devel
           Dockerfile: docker/Dockerfile
           buildContext: .
 
@@ -186,7 +185,6 @@ jobs:
         condition: >
           and(
             succeeded(),
-            ne(variables['Build.Reason'], 'PullRequest'),
             ne(variables.BASE_PULL, True),
             or(
               eq(variables.BASE_CHANGED, True),
@@ -197,14 +195,13 @@ jobs:
           command: push
           containerRegistry: DockerHub
           repository: pythondiscord/snekbox-base
-          tags: latest
+          tags: devel
 
       - task: Docker@2
         displayName: 'Push Virtual Environment Image'
         condition: >
           and(
             succeeded(),
-            ne(variables['Build.Reason'], 'PullRequest'),
             or(
               eq(variables.BASE_CHANGED, True),
               eq(variables.VENV_CHANGED, True)
@@ -214,13 +211,13 @@ jobs:
           command: push
           containerRegistry: DockerHub
           repository: pythondiscord/snekbox-venv
-          tags: latest
+          tags: devel
 
       - task: Docker@2
         displayName: 'Push Final Image'
-        condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+        condition: and(succeeded())
         inputs:
           command: push
           containerRegistry: DockerHub
           repository: pythondiscord/snekbox
-          tags: latest
+          tags: devel

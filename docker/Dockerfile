@@ -1,4 +1,4 @@
-FROM pythondiscord/snekbox-venv:latest
+FROM pythondiscord/snekbox-venv:devel
 
 ENTRYPOINT ["pipenv", "run"]
 CMD ["snekbox"]
