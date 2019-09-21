@@ -34,16 +34,17 @@ fi
 # The volume is mounted to same the path in the container as the source
 # directory on the host to ensure coverage can find the source files.
 docker run \
-    -td \
+    --tty \
+    --detach \
     --name snekbox_test \
     --privileged \
     --network host \
-    -h pdsnk-dev \
+    --hostname pdsnk-dev \
     -e PYTHONDONTWRITEBYTECODE=1 \
     -e PIPENV_PIPFILE="/snekbox/Pipfile" \
     -e ENV="${PWD}/scripts/.profile" \
-    -v "${PWD}":"${PWD}" \
-    -w "${PWD}"\
+    --volume "${PWD}":"${PWD}" \
+    --workdir "${PWD}"\
     --entrypoint /bin/ash \
     pythondiscord/snekbox-venv:dev \
     >/dev/null \

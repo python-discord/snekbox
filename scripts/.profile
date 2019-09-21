@@ -20,8 +20,8 @@ nsjpy() {
         --chroot / \
         -E LANG=en_US.UTF-8 \
         -R/usr -R/lib -R/lib64 \
-        --user nobody \
-        --group nogroup \
+        --user 65534 \
+        --group 65534 \
         --time_limit 2 \
         --disable_proc \
         --iface_no_lo \

@@ -24,7 +24,8 @@ get_build() {
     response="$(curl -sSL "${url}")"
 
     if [[ -z "${response}" ]] \
-        || ! printf '%s' "${response}" | jq -re '.count'
+        || ! count="$(printf '%s' "${response}" | jq -re '.count')" \
+        || (( "${count}" < 1 ))
     then
         return 1
     else
@@ -64,7 +65,7 @@ printf '%s\n' "Comparing HEAD (${head}) against ${prev_commit}."
 
 if git diff --quiet "${prev_commit}" -- docker/base.Dockerfile; then
     echo "No changes detected in docker/base.Dockerfile."
-    echo "##vso[task.setvariable variable=BASE_CHANGED;isOutput=true]false"
+    echo "##vso[task.setvariable variable=BASE_CHANGED;isOutput=true]False"
 else
     # Always rebuild the venv if the base changes.
     exit 0
@@ -72,13 +73,14 @@ fi
 
 if git diff --quiet "${prev_commit}" -- docker/venv.Dockerfile Pipfile*; then
     echo "No changes detected in docker/venv.Dockerfile or the Pipfiles."
-    echo "##vso[task.setvariable variable=VENV_CHANGED;isOutput=true]false"
+    echo "##vso[task.setvariable variable=VENV_CHANGED;isOutput=true]False"
 elif master_commit="$(
         get_build "refs/heads/master" \
         | jq -re '.value[0].sourceVersion'
     )" \
     && git diff --quiet "${master_commit}" -- docker/base.Dockerfile
 then
+    # Though base image hasn't changed, it's still needed to build the venv.
     echo "Can pull base image from Docker Hub; no changes made since master."
-    echo "##vso[task.setvariable variable=BASE_PULL;isOutput=true]true"
+    echo "##vso[task.setvariable variable=BASE_PULL;isOutput=true]True"
 fi

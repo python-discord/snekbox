@@ -4,23 +4,24 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-falcon = "*"
-gunicorn = "*"
-jsonschema = "*"
+falcon = "~= 2.0.0"
+gunicorn = "~= 19.9"
+jsonschema = "~= 3.0"
 
 [dev-packages]
-coverage = "*"
-pre-commit = "*"
-flake8 = "*"
-flake8-docstrings = "*"
-flake8-bugbear = "*"
-flake8-import-order = "*"
-flake8-tidy-imports = "*"
-flake8-todo = "*"
-flake8-string-format = "*"
-flake8-formatter-junit-xml = "*"
-flake8-quotes = "*"
-unittest-xml-reporting = "*"
+coverage = ">= 4.4.2, == 4.*"
+pre-commit = "~= 1.18"
+pydocstyle = "~= 4.0"
+flake8 = "~= 3.7.8"
+flake8-docstrings = "~=1.4"
+flake8-bugbear = "~= 19.3"
+flake8-import-order = "~= 0.18.1"
+flake8-tidy-imports = "~= 2.0"
+flake8-todo = "~= 0.7"
+flake8-string-format = "~= 0.2.3"
+flake8-formatter-junit-xml = "~= 0.0.6"
+flake8-quotes = "~= 2.1"
+unittest-xml-reporting = ">= 2.5.1, == 2.*"
 
 [requires]
 python_version = "3.7"
@@ -28,8 +29,14 @@ python_version = "3.7"
 [scripts]
 lint = "flake8"
 precommit = "pre-commit install"
-test = "scripts/dev.sh -c 'pipenv run coverage run -m unittest'"
-report = "coverage html"
+test = "sh scripts/dev.sh -c 'pipenv run coverage run -m unittest'"
+testb = """
+    sh scripts/dev.sh \
+        --build \
+        --clean \
+        -c 'pipenv run coverage run -m unittest'
+"""
+report = "coverage report"
 snekbox = """
     gunicorn \
         -w 2 \
@@ -39,8 +46,29 @@ snekbox = """
         --access-logfile - \
         snekbox.api.app
 """
-devsh = "scripts/dev.sh"
-buildbox = "docker build -t pythondiscord/snekbox:latest -f docker/Dockerfile ."
-pushbox = "docker push pythondiscord/snekbox:latest"
-buildboxbase = "docker build -t pythondiscord/snekbox-base:latest -f docker/base.Dockerfile ."
-pushboxbase = "docker push pythondiscord/snekbox-base:latest"
+devsh = "sh scripts/dev.sh"
+build = """
+    docker build \
+        -t pythondiscord/snekbox:latest \
+        -f docker/Dockerfile \
+        .
+"""
+buildbase = """
+    docker build \
+        -t pythondiscord/snekbox-base:latest \
+        -f docker/base.Dockerfile \
+        .
+"""
+buildvenv = """
+    docker build \
+        -t pythondiscord/snekbox-venv:latest \
+        -f docker/venv.Dockerfile \
+        .
+"""
+builddev = """
+    docker build \
+        -t pythondiscord/snekbox-venv:dev \
+        -f docker/venv.Dockerfile \
+        --build-arg DEV=1 \
+        .
+"""
