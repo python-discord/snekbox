@@ -55,7 +55,8 @@ class NsJail:
 
     @staticmethod
     def _create_parent_cgroups(
-        pids: Path = CGROUP_PIDS_PARENT, mem: Path = CGROUP_MEMORY_PARENT
+        pids: Path = CGROUP_PIDS_PARENT,
+        mem: Path = CGROUP_MEMORY_PARENT
     ) -> None:
         """
         Create the PIDs and memory cgroups which NsJail will use as its parent cgroups.
