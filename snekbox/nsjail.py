@@ -54,7 +54,10 @@ class NsJail:
         self._create_parent_cgroups()
 
     @staticmethod
-    def _create_parent_cgroups(pids: Path = CGROUP_PIDS_PARENT, mem: Path = CGROUP_MEMORY_PARENT):
+    def _create_parent_cgroups(
+        pids: Path = CGROUP_PIDS_PARENT,
+        mem: Path = CGROUP_MEMORY_PARENT
+    ) -> None:
         """
         Create the PIDs and memory cgroups which NsJail will use as its parent cgroups.
 
@@ -81,7 +84,7 @@ class NsJail:
             )
 
     @staticmethod
-    def _parse_log(log_lines: Iterable[str]):
+    def _parse_log(log_lines: Iterable[str]) -> None:
         """Parse and log NsJail's log messages."""
         for line in log_lines:
             match = LOG_PATTERN.fullmatch(line)
