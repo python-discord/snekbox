@@ -3,6 +3,7 @@ import os
 import sys
 
 from gunicorn import glogging
+from gunicorn.config import Config
 
 DEBUG = os.environ.get("DEBUG", False)
 
@@ -14,7 +15,7 @@ class GunicornLogger(glogging.Logger):
     access_fmt = error_fmt
     datefmt = None  # Use the default ISO 8601 format
 
-    def setup(self, cfg):
+    def setup(self, cfg: Config) -> None:
         """
         Set up loggers and set error logger's level to DEBUG if the DEBUG env var is set.
 

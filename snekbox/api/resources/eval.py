@@ -34,7 +34,7 @@ class EvalResource:
         self.nsjail = NsJail()
 
     @validate(REQ_SCHEMA)
-    def on_post(self, req, resp):
+    def on_post(self, req: falcon.Request, resp: falcon.Response) -> None:
         """
         Evaluate Python code and return stdout, stderr, and the return code.
 
