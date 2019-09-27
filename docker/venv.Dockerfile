@@ -7,7 +7,7 @@ ENV PIP_NO_CACHE_DIR=false \
     PIPENV_NOSPIN=1 \
     PIPENV_VENV_IN_PROJECT=1
 
-COPY Pipfile Pipfile.lock /snekbox/
+COPY Pipfile Pipfile.lock /snekbox/ /wheels/
 WORKDIR /snekbox
 
 RUN if [ -n "${DEV}" ]; pipenv sync --dev; then pipenv sync; fi

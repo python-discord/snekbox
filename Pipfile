@@ -22,6 +22,7 @@ flake8-todo = "~= 0.7"
 flake8-string-format = "~= 0.2.3"
 flake8-formatter-junit-xml = "~= 0.0.6"
 flake8-quotes = "~= 2.1"
+typed-ast = {path = "./wheels/typed_ast-1.4.0-cp35-cp35m-manylinux1_x86_64.whl"}
 unittest-xml-reporting = ">= 2.5.1, == 2.*"
 
 [requires]

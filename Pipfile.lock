@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "32d02300db85c5d5d7660846db703e17e2d7615c07eaf6ead97fa61d8875ed88"
+            "sha256": "df54cefcbd876d2d63ecdde759be8d6ed4cb69dc10070448bf4645c3d3987097"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -344,6 +344,7 @@
                 "sha256:d896919306dd0aa22d0132f62a1b78d11aaf4c9fc5b3410d3c666b818191630a",
                 "sha256:ffde2fbfad571af120fcbfbbc61c72469e72f550d676c3342492a9dfdefb8f12"
             ],
+            "path": "./wheels/typed_ast-1.4.0-cp35-cp35m-manylinux1_x86_64.whl",
             "version": "==1.4.0"
         },
         "unittest-xml-reporting": {
