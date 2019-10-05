@@ -52,7 +52,7 @@ See [`snekapi.py`](snekbox/api/snekapi.py) and [`resources`](snekbox/api/resourc
 A Python 3.7 interpreter and the [pipenv](https://docs.pipenv.org/en/latest/) package are required. Once those requirements are satisfied, install the project's dependencies:
 
 ```
-pipenv --sync
+pipenv sync
 ```
 
 Follow that up with setting up the pre-commit hook:
