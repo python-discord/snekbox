@@ -1,4 +1,4 @@
-FROM alpine:3.10 as builder
+FROM python:3.8.0-alpine3.10 as builder
 RUN apk add --no-cache --update  \
         bison~=3.3 \
         bsd-compat-headers~=0.7 \
@@ -16,7 +16,7 @@ RUN git clone https://github.com/google/nsjail.git /nsjail \
 WORKDIR /nsjail
 RUN make
 
-FROM python:3.7.4-alpine3.10
+FROM python:3.8.0-alpine3.10
 ENV PIP_NO_CACHE_DIR=false
 RUN apk add --no-cache --update \
         libnl3~=3.4 \

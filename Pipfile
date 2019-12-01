@@ -25,7 +25,7 @@ flake8-quotes = "~= 2.1"
 unittest-xml-reporting = ">= 2.5.1, == 2.*"
 
 [requires]
-python_version = "3.7"
+python_version = "3.8"
 
 [scripts]
 lint = "flake8"
