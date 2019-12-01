@@ -10,9 +10,11 @@ RUN apk add --no-cache --update  \
         linux-headers~=4.19 \
         make~=4.2 \
         protobuf-dev~=3.6
-RUN git clone https://github.com/google/nsjail.git /nsjail \
-    && cd /nsjail \
-    && git checkout 0b1d5ac03932c140f08536ed72b4b58741e7d3cf
+RUN git clone \
+    -b '2.9' \
+    --single-branch \
+    --depth 1 \
+    https://github.com/google/nsjail.git /nsjail
 WORKDIR /nsjail
 RUN make
 
