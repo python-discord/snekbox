@@ -56,12 +56,12 @@ jobs:
             -e ENV="${PWD}/scripts/.profile" \
             --volume "${PWD}":"${PWD}" \
             --workdir "${PWD}"\
-            --entrypoint /bin/ash \
+            --entrypoint /bin/bash \
             pythondiscord/snekbox-venv:dev
         displayName: 'Start Container'
 
       - script: |
-          docker exec snekbox_test /bin/ash -c \
+          docker exec snekbox_test /bin/bash -c \
             'pipenv run lint --format junit-xml --output-file test-lint.xml'
         displayName: 'Run Linter'
 
@@ -77,7 +77,7 @@ jobs:
         displayName: 'Disable Swap Memory'
 
       - script: |
-          docker exec snekbox_test /bin/ash -c \
+          docker exec snekbox_test /bin/bash -c \
             'pipenv run coverage run -m xmlrunner'
         displayName: 'Run Unit Tests'
 
@@ -90,8 +90,8 @@ jobs:
 
       # Run report too because the XML report doesn't output to stdout.
       - script: |
-          docker exec snekbox_test /bin/ash -c \
-            'pipenv run /bin/ash -c "coverage report && coverage xml"'
+          docker exec snekbox_test /bin/bash -c \
+            'pipenv run /bin/bash -c "coverage report && coverage xml"'
         displayName: 'Generate Coverage Report'
 
       - task: PublishCodeCoverageResults@1

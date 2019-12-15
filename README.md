@@ -122,17 +122,17 @@ The HTML will output to `./htmlcov/` by default
 
 ### The `devsh` Helper Script
 
-This script starts an `ash` shell inside the venv Docker container and attaches to it. Unlike the production image, the venv image that is built by this script contains dev dependencies too. The project directory is mounted inside the container so any filesystem changes made inside the container affect the actual local project.
+This script starts an `bash` shell inside the venv Docker container and attaches to it. Unlike the production image, the venv image that is built by this script contains dev dependencies too. The project directory is mounted inside the container so any filesystem changes made inside the container affect the actual local project.
 
 #### Usage
 
 ```
-pipenv run devsh [--build [--clean]] [ash_args ...]
+pipenv run devsh [--build [--clean]] [bash_args ...]
 ```
 
 * `--build` Build the venv Docker image
 * `--clean` Clean up dangling Docker images (only works if `--build` precedes it)
-* `ash_args` Arguments to pass to `/bin/ash` (for example `-c "echo hello"`). An interactive shell is launched if no arguments are given
+* `bash_args` Arguments to pass to `/bin/bash` (for example `-c "echo hello"`). An interactive shell is launched if no arguments are given
 
 #### Invoking NsJail
 
