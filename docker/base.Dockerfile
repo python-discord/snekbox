@@ -23,6 +23,7 @@ FROM python:3.8.0-slim-buster
 ENV PIP_NO_CACHE_DIR=false
 RUN apt-get -y update \
     && apt-get install -y \
+        gcc=4:8.3.* \
         libnl-route-3-200=3.4.* \
         libprotobuf17=3.6.* \
     && rm -rf /var/lib/apt/lists/*
