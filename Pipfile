@@ -16,8 +16,6 @@ python-dateutil = "*"
 pendulum = "*"
 arrow = "*"
 yarl = "*"
-pyyaml = "*"
-toml = "*"
 attrs = "*"
 forbiddenfruit = "*"
 
