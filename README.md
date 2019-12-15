@@ -33,7 +33,7 @@ The code is executed in a Python process that is launched through [NsJail](https
 
 The Python process is configured as follows:
 
-* Version 3.7.4
+* Version 3.8.0
 * Isolated mode
   * Neither the script's directory nor the user's site packages are in `sys.path`
   * All `PYTHON*` environment variables are ignored
@@ -49,7 +49,7 @@ See [`snekapi.py`](snekbox/api/snekapi.py) and [`resources`](snekbox/api/resourc
 
 ### Initial Setup
 
-A Python 3.7 interpreter and the [pipenv](https://docs.pipenv.org/en/latest/) package are required. Once those requirements are satisfied, install the project's dependencies:
+A Python 3.8 interpreter and the [pipenv](https://docs.pipenv.org/en/latest/) package are required. Once those requirements are satisfied, install the project's dependencies:
 
 ```
 pipenv sync
