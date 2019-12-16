@@ -21,6 +21,7 @@ RUN make
 
 FROM python:3.8.0-slim-buster
 ENV PIP_NO_CACHE_DIR=false
+
 RUN apt-get -y update \
     && apt-get install -y \
         gcc=4:8.3.* \
@@ -28,5 +29,6 @@ RUN apt-get -y update \
         libprotobuf17=3.6.* \
     && rm -rf /var/lib/apt/lists/*
 RUN pip install pipenv==2018.11.26
+
 COPY --from=builder /nsjail/nsjail /usr/sbin/
 RUN chmod +x /usr/sbin/nsjail

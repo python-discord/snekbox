@@ -13,6 +13,7 @@ jobs:
         name: check
         inputs:
           scriptPath: scripts/check_dockerfiles.sh
+          disableAutoCwd: true
 
       # Without a login the following Docker build tasks won't add image tags.
       - task: Docker@1
