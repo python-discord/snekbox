@@ -68,12 +68,17 @@ if git diff --quiet "${prev_commit}" -- docker/base.Dockerfile; then
     echo "##vso[task.setvariable variable=BASE_CHANGED;isOutput=true]False"
 else
     # Always rebuild the venv if the base changes.
+    echo "Changes detected in docker/base.Dockerfile; all images will be built."
     exit 0
 fi
 
 if git diff --quiet "${prev_commit}" -- docker/venv.Dockerfile Pipfile*; then
     echo "No changes detected in docker/venv.Dockerfile or the Pipfiles."
     echo "##vso[task.setvariable variable=VENV_CHANGED;isOutput=true]False"
+else
+    echo \
+        "Changes detected in docker/venv.Dockerfile or the Pipfiles;" \
+        "the venv image will be built."
 fi
 
 # Though base image hasn't changed, it's still needed to build the venv.
@@ -87,4 +92,8 @@ if master_commit="$(
 then
     echo "Can pull base image from Docker Hub; no changes made since master."
     echo "##vso[task.setvariable variable=BASE_PULL;isOutput=true]True"
+else
+    echo \
+        "Cannot pull base image from Docker Hub due to detected changes;" \
+        "the base image will be built."
 fi
