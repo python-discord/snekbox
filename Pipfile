@@ -18,6 +18,8 @@ arrow = "*"
 yarl = "*"
 attrs = "*"
 forbiddenfruit = "*"
+more-itertools = "*"
+networkx = "*"
 
 [dev-packages]
 coverage = ">= 4.4.2, == 4.*"
