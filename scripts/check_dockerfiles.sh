@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
+shopt -s inherit_errexit
 exec 3>&1 # New file descriptor to stdout
 
 BASE_URL="https://dev.azure.com/\
@@ -13,8 +14,6 @@ repositoryId=${BUILD_REPOSITORY_NAME}&\
 api-version=5.0"
 
 get_build() {
-    set -e # Poor Ubuntu LTS doesn't have Bash 4.4's inherit_errexit
-
     local branch="${1:?"get_build: argument 1 'branch' is unset"}"
     local url="${BASE_URL}&branchName=${branch}"
 
