@@ -121,6 +121,11 @@ class NsJail:
                 "--rlimit_as", "700",
                 "--chroot", "/",
                 "-E", "LANG=en_US.UTF-8",
+                "-E", "OMP_NUM_THREADS=1",
+                "-E", "OPENBLAS_NUM_THREADS=1",
+                "-E", "MKL_NUM_THREADS=1",
+                "-E", "VECLIB_MAXIMUM_THREADS=1",
+                "-E", "NUMEXPR_NUM_THREADS=1",
                 "-R/usr", "-R/lib", "-R/lib64",
                 "--user", "65534",  # nobody
                 "--group", "65534",  # nobody/nogroup
