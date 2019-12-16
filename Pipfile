@@ -20,6 +20,9 @@ attrs = "*"
 forbiddenfruit = "*"
 more-itertools = "*"
 networkx = "*"
+beautifulsoup4 = "*"
+pyyaml = "*"
+toml = "*"
 
 [dev-packages]
 coverage = ">= 4.4.2, == 4.*"
