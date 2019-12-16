@@ -74,13 +74,17 @@ fi
 if git diff --quiet "${prev_commit}" -- docker/venv.Dockerfile Pipfile*; then
     echo "No changes detected in docker/venv.Dockerfile or the Pipfiles."
     echo "##vso[task.setvariable variable=VENV_CHANGED;isOutput=true]False"
-elif master_commit="$(
+fi
+
+# Though base image hasn't changed, it's still needed to build the venv.
+# Even if the venv hasn't changed, the dev venv image is still needed to run
+# the linter and tests. Therefore, the base image is also always needed.
+if master_commit="$(
         get_build "refs/heads/master" \
         | jq -re '.value[0].sourceVersion'
     )" \
     && git diff --quiet "${master_commit}" -- docker/base.Dockerfile
 then
-    # Though base image hasn't changed, it's still needed to build the venv.
     echo "Can pull base image from Docker Hub; no changes made since master."
     echo "##vso[task.setvariable variable=BASE_PULL;isOutput=true]True"
 fi
