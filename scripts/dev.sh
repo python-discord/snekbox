@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 # Sets up a development environment and runs a shell in a docker container.
-# Usage: dev.sh [--build [--clean]] [ash_args ...]
+# Usage: dev.sh [--build [--clean]] [bash_args ...]
 
 if [ "$1" = "--build" ]; then
     shift
@@ -42,15 +42,15 @@ docker run \
     --hostname pdsnk-dev \
     -e PYTHONDONTWRITEBYTECODE=1 \
     -e PIPENV_PIPFILE="/snekbox/Pipfile" \
-    -e ENV="${PWD}/scripts/.profile" \
+    -e BASH_ENV="${PWD}/scripts/.profile" \
     --volume "${PWD}":"${PWD}" \
     --workdir "${PWD}"\
-    --entrypoint /bin/ash \
+    --entrypoint /bin/bash \
     pythondiscord/snekbox-venv:dev \
     >/dev/null \
 
 # Execute the given command(s)
-docker exec -it snekbox_test /bin/ash "$@"
+docker exec -it snekbox_test /bin/bash --rcfile "${PWD}/scripts/.profile" "$@"
 
 # Fix ownership of coverage file
 # BusyBox doesn't support --reference for chown
@@ -58,7 +58,7 @@ docker exec \
     -it \
     -e CWD="${PWD}" \
     snekbox_test \
-    /bin/ash \
+    /bin/bash \
     -c 'chown "$(stat -c "%u:%g" "${CWD}")" "${CWD}/.coverage"'
 
 docker rm -f snekbox_test >/dev/null # Stop and remove the container

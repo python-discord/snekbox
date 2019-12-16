@@ -33,7 +33,7 @@ The code is executed in a Python process that is launched through [NsJail](https
 
 The Python process is configured as follows:
 
-* Version 3.7.4
+* Version 3.8.0
 * Isolated mode
   * Neither the script's directory nor the user's site packages are in `sys.path`
   * All `PYTHON*` environment variables are ignored
@@ -49,7 +49,7 @@ See [`snekapi.py`](snekbox/api/snekapi.py) and [`resources`](snekbox/api/resourc
 
 ### Initial Setup
 
-A Python 3.7 interpreter and the [pipenv](https://docs.pipenv.org/en/latest/) package are required. Once those requirements are satisfied, install the project's dependencies:
+A Python 3.8 interpreter and the [pipenv](https://docs.pipenv.org/en/latest/) package are required. Once those requirements are satisfied, install the project's dependencies:
 
 ```
 pipenv sync
@@ -122,17 +122,17 @@ The HTML will output to `./htmlcov/` by default
 
 ### The `devsh` Helper Script
 
-This script starts an `ash` shell inside the venv Docker container and attaches to it. Unlike the production image, the venv image that is built by this script contains dev dependencies too. The project directory is mounted inside the container so any filesystem changes made inside the container affect the actual local project.
+This script starts an `bash` shell inside the venv Docker container and attaches to it. Unlike the production image, the venv image that is built by this script contains dev dependencies too. The project directory is mounted inside the container so any filesystem changes made inside the container affect the actual local project.
 
 #### Usage
 
 ```
-pipenv run devsh [--build [--clean]] [ash_args ...]
+pipenv run devsh [--build [--clean]] [bash_args ...]
 ```
 
 * `--build` Build the venv Docker image
 * `--clean` Clean up dangling Docker images (only works if `--build` precedes it)
-* `ash_args` Arguments to pass to `/bin/ash` (for example `-c "echo hello"`). An interactive shell is launched if no arguments are given
+* `bash_args` Arguments to pass to `/bin/bash` (for example `-c "echo hello"`). An interactive shell is launched if no arguments are given
 
 #### Invoking NsJail
 
