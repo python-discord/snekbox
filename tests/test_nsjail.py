@@ -152,3 +152,9 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("Function not implemented", result.stdout)
         self.assertEqual(result.stderr, None)
+
+    def test_numpy_import(self):
+        result = self.nsjail.python3("import numpy")
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(result.stdout, "")
+        self.assertEqual(result.stderr, None)
