@@ -122,3 +122,30 @@ class NsJailTests(unittest.TestCase):
             "INFO:snekbox.nsjail:pid=20 ([STANDALONE MODE]) exited with status: 2, (PIDs left: 0)",
             log.output
         )
+
+    def test_shm_and_tmp_not_mounted(self):
+        for path in ("/dev/shm", "/run/shm", "/tmp"):
+            with self.subTest(path=path):
+                code = dedent(f"""
+                    with open('{path}/test', 'wb') as file:
+                        file.write(bytes([255]))
+                """).strip()
+
+                result = self.nsjail.python3(code)
+                self.assertEqual(result.returncode, 1)
+                self.assertIn("No such file or directory", result.stdout)
+                self.assertEqual(result.stderr, None)
+
+    def test_multiprocessing_shared_memory_disabled(self):
+        code = dedent("""
+            from multiprocessing.shared_memory import SharedMemory
+            try:
+                SharedMemory('test', create=True, size=16)
+            except FileExistsError:
+                pass
+        """).strip()
+
+        result = self.nsjail.python3(code)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("Function not implemented", result.stdout)
+        self.assertEqual(result.stderr, None)
