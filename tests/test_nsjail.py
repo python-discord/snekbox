@@ -56,14 +56,17 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.stderr, None)
 
     def test_read_only_file_system(self):
-        code = dedent("""
-            open('hello', 'w').write('world')
-        """).strip()
+        for path in ("/", "/etc", "/lib", "/lib64", "/snekbox", "/usr"):
+            with self.subTest(path=path):
+                code = dedent(f"""
+                    with open('{path}/hello', 'w') as f:
+                        f.write('world')
+                """).strip()
 
-        result = self.nsjail.python3(code)
-        self.assertEqual(result.returncode, 1)
-        self.assertIn("Read-only file system", result.stdout)
-        self.assertEqual(result.stderr, None)
+                result = self.nsjail.python3(code)
+                self.assertEqual(result.returncode, 1)
+                self.assertIn("Read-only file system", result.stdout)
+                self.assertEqual(result.stderr, None)
 
     def test_forkbomb_resource_unavailable(self):
         code = dedent("""
