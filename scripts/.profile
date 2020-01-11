@@ -17,5 +17,5 @@ nsjpy() {
     nsjail \
         --config "${NSJAIL_CFG:-/snekbox/snekbox.cfg}" \
         $nsj_args -- \
-        /snekbox/.venv/bin/python3 -Iq -c "$@"
+        /snekbox/.venv/bin/python3 -Iqu -c "$@"
 }

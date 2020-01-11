@@ -128,7 +128,7 @@ class NsJail:
                 "--cgroup_pids_mount", str(CGROUP_PIDS_PARENT.parent),
                 "--cgroup_pids_parent", CGROUP_PIDS_PARENT.name,
                 "--",
-                self.python_binary, "-Iq", "-c", code
+                self.python_binary, "-Iqu", "-c", code
             )
 
             msg = "Executing code..."

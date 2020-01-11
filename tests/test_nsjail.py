@@ -158,3 +158,19 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0)
         self.assertEqual(result.stdout, "")
         self.assertEqual(result.stderr, None)
+
+    def test_output_order(self):
+        stdout_msg = "greetings from stdout!"
+        stderr_msg = "hello from stderr!"
+        code = dedent(f"""
+            print({stdout_msg!r})
+            raise ValueError({stderr_msg!r})
+        """).strip()
+
+        result = self.nsjail.python3(code)
+        self.assertLess(
+            result.stdout.find(stdout_msg),
+            result.stdout.find(stderr_msg),
+            msg="stdout does not come before stderr"
+        )
+        self.assertEqual(result.stderr, None)
