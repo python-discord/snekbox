@@ -25,7 +25,7 @@ result <- |             |<----------|           | <----------+
 The code is executed in a Python process that is launched through [NsJail](https://github.com/google/nsjail), which is responsible for sandboxing the Python process. NsJail is configured as follows:
 
 * All mounts are read-only
-* Time limit of 2 seconds
+* Time limit of 5 seconds
 * Maximum of 1 PID
 * Maximum memory of 52428800 bytes
 * Loopback interface is down
