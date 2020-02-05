@@ -40,6 +40,7 @@ docker run \
     --privileged \
     --network host \
     --hostname pdsnk-dev \
+    --ipc="none" \
     -e PYTHONDONTWRITEBYTECODE=1 \
     -e PIPENV_PIPFILE="/snekbox/Pipfile" \
     -e BASH_ENV="${PWD}/scripts/.profile" \

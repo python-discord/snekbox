@@ -6,6 +6,7 @@ services:
     image: pythondiscord/snekbox:latest
     network_mode: "host"
     init: true
+    ipc: none
     build:
       context: .
       dockerfile: docker/Dockerfile

@@ -2,8 +2,8 @@
 *
 
 # Make exceptions for what's needed
-!docker/.profile
 !snekbox
+!snekbox.cfg
 !tests
 !Pipfile
 !Pipfile.lock
