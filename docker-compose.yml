@@ -1,10 +1,11 @@
 version: "3.7"
 services:
-  pdsnk:
-    hostname: "pdsnk"
+  snekbox:
+    container_name: snekbox
     privileged: true
     image: pythondiscord/snekbox:latest
-    network_mode: "host"
+    ports:
+     - 8060:8060
     init: true
     ipc: none
     build:
