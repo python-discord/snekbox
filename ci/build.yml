@@ -23,7 +23,7 @@ steps:
         -t pythondiscord/snekbox-base:latest \
         .
     displayName: 'Build Base Image'
-    condition: and(succeeded(), ne(variables['check.BASE_PULL'], True))
+    condition: and(succeeded(), ne(variables['check.BASE_PULL'], 'True'))
 
   # Build the venv image if it's had changes.
   - script: |
@@ -32,4 +32,4 @@ steps:
         -t pythondiscord/snekbox-venv:latest \
         .
     displayName: 'Build Virtual Environment Image'
-    condition: and(succeeded(), ne(variables['check.VENV_CHANGED'], False))
+    condition: and(succeeded(), ne(variables['check.VENV_CHANGED'], 'False'))

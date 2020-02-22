@@ -22,17 +22,17 @@ jobs:
         succeeded(),
         or(
           ne(variables['Build.Reason'], 'PullRequest'),
-          eq(coalesce(dependencies.test.outputs['check.BASE_CHANGED'], True), True),
-          eq(coalesce(dependencies.test.outputs['check.VENV_CHANGED'], True), True)
+          eq(coalesce(dependencies.test.outputs['check.BASE_CHANGED'], 'True'), 'True'),
+          eq(coalesce(dependencies.test.outputs['check.VENV_CHANGED'], 'True'), 'True')
         )
       )
     dependsOn: test
 
     # coalesce() gives variables default values if they are null (i.e. unset).
     variables:
-      BASE_CHANGED: $[ coalesce(dependencies.test.outputs['check.BASE_CHANGED'], True) ]
-      VENV_CHANGED: $[ coalesce(dependencies.test.outputs['check.VENV_CHANGED'], True) ]
-      BASE_PULL: $[ coalesce(dependencies.test.outputs['check.BASE_PULL'], False) ]
+      BASE_CHANGED: $[ coalesce(dependencies.test.outputs['check.BASE_CHANGED'], 'True') ]
+      VENV_CHANGED: $[ coalesce(dependencies.test.outputs['check.VENV_CHANGED'], 'True') ]
+      BASE_PULL: $[ coalesce(dependencies.test.outputs['check.BASE_PULL'], 'False') ]
 
     steps:
       - task: Docker@1
@@ -54,10 +54,10 @@ jobs:
         condition: >
           and(
             succeeded(),
-            ne(variables.BASE_PULL, True),
+            ne(variables.BASE_PULL, 'True'),
             or(
-              eq(variables.BASE_CHANGED, True),
-              eq(variables.VENV_CHANGED, True)
+              eq(variables.BASE_CHANGED, 'True'),
+              eq(variables.VENV_CHANGED, 'True')
             )
           )
 
@@ -72,8 +72,8 @@ jobs:
           and(
             succeeded(),
             or(
-              eq(variables.BASE_CHANGED, True),
-              eq(variables.VENV_CHANGED, True)
+              eq(variables.BASE_CHANGED, 'True'),
+              eq(variables.VENV_CHANGED, 'True')
             )
           )
 
@@ -95,10 +95,10 @@ jobs:
           and(
             succeeded(),
             ne(variables['Build.Reason'], 'PullRequest'),
-            ne(variables.BASE_PULL, True),
+            ne(variables.BASE_PULL, 'True'),
             or(
-              eq(variables.BASE_CHANGED, True),
-              eq(variables.VENV_CHANGED, True)
+              eq(variables.BASE_CHANGED, 'True'),
+              eq(variables.VENV_CHANGED, 'True')
             )
           )
 
@@ -109,8 +109,8 @@ jobs:
             succeeded(),
             ne(variables['Build.Reason'], 'PullRequest'),
             or(
-              eq(variables.BASE_CHANGED, True),
-              eq(variables.VENV_CHANGED, True)
+              eq(variables.BASE_CHANGED, 'True'),
+              eq(variables.VENV_CHANGED, 'True')
             )
           )
 
