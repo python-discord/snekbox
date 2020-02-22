@@ -78,21 +78,19 @@ else
     echo \
         "Changes detected in docker/venv.Dockerfile or the Pipfiles;" \
         "the venv image will be built."
-fi
 
-# Though base image hasn't changed, it's still needed to build the venv.
-# Even if the venv hasn't changed, the dev venv image is still needed to run
-# the linter and tests. Therefore, the base image is also always needed.
-if master_commit="$(
-        get_build "refs/heads/master" \
-        | jq -re '.value[0].sourceVersion'
-    )" \
-    && git diff --quiet "${master_commit}" -- docker/base.Dockerfile
-then
-    echo "Can pull base image from Docker Hub; no changes made since master."
-    echo "##vso[task.setvariable variable=BASE_PULL;isOutput=true]True"
-else
-    echo \
-        "Cannot pull base image from Docker Hub due to detected changes;" \
-        "the base image will be built."
+    # Though base image hasn't changed, it's still needed to build the venv.
+    if master_commit="$(
+            get_build "refs/heads/master" \
+            | jq -re '.value[0].sourceVersion'
+        )" \
+        && git diff --quiet "${master_commit}" -- docker/base.Dockerfile
+    then
+        echo "Can pull base image from Docker Hub; no changes since master."
+        echo "##vso[task.setvariable variable=BASE_PULL;isOutput=true]True"
+    else
+        echo \
+            "Cannot pull base image from Docker Hub due to detected changes;" \
+            "the base image will be built."
+    fi
 fi
