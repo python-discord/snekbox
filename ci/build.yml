@@ -1,0 +1,35 @@
+steps:
+  - task: ShellScript@2
+    displayName: 'Check If Images Need to Be Built'
+    name: check
+    inputs:
+      scriptPath: scripts/check_dockerfiles.sh
+      disableAutoCwd: true
+
+  # Without a login the following Docker build tasks won't add image tags.
+  - task: Docker@1
+    displayName: 'Log into Docker Hub'
+    inputs:
+      command: login
+      containerregistrytype: 'Container Registry'
+      dockerRegistryEndpoint: 'DockerHub'
+
+  # The venv image depends on this image. Build it if it can't be pulled
+  # from Docker Hub, which will be the case if the base Dockerfile has had
+  # changes.
+  - script: |
+      docker build \
+        -f docker/base.Dockerfile \
+        -t pythondiscord/snekbox-base:latest \
+        .
+    displayName: 'Build Base Image'
+    condition: and(succeeded(), ne(variables['check.BASE_PULL'], True))
+
+  # The dev image is never pushed and therefore is always built.
+  - script: |
+      docker build \
+        -f docker/venv.Dockerfile \
+        -t pythondiscord/snekbox-venv:dev \
+        --build-arg DEV=1 \
+        .
+    displayName: 'Build Development Image'
