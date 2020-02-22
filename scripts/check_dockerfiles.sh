@@ -64,7 +64,7 @@ printf '%s\n' "Comparing HEAD (${head}) against ${prev_commit}."
 
 if git diff --quiet "${prev_commit}" -- docker/base.Dockerfile; then
     echo "No changes detected in docker/base.Dockerfile."
-    echo "##vso[task.setvariable variable=BASE_CHANGED;isOutput=true]False"
+    echo "##vso[task.setvariable variable=BASE_CHANGED]False"
 else
     # Always rebuild the venv if the base changes.
     echo "Changes detected in docker/base.Dockerfile; all images will be built."
@@ -73,7 +73,7 @@ fi
 
 if git diff --quiet "${prev_commit}" -- docker/venv.Dockerfile Pipfile*; then
     echo "No changes detected in docker/venv.Dockerfile or the Pipfiles."
-    echo "##vso[task.setvariable variable=VENV_CHANGED;isOutput=true]False"
+    echo "##vso[task.setvariable variable=VENV_CHANGED]False"
 else
     echo \
         "Changes detected in docker/venv.Dockerfile or the Pipfiles;" \
@@ -87,7 +87,7 @@ else
         && git diff --quiet "${master_commit}" -- docker/base.Dockerfile
     then
         echo "Can pull base image from Docker Hub; no changes since master."
-        echo "##vso[task.setvariable variable=BASE_PULL;isOutput=true]True"
+        echo "##vso[task.setvariable variable=BASE_PULL]True"
     else
         echo \
             "Cannot pull base image from Docker Hub due to detected changes;" \
