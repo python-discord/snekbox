@@ -1,7 +1,7 @@
 # https://aka.ms/yaml
 
 jobs:
-  - job: build-lint-test-push
+  - job: build_lint_test_push
     displayName: 'Build, Lint, Test, & Push'
 
     pool:
