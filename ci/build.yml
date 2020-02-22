@@ -22,7 +22,17 @@ steps:
         -t pythondiscord/snekbox-base:latest \
         .
     displayName: 'Build Base Image'
-    condition: and(succeeded(), eq(variables.BASE_PULL, 'False'))
+    condition: >
+      and(
+        succeeded(),
+        or(
+          eq(variables.BASE_CHANGED, 'True'),
+          and(
+            eq(variables.VENV_CHANGED, 'True'),
+            eq(variables.BASE_PULL, 'False')
+          )
+        )
+      )
 
   # Build the venv image if it's had changes.
   - script: |
