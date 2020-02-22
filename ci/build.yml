@@ -34,11 +34,18 @@ steps:
         )
       )
 
-  # Build the venv image if it's had changes.
+  # Build the venv image if it's had changes or it can't be pulled.
   - script: |
       docker build \
         -f docker/venv.Dockerfile \
         -t pythondiscord/snekbox-venv:latest \
         .
     displayName: 'Build Virtual Environment Image'
-    condition: and(succeeded(), eq(variables.VENV_CHANGED, 'True'))
+    condition: >
+      and(
+        succeeded(),
+        or(
+          eq(variables.VENV_CHANGED, 'True'),
+          eq(variables.VENV_PULL, 'False')
+        )
+      )

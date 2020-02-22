@@ -11,6 +11,7 @@ jobs:
       BASE_CHANGED: 'True'
       VENV_CHANGED: 'True'
       BASE_PULL: 'False'
+      VENV_PULL: 'False'
 
     steps:
       - template: ci/build.yml
