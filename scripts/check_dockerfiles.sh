@@ -99,6 +99,12 @@ fi
 if git diff --quiet "${prev_commit}" -- docker/venv.Dockerfile Pipfile*; then
     echo "No changes detected in docker/venv.Dockerfile or the Pipfiles."
     echo "##vso[task.setvariable variable=VENV_CHANGED]False"
+
+    if ! can_pull venv docker/venv.Dockerfile Pipfile*; then
+        # Venv image can't be pulled so it needs to be built.
+        # Therefore, the base image is needed too.
+        can_pull base docker/base.Dockerfile
+    fi
 else
     echo \
         "Changes detected in docker/venv.Dockerfile or the Pipfiles;" \
