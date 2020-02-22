@@ -7,6 +7,11 @@ jobs:
     pool:
       vmImage: 'ubuntu-18.04'
 
+    variables:
+      BASE_CHANGED: 'True'
+      VENV_CHANGED: 'True'
+      BASE_PULL: 'False'
+
     steps:
       - template: ci/build.yml
       - template: ci/setup.yml
