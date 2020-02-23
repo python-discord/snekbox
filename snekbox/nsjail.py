@@ -24,6 +24,7 @@ CGROUP_PIDS_PARENT = Path("/sys/fs/cgroup/pids/NSJAIL")
 CGROUP_MEMORY_PARENT = Path("/sys/fs/cgroup/memory/NSJAIL")
 
 NSJAIL_PATH = os.getenv("NSJAIL_PATH", "/usr/sbin/nsjail")
+NSJAIL_CFG = os.getenv("NSJAIL_CFG", "./snekbox.cfg")
 MEM_MAX = 52428800
 
 
@@ -31,10 +32,10 @@ class NsJail:
     """
     Core Snekbox functionality, providing safe execution of Python code.
 
-    NsJail configuration:
+    Default NsJail configuration (snekbox.cfg):
 
-    - Root directory is mounted as read-only
-    - Time limit of 2 seconds
+    - All mounts are read-only
+    - Time limit of 5 seconds
     - Maximum of 1 PID
     - Maximum memory of 52428800 bytes
     - Loopback interface is down
@@ -54,7 +55,10 @@ class NsJail:
         self._create_parent_cgroups()
 
     @staticmethod
-    def _create_parent_cgroups(pids: Path = CGROUP_PIDS_PARENT, mem: Path = CGROUP_MEMORY_PARENT):
+    def _create_parent_cgroups(
+        pids: Path = CGROUP_PIDS_PARENT,
+        mem: Path = CGROUP_MEMORY_PARENT
+    ) -> None:
         """
         Create the PIDs and memory cgroups which NsJail will use as its parent cgroups.
 
@@ -81,7 +85,7 @@ class NsJail:
             )
 
     @staticmethod
-    def _parse_log(log_lines: Iterable[str]):
+    def _parse_log(log_lines: Iterable[str]) -> None:
         """Parse and log NsJail's log messages."""
         for line in log_lines:
             match = LOG_PATTERN.fullmatch(line)
@@ -114,16 +118,8 @@ class NsJail:
         """Execute Python 3 code in an isolated environment and return the completed process."""
         with NamedTemporaryFile() as nsj_log:
             args = (
-                self.nsjail_binary, "-Mo",
-                "--rlimit_as", "700",
-                "--chroot", "/",
-                "-E", "LANG=en_US.UTF-8",
-                "-R/usr", "-R/lib", "-R/lib64",
-                "--user", "65534",  # nobody
-                "--group", "65534",  # nobody/nogroup
-                "--time_limit", "2",
-                "--disable_proc",
-                "--iface_no_lo",
+                self.nsjail_binary,
+                "--config", NSJAIL_CFG,
                 "--log", nsj_log.name,
                 f"--cgroup_mem_max={MEM_MAX}",
                 "--cgroup_mem_mount", str(CGROUP_MEMORY_PARENT.parent),
@@ -132,7 +128,7 @@ class NsJail:
                 "--cgroup_pids_mount", str(CGROUP_PIDS_PARENT.parent),
                 "--cgroup_pids_parent", CGROUP_PIDS_PARENT.name,
                 "--",
-                self.python_binary, "-Iq", "-c", code
+                self.python_binary, "-Iqu", "-c", code
             )
 
             msg = "Executing code..."

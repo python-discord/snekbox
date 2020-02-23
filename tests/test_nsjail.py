@@ -56,14 +56,17 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.stderr, None)
 
     def test_read_only_file_system(self):
-        code = dedent("""
-            open('hello', 'w').write('world')
-        """).strip()
+        for path in ("/", "/etc", "/lib", "/lib64", "/snekbox", "/usr"):
+            with self.subTest(path=path):
+                code = dedent(f"""
+                    with open('{path}/hello', 'w') as f:
+                        f.write('world')
+                """).strip()
 
-        result = self.nsjail.python3(code)
-        self.assertEqual(result.returncode, 1)
-        self.assertIn("Read-only file system", result.stdout)
-        self.assertEqual(result.stderr, None)
+                result = self.nsjail.python3(code)
+                self.assertEqual(result.returncode, 1)
+                self.assertIn("Read-only file system", result.stdout)
+                self.assertEqual(result.stderr, None)
 
     def test_forkbomb_resource_unavailable(self):
         code = dedent("""
@@ -122,3 +125,52 @@ class NsJailTests(unittest.TestCase):
             "INFO:snekbox.nsjail:pid=20 ([STANDALONE MODE]) exited with status: 2, (PIDs left: 0)",
             log.output
         )
+
+    def test_shm_and_tmp_not_mounted(self):
+        for path in ("/dev/shm", "/run/shm", "/tmp"):
+            with self.subTest(path=path):
+                code = dedent(f"""
+                    with open('{path}/test', 'wb') as file:
+                        file.write(bytes([255]))
+                """).strip()
+
+                result = self.nsjail.python3(code)
+                self.assertEqual(result.returncode, 1)
+                self.assertIn("No such file or directory", result.stdout)
+                self.assertEqual(result.stderr, None)
+
+    def test_multiprocessing_shared_memory_disabled(self):
+        code = dedent("""
+            from multiprocessing.shared_memory import SharedMemory
+            try:
+                SharedMemory('test', create=True, size=16)
+            except FileExistsError:
+                pass
+        """).strip()
+
+        result = self.nsjail.python3(code)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("Function not implemented", result.stdout)
+        self.assertEqual(result.stderr, None)
+
+    def test_numpy_import(self):
+        result = self.nsjail.python3("import numpy")
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(result.stdout, "")
+        self.assertEqual(result.stderr, None)
+
+    def test_output_order(self):
+        stdout_msg = "greetings from stdout!"
+        stderr_msg = "hello from stderr!"
+        code = dedent(f"""
+            print({stdout_msg!r})
+            raise ValueError({stderr_msg!r})
+        """).strip()
+
+        result = self.nsjail.python3(code)
+        self.assertLess(
+            result.stdout.find(stdout_msg),
+            result.stdout.find(stderr_msg),
+            msg="stdout does not come before stderr"
+        )
+        self.assertEqual(result.stderr, None)

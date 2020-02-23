@@ -15,18 +15,7 @@ nsjpy() {
     echo "${MEM_MAX}" > /sys/fs/cgroup/memory/NSJAIL/memory.memsw.limit_in_bytes
 
     nsjail \
-        -Mo \
-        --rlimit_as 700 \
-        --chroot / \
-        -E LANG=en_US.UTF-8 \
-        -R/usr -R/lib -R/lib64 \
-        --user 65534 \
-        --group 65534 \
-        --time_limit 2 \
-        --disable_proc \
-        --iface_no_lo \
-        --cgroup_pids_max=1 \
-        --cgroup_mem_max="${MEM_MAX}" \
+        --config "${NSJAIL_CFG:-/snekbox/snekbox.cfg}" \
         $nsj_args -- \
-        /snekbox/.venv/bin/python3 -Iq -c "$@"
+        /usr/local/bin/python -Iqu -c "$@"
 }
