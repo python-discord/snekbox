@@ -8,7 +8,7 @@ jobs:
       vmImage: 'ubuntu-18.04'
 
     steps:
-      - script: pip install flake8
+      - script: pip install flake8 flake8-formatter-junit-xml
         displayName: 'Install Linter'
 
       - script: python -m flake8 --format junit-xml --output-file test-lint.xml
