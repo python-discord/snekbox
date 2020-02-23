@@ -115,7 +115,7 @@ if git diff --quiet "${prev_commit}" -- docker/venv.Dockerfile Pipfile*; then
     if ! can_pull venv docker/venv.Dockerfile Pipfile*; then
         # Venv image can't be pulled so it needs to be built.
         # Therefore, the base image is needed too.
-        can_pull base docker/base.Dockerfile
+        can_pull base docker/base.Dockerfile || true
     fi
 else
     echo \
@@ -123,5 +123,5 @@ else
         "the venv image will be built."
 
     # Though base image hasn't changed, it's still needed to build the venv.
-    can_pull base docker/base.Dockerfile
+    can_pull base docker/base.Dockerfile || true
 fi
