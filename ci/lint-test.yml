@@ -1,7 +1,7 @@
 steps:
   - script: |
       docker exec snekbox_test /bin/bash -c \
-        'pipenv run lint --format junit-xml --output-file test-lint.xml'
+        'flake8 --format junit-xml --output-file test-lint.xml'
     displayName: 'Run Linter'
 
   - task: PublishTestResults@2
@@ -17,7 +17,7 @@ steps:
 
   - script: |
       docker exec snekbox_test /bin/bash -c \
-        'pipenv run coverage run -m xmlrunner'
+        'coverage run -m xmlrunner'
     displayName: 'Run Unit Tests'
 
   - task: PublishTestResults@2
@@ -30,7 +30,7 @@ steps:
   # Run report too because the XML report doesn't output to stdout.
   - script: |
       docker exec snekbox_test /bin/bash -c \
-        'pipenv run /bin/bash -c "coverage report && coverage xml"'
+        'coverage report && coverage xml'
     displayName: 'Generate Coverage Report'
 
   - task: PublishCodeCoverageResults@1
