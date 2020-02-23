@@ -1,7 +1,7 @@
 steps:
   - script: |
       docker exec snekbox_test /bin/bash -c \
-        'flake8 --format junit-xml --output-file test-lint.xml'
+        'flake8; flake8 --format junit-xml --output-file test-lint.xml'
     displayName: 'Run Linter'
 
   - task: PublishTestResults@2
