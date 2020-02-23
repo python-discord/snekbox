@@ -72,7 +72,7 @@ class NsJail:
 
         # Swap limit cannot be set to a value lower than memory.limit_in_bytes.
         # Therefore, this must be set first.
-        (mem /"memory.limit_in_bytes").write_text(str(MEM_MAX), encoding="utf-8")
+        (mem / "memory.limit_in_bytes").write_text(str(MEM_MAX), encoding="utf-8")
 
         try:
             # Swap limit is specified as the sum of the memory and swap limits.
@@ -94,13 +94,13 @@ class NsJail:
                 continue
 
             msg = match["msg"]
-            if not DEBUG and any( msg.startswith(s) for s in LOG_BLACKLIST):
+            if not DEBUG and any(msg.startswith(s) for s in LOG_BLACKLIST):
                 # Skip blacklisted messages if not debugging.
                 continue
 
             if DEBUG and match["func"]:
                 # Prepend PID, function signature, and line number if debugging.
-                msg = f"{match[ 'func' ]}{msg}"
+                msg = f"{match['func']}{msg}"
 
             if match["level"] == "D":
                 log.debug(msg)
@@ -116,7 +116,7 @@ class NsJail:
 
     def python3(self, code: str) -> CompletedProcess:
         """Execute Python 3 code in an isolated environment and return the completed process."""
-        with NamedTemporaryFile()  as nsj_log :
+        with NamedTemporaryFile() as nsj_log:
             args = (
                 self.nsjail_binary,
                 "--config", NSJAIL_CFG,
@@ -128,10 +128,10 @@ class NsJail:
                 "--cgroup_pids_mount", str(CGROUP_PIDS_PARENT.parent),
                 "--cgroup_pids_parent", CGROUP_PIDS_PARENT.name,
                 "--",
-                self.python_binary,  "-Iqu", "-c", code
+                self.python_binary, "-Iqu", "-c", code
             )
 
-            msg="Executing code..."
+            msg = "Executing code..."
             if DEBUG:
                 msg = f"{msg[:-3]}:\n{textwrap.indent(code, '    ')}"
             log.info(msg)
