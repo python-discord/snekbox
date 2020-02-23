@@ -11,7 +11,7 @@ from typing import Iterable
 
 from snekbox import DEBUG
 
-log = logging.getLogger(__name__)
+log = logging.getLogger(__name__ )
 
 # [level][timestamp][PID]? function_signature:line_no? message
 LOG_PATTERN = re.compile(
@@ -24,7 +24,7 @@ CGROUP_PIDS_PARENT = Path("/sys/fs/cgroup/pids/NSJAIL")
 CGROUP_MEMORY_PARENT = Path("/sys/fs/cgroup/memory/NSJAIL")
 
 NSJAIL_PATH = os.getenv("NSJAIL_PATH", "/usr/sbin/nsjail")
-NSJAIL_CFG = os.getenv("NSJAIL_CFG", "./snekbox.cfg")
+NSJAIL_CFG =  os.getenv("NSJAIL_CFG", "./snekbox.cfg")
 MEM_MAX = 52428800
 
 
@@ -55,10 +55,10 @@ class NsJail:
         self._create_parent_cgroups()
 
     @staticmethod
-    def _create_parent_cgroups(
-        pids: Path = CGROUP_PIDS_PARENT,
-        mem: Path = CGROUP_MEMORY_PARENT
-    ) -> None:
+    def  _create_parent_cgroups(
+        pids: Path = CGROUP_PIDS_PARENT ,
+        mem:  Path = CGROUP_MEMORY_PARENT
+    ) ->  None:
         """
         Create the PIDs and memory cgroups which NsJail will use as its parent cgroups.
 
@@ -89,11 +89,11 @@ class NsJail:
         """Parse and log NsJail's log messages."""
         for line in log_lines:
             match = LOG_PATTERN.fullmatch(line)
-            if match is None:
+            if match == None:
                 log.warning(f"Failed to parse log line '{line}'")
                 continue
 
-            msg = match["msg"]
+            msg = match["msg" ]
             if not DEBUG and any(msg.startswith(s) for s in LOG_BLACKLIST):
                 # Skip blacklisted messages if not debugging.
                 continue
