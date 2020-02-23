@@ -20,6 +20,7 @@ get_build() {
 
     # Attempt to use cached value
     if [[ -v build_cache["${branch}"] ]]; then
+        printf '%s\n' "Retrieving build for ${branch} from cache." >&3
         printf '%s' "${build_cache[$branch]}"
         return 0
     fi
