@@ -13,8 +13,17 @@ repositoryType=${BUILD_REPOSITORY_PROVIDER}&\
 repositoryId=${BUILD_REPOSITORY_NAME}&\
 api-version=5.0"
 
+declare -A build_cache
+
 get_build() {
     local branch="${1:?"get_build: argument 1 'branch' is unset"}"
+
+    # Attempt to use cached value
+    if [[ -v "${build_cache[$branch]}" ]]; then
+        printf '%s' "${build_cache[$branch]}"
+        return 0
+    fi
+
     local url="${BASE_URL}&branchName=${branch}"
 
     printf '%s\n' "Retrieving the latest successful build using ${url}" >&3
@@ -28,6 +37,8 @@ get_build() {
     then
         return 1
     else
+        # Cache the response
+        build_cache["${branch}"]="${response}"
         printf '%s' "${response}"
     fi
 }
