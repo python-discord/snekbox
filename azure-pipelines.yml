@@ -1,22 +1,20 @@
 # https://aka.ms/yaml
 
 jobs:
-  - job: test
-    displayName: 'Lint & Test'
+  - job: build_lint_test_push
+    displayName: 'Build, Lint, Test, & Push'
 
     pool:
       vmImage: 'ubuntu-18.04'
 
+    variables:
+      BASE_CHANGED: 'True'
+      VENV_CHANGED: 'True'
+      BASE_PULL: 'False'
+      VENV_PULL: 'False'
+
     steps:
-      - script: pip install flake8 flake8-formatter-junit-xml
-        displayName: 'Install Linter'
-
-      - script: python -m flake8 --format junit-xml --output-file test-lint.xml
-        displayName: 'Run Linter'
-
-      - task: PublishTestResults@2
-        displayName: 'Publish Lint Results'
-        condition: succeededOrFailed()
-        inputs:
-          testResultsFiles: '**/test-lint.xml'
-          testRunTitle: 'Lint Results'
+      - template: ci/build.yml
+      - template: ci/setup.yml
+      - template: ci/lint-test.yml
+      - template: ci/push.yml
