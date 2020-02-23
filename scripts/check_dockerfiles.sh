@@ -19,7 +19,7 @@ get_build() {
     local branch="${1:?"get_build: argument 1 'branch' is unset"}"
 
     # Attempt to use cached value
-    if [[ -v "${build_cache[$branch]}" ]]; then
+    if [[ -v build_cache["${branch}"] ]]; then
         printf '%s' "${build_cache[$branch]}"
         return 0
     fi
