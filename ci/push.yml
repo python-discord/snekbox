@@ -1,0 +1,39 @@
+steps:
+  # Always build this image unless it's for a pull request.
+  - script: |
+      docker build \
+        -f docker/Dockerfile \
+        -t pythondiscord/snekbox:latest \
+        .
+    displayName: 'Build Final Image'
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+
+  # Push images only after they've all successfully been built.
+  - script: docker push pythondiscord/snekbox-base:latest
+    displayName: 'Push Base Image'
+    condition: >
+      and(
+        succeeded(),
+        ne(variables['Build.Reason'], 'PullRequest'),
+        ne(variables.BASE_PULL, 'True'),
+        or(
+          eq(variables.BASE_CHANGED, 'True'),
+          eq(variables.VENV_CHANGED, 'True')
+        )
+      )
+
+  - script: docker push pythondiscord/snekbox-venv:latest
+    displayName: 'Push Virtual Environment Image'
+    condition: >
+      and(
+        succeeded(),
+        ne(variables['Build.Reason'], 'PullRequest'),
+        or(
+          eq(variables.BASE_CHANGED, 'True'),
+          eq(variables.VENV_CHANGED, 'True')
+        )
+      )
+
+  - script: docker push pythondiscord/snekbox:latest
+    displayName: 'Push Final Image'
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
