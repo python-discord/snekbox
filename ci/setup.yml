@@ -1,0 +1,24 @@
+steps:
+  # The linter and all tests run inside this container.
+  # The venv image will be pulled if it doesn't exist locally.
+  - script: |
+      docker run \
+        --tty \
+        --detach \
+        --name snekbox_test \
+        --privileged \
+        --network host \
+        --hostname pdsnk-dev \
+        -e PYTHONDONTWRITEBYTECODE=1 \
+        -e PIPENV_PIPFILE="/snekbox/Pipfile" \
+        -e ENV="${PWD}/scripts/.profile" \
+        --volume "${PWD}":"${PWD}" \
+        --workdir "${PWD}"\
+        --entrypoint /bin/bash \
+        pythondiscord/snekbox-venv:latest
+    displayName: 'Start Container'
+
+  - script: |
+      docker exec snekbox_test /bin/bash -c \
+        'pipenv install --system --deploy --dev'
+    displayName: 'Install Development Dependencies'
