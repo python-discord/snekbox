@@ -38,7 +38,6 @@ docker run \
     --detach \
     --name snekbox_test \
     --privileged \
-    --network host \
     --hostname pdsnk-dev \
     --ipc="none" \
     -e PYTHONDONTWRITEBYTECODE=1 \

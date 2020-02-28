@@ -7,7 +7,6 @@ steps:
         --detach \
         --name snekbox_test \
         --privileged \
-        --network host \
         --hostname pdsnk-dev \
         -e PYTHONDONTWRITEBYTECODE=1 \
         -e PIPENV_PIPFILE="/snekbox/Pipfile" \
