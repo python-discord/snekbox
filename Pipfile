@@ -21,6 +21,7 @@ flake8-quotes = "~= 3.2"
 flake8-string-format = "~= 0.3.0"
 flake8-tidy-imports = "~= 4.2"
 flake8-todo = "~= 0.7"
+pep8-naming = "~= 0.11.1"
 pre-commit = "~= 2.9.3"
 pydocstyle = "~= 5.1"
 
