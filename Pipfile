@@ -12,16 +12,16 @@ sentry-sdk = {extras = ["falcon"], version = "~= 0.19.3"}
 [dev-packages]
 coverage = "~= 5.3"
 flake8 = "~= 3.8.4"
-flake8-annotations = "~= 2.4.1"
-flake8-bugbear = "~= 20.1"
+flake8-annotations = "~= 2.5.0"
+flake8-bugbear = "~= 20.11"
 flake8-docstrings = "~= 1.5"
 flake8-formatter-junit-xml = "~= 0.0.6"
 flake8-import-order = "~= 0.18.1"
 flake8-quotes = "~= 3.2"
 flake8-string-format = "~= 0.3.0"
-flake8-tidy-imports = "~= 4.1"
+flake8-tidy-imports = "~= 4.2"
 flake8-todo = "~= 0.7"
-pre-commit = "~= 2.8.2"
+pre-commit = "~= 2.9.3"
 pydocstyle = "~= 5.1"
 
 [requires]
