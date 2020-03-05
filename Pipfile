@@ -29,7 +29,7 @@ pydocstyle = "~= 5.1"
 python_version = "3.9"
 
 [scripts]
-lint = "flake8"
+lint = "pre-commit run --all-files"
 precommit = "pre-commit install"
 test = "sh scripts/dev.sh -c 'pipenv run coverage run -m unittest'"
 testb = """

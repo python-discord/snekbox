@@ -24,6 +24,7 @@ if [ "$1" = "--build" ]; then
         if [ -n "${dangling_imgs}" ]; then
             printf "Removing dangling images..."
 
+            # shellcheck disable=SC2086
             docker rmi $dangling_imgs >/dev/null \
             && printf " done!\n" || exit "$?"
         fi
