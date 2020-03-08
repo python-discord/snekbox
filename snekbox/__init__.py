@@ -2,10 +2,18 @@ import logging
 import os
 import sys
 
+import sentry_sdk
 from gunicorn import glogging
 from gunicorn.config import Config
+from sentry_sdk.integrations.falcon import FalconIntegration
 
 DEBUG = os.environ.get("DEBUG", False)
+
+sentry_sdk.init(
+    dsn=os.environ.get("SNEKBOX_SENTRY_DSN", ""),
+    integrations=[FalconIntegration()],
+    send_default_pii=True
+)
 
 
 class GunicornLogger(glogging.Logger):
