@@ -23,6 +23,7 @@ networkx = "~= 2.4"
 beautifulsoup4 = "~= 4.8"
 pyyaml = "~= 5.2"
 toml = "~= 0.10"
+sentry-sdk = {extras = ["falcon"], version = "~= 0.14.2"}
 
 [dev-packages]
 coverage = ">= 4.4.2, == 4.*"
