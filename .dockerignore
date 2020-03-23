@@ -3,7 +3,7 @@
 
 # Make exceptions for what's needed
 !snekbox
-!snekbox.cfg
+!config/
 !tests
 !Pipfile
 !Pipfile.lock
