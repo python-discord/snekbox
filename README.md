@@ -120,7 +120,7 @@ The HTML will output to `./htmlcov/` by default
 
 ### The `devsh` Helper Script
 
-This script starts an `bash` shell inside the venv Docker container and attaches to it. Unlike the production image, the venv image that is built by this script contains dev dependencies too. The project directory is mounted inside the container so any filesystem changes made inside the container affect the actual local project.
+This script starts a `bash` shell inside the venv Docker container and attaches to it. Unlike the production image, the venv image that is built by this script contains dev dependencies too. The project directory is mounted inside the container so any filesystem changes made inside the container affect the actual local project.
 
 #### Usage
 
