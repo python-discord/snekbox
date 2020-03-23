@@ -55,15 +55,7 @@ testb = """
         -c 'pipenv run coverage run -m unittest'
 """
 report = "coverage report"
-snekbox = """
-    gunicorn \
-        -w 2 \
-        -b 0.0.0.0:8060 \
-        --logger-class snekbox.GunicornLogger \
-        --access-logformat '%(m)s %(U)s%(q)s %(s)s %(b)s %(L)ss' \
-        --access-logfile - \
-        snekbox.api.app
-"""
+snekbox = "gunicorn -c config/gunicorn.conf.py snekbox.api.app"
 devsh = "sh scripts/dev.sh"
 build = """
     docker build \
