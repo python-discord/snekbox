@@ -32,20 +32,7 @@ class NsJail:
     """
     Core Snekbox functionality, providing safe execution of Python code.
 
-    Default NsJail configuration (snekbox.cfg):
-
-    - All mounts are read-only
-    - Time limit of 5 seconds
-    - Maximum of 1 PID
-    - Maximum memory of 52428800 bytes
-    - Loopback interface is down
-    - procfs is disabled
-
-    Python configuration:
-
-    - Isolated mode
-        - Neither the script's directory nor the user's site packages are in sys.path
-        - All PYTHON* environment variables are ignored
+    See snekbox.cfg for the default NsJail configuration.
     """
 
     def __init__(self, nsjail_binary: str = NSJAIL_PATH, python_binary: str = sys.executable):

@@ -22,21 +22,7 @@ result <- |             |<----------|           | <----------+
 
 ```
 
-The code is executed in a Python process that is launched through [NsJail], which is responsible for sandboxing the Python process. NsJail is configured as follows:
-
-* All mounts are read-only
-* Time limit of 5 seconds
-* Maximum of 1 PID
-* Maximum memory of 52428800 bytes
-* Loopback interface is down
-* procfs is disabled
-
-The Python process is configured as follows:
-
-* Version 3.8.0
-* Isolated mode
-  * Neither the script's directory nor the user's site packages are in `sys.path`
-  * All `PYTHON*` environment variables are ignored
+The code is executed in a Python process that is launched through [NsJail], which is responsible for sandboxing the Python process. See [`snekbox.cfg`] for the NsJail configuration.
 
 
 ## HTTP REST API
@@ -158,6 +144,7 @@ The alias can be found in `./scripts/.profile`, which is automatically added whe
 
 [1]: https://dev.azure.com/python-discord/Python%20Discord/_apis/build/status/Snekbox?branchName=master
 [2]: https://dev.azure.com/python-discord/Python%20Discord/_build/latest?definitionId=13&branchName=master
+[`snekbox.cfg`]: snekbox.cfg
 [`snekapi.py`]: snekbox/api/snekapi.py
 [`resources`]: snekbox/api/resources
 [`docker run`]: https://docs.docker.com/engine/reference/commandline/run/
