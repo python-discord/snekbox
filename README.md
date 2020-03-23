@@ -45,6 +45,18 @@ Communication with snekbox is done over a HTTP REST API. The framework for the H
 
 See [`snekapi.py`](snekbox/api/snekapi.py) and [`resources`](snekbox/api/resources) for API documentation.
 
+## Running snekbox
+
+A Docker image is available on [Docker Hub](https://hub.docker.com/r/pythondiscord/snekbox). A container can be started with the following command, which will also pull the image if it doesn't currently exist locally:
+
+```
+docker run --ipc=none --privileged -p 8060:8060 pythondiscord/snekbox
+```
+
+To run it in the background, use the `-d` option. See the documentation on [`docker run`](https://docs.docker.com/engine/reference/commandline/run/) for more information.
+
+The above command will make the API accessible on the host via `http://localhost:8060/`. Currently there's only one endpoint: `http://localhost:8060/eval`.
+
 ## Development Environment
 
 ### Initial Setup
