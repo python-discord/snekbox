@@ -1,4 +1,4 @@
-[![Build Status](https://dev.azure.com/python-discord/Python%20Discord/_apis/build/status/Snekbox?branchName=master)](https://dev.azure.com/python-discord/Python%20Discord/_build/latest?definitionId=13&branchName=master)
+[![Build Status][1]][2]
 
 # snekbox
 
@@ -22,7 +22,7 @@ result <- |             |<----------|           | <----------+
 
 ```
 
-The code is executed in a Python process that is launched through [NsJail](https://github.com/google/nsjail), which is responsible for sandboxing the Python process. NsJail is configured as follows:
+The code is executed in a Python process that is launched through [NsJail], which is responsible for sandboxing the Python process. NsJail is configured as follows:
 
 * All mounts are read-only
 * Time limit of 5 seconds
@@ -41,19 +41,19 @@ The Python process is configured as follows:
 
 ## HTTP REST API
 
-Communication with snekbox is done over a HTTP REST API. The framework for the HTTP REST API is [Falcon](https://falconframework.org/) and the WSGI being used is [Gunicorn](https://gunicorn.org/). By default, the server is hosted on `0.0.0.0:8060` with two workers.
+Communication with snekbox is done over a HTTP REST API. The framework for the HTTP REST API is [Falcon] and the WSGI being used is [Gunicorn]. By default, the server is hosted on `0.0.0.0:8060` with two workers.
 
-See [`snekapi.py`](snekbox/api/snekapi.py) and [`resources`](snekbox/api/resources) for API documentation.
+See [`snekapi.py`] and [`resources`] for API documentation.
 
 ## Running snekbox
 
-A Docker image is available on [Docker Hub](https://hub.docker.com/r/pythondiscord/snekbox). A container can be started with the following command, which will also pull the image if it doesn't currently exist locally:
+A Docker image is available on [Docker Hub]. A container can be started with the following command, which will also pull the image if it doesn't currently exist locally:
 
 ```
 docker run --ipc=none --privileged -p 8060:8060 pythondiscord/snekbox
 ```
 
-To run it in the background, use the `-d` option. See the documentation on [`docker run`](https://docs.docker.com/engine/reference/commandline/run/) for more information.
+To run it in the background, use the `-d` option. See the documentation on [`docker run`] for more information.
 
 The above command will make the API accessible on the host via `http://localhost:8060/`. Currently there's only one endpoint: `http://localhost:8060/eval`.
 
@@ -61,7 +61,7 @@ The above command will make the API accessible on the host via `http://localhost
 
 ### Initial Setup
 
-A Python 3.8 interpreter and the [pipenv](https://docs.pipenv.org/en/latest/) package are required. Once those requirements are satisfied, install the project's dependencies:
+A Python 3.8 interpreter and the [pipenv] package are required. Once those requirements are satisfied, install the project's dependencies:
 
 ```
 pipenv sync
@@ -155,3 +155,14 @@ nsjpy "print('hello world!')"
 ```
 
 The alias can be found in `./scripts/.profile`, which is automatically added when the shell is launched in the container.
+
+[1]: https://dev.azure.com/python-discord/Python%20Discord/_apis/build/status/Snekbox?branchName=master
+[2]: https://dev.azure.com/python-discord/Python%20Discord/_build/latest?definitionId=13&branchName=master
+[`snekapi.py`]: snekbox/api/snekapi.py
+[`resources`]: snekbox/api/resources
+[`docker run`]: https://docs.docker.com/engine/reference/commandline/run/
+[nsjail]: https://github.com/google/nsjail
+[falcon]: https://falconframework.org/
+[gunicorn]: https://gunicorn.org/
+[docker hub]: https://hub.docker.com/r/pythondiscord/snekbox
+[pipenv]: https://docs.pipenv.org/en/latest/
