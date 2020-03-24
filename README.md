@@ -144,7 +144,7 @@ The alias can be found in `./scripts/.profile`, which is automatically added whe
 
 [1]: https://dev.azure.com/python-discord/Python%20Discord/_apis/build/status/Snekbox?branchName=master
 [2]: https://dev.azure.com/python-discord/Python%20Discord/_build/latest?definitionId=13&branchName=master
-[`snekbox.cfg`]: snekbox.cfg
+[`snekbox.cfg`]: config/snekbox.cfg
 [`snekapi.py`]: snekbox/api/snekapi.py
 [`resources`]: snekbox/api/resources
 [`docker run`]: https://docs.docker.com/engine/reference/commandline/run/

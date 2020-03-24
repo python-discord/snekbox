@@ -1,7 +1,7 @@
 FROM pythondiscord/snekbox-venv:latest
 
-ENTRYPOINT ["pipenv", "run"]
-CMD ["snekbox"]
+ENTRYPOINT ["gunicorn"]
+CMD ["-c", "config/gunicorn.conf.py", "snekbox.api.app"]
 
 COPY . /snekbox
 WORKDIR /snekbox

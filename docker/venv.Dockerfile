@@ -6,7 +6,7 @@ ENV PIP_NO_CACHE_DIR=false \
     PIPENV_HIDE_EMOJIS=1 \
     PIPENV_NOSPIN=1
 
-COPY Pipfile Pipfile.lock snekbox.cfg /snekbox/
+COPY Pipfile Pipfile.lock /snekbox/
 WORKDIR /snekbox
 
 RUN if [ -n "${DEV}" ]; \
@@ -15,3 +15,6 @@ RUN if [ -n "${DEV}" ]; \
     else \
         pipenv install --deploy --system; \
     fi
+
+# At the end to avoid re-installing dependencies when only a config changes.
+COPY config/ /snekbox/config

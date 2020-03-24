@@ -24,7 +24,7 @@ CGROUP_PIDS_PARENT = Path("/sys/fs/cgroup/pids/NSJAIL")
 CGROUP_MEMORY_PARENT = Path("/sys/fs/cgroup/memory/NSJAIL")
 
 NSJAIL_PATH = os.getenv("NSJAIL_PATH", "/usr/sbin/nsjail")
-NSJAIL_CFG = os.getenv("NSJAIL_CFG", "./snekbox.cfg")
+NSJAIL_CFG = os.getenv("NSJAIL_CFG", "./config/snekbox.cfg")
 MEM_MAX = 52428800
 
 
@@ -32,7 +32,7 @@ class NsJail:
     """
     Core Snekbox functionality, providing safe execution of Python code.
 
-    See snekbox.cfg for the default NsJail configuration.
+    See config/snekbox.cfg for the default NsJail configuration.
     """
 
     def __init__(self, nsjail_binary: str = NSJAIL_PATH, python_binary: str = sys.executable):
