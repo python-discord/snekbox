@@ -50,7 +50,7 @@ The above command will make the API accessible on the host via `http://localhost
 A Python 3.8 interpreter and the [pipenv] package are required. Once those requirements are satisfied, install the project's dependencies:
 
 ```
-pipenv sync
+pipenv sync --dev
 ```
 
 Follow that up with setting up the pre-commit hook:
