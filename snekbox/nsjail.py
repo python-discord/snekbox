@@ -120,7 +120,6 @@ class NsJail:
                 f"--cgroup_mem_max={MEM_MAX}",
                 "--cgroup_mem_mount", str(CGROUP_MEMORY_PARENT.parent),
                 "--cgroup_mem_parent", CGROUP_MEMORY_PARENT.name,
-                "--cgroup_pids_max=10",
                 "--cgroup_pids_mount", str(CGROUP_PIDS_PARENT.parent),
                 "--cgroup_pids_parent", CGROUP_PIDS_PARENT.name,
                 "--"
