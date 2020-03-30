@@ -15,7 +15,7 @@ nsjpy() {
     echo "${MEM_MAX}" > /sys/fs/cgroup/memory/NSJAIL/memory.memsw.limit_in_bytes
 
     nsjail \
-        --config "${NSJAIL_CFG:-/snekbox/config/snekbox.cfg}" \
+        --config "${NSJAIL_CFG_SNEKBOX:-/snekbox/config/snekbox.cfg}" \
         $nsj_args -- \
         /usr/local/bin/python -Iqu -c "$@"
 }

@@ -1,6 +1,7 @@
 FROM pythondiscord/snekbox-base:latest
 
 ARG DEV
+ARG NO_LINUXFS
 ENV PIP_NO_CACHE_DIR=false \
     PIPENV_DONT_USE_PYENV=1 \
     PIPENV_HIDE_EMOJIS=1 \
@@ -15,6 +16,8 @@ RUN if [ -n "${DEV}" ]; \
     else \
         pipenv install --deploy --system; \
     fi
+
+RUN [ -z "${NO_LINUXFS}" ] && pipenv run bootstrap-linux
 
 # At the end to avoid re-installing dependencies when only a config changes.
 COPY config/ /snekbox/config

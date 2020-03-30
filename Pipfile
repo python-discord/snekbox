@@ -57,6 +57,11 @@ testb = """
 report = "coverage report"
 snekbox = "gunicorn -c config/gunicorn.conf.py snekbox.api.app"
 devsh = "sh scripts/dev.sh"
+bootstrap-linux = """
+    sh -c ' \
+    mkdir linuxfs; \
+    debootstrap stable linuxfs http://deb.debian.org/debian/'
+"""
 build = """
     docker build \
         -t pythondiscord/snekbox:latest \

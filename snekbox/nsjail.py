@@ -24,8 +24,11 @@ CGROUP_PIDS_PARENT = Path("/sys/fs/cgroup/pids/NSJAIL")
 CGROUP_MEMORY_PARENT = Path("/sys/fs/cgroup/memory/NSJAIL")
 
 NSJAIL_PATH = os.getenv("NSJAIL_PATH", "/usr/sbin/nsjail")
-NSJAIL_CFG = os.getenv("NSJAIL_CFG", "./config/snekbox.cfg")
+NSJAIL_CFG_SNEKBOX = os.getenv("NSJAIL_CFG_SNEKBOX", "./config/snekbox.cfg")
 MEM_MAX = 52428800
+
+SHELL_PATH = os.getenv("SHELL_PATH", "/bin/bash")
+NSJAIL_CFG_UNIXCMD = os.getenv("NSJAIL_CFG_UNIXCMD", "./config/unixcmd.cfg")
 
 
 class NsJail:
@@ -35,9 +38,15 @@ class NsJail:
     See config/snekbox.cfg for the default NsJail configuration.
     """
 
-    def __init__(self, nsjail_binary: str = NSJAIL_PATH, python_binary: str = sys.executable):
+    def __init__(
+        self,
+        nsjail_binary: str = NSJAIL_PATH,
+        python_binary: str = sys.executable,
+        shell_binary: str = SHELL_PATH
+    ):
         self.nsjail_binary = nsjail_binary
         self.python_binary = python_binary
+        self.shell_binary = shell_binary
 
         self._create_parent_cgroups()
 
@@ -101,28 +110,28 @@ class NsJail:
                 # Treat fatal as error.
                 log.error(msg)
 
-    def python3(self, code: str) -> CompletedProcess:
-        """Execute Python 3 code in an isolated environment and return the completed process."""
+    def _jail_execute(self, nsjail_cfg: str, exec_args: tuple) -> CompletedProcess:
+        """Execute a process in an isolated environment and return the completed process."""
         with NamedTemporaryFile() as nsj_log:
-            args = (
+            nsjail_args = (
                 self.nsjail_binary,
-                "--config", NSJAIL_CFG,
+                "--config", nsjail_cfg,
                 "--log", nsj_log.name,
                 f"--cgroup_mem_max={MEM_MAX}",
                 "--cgroup_mem_mount", str(CGROUP_MEMORY_PARENT.parent),
                 "--cgroup_mem_parent", CGROUP_MEMORY_PARENT.name,
-                "--cgroup_pids_max=1",
+                "--cgroup_pids_max=10",
                 "--cgroup_pids_mount", str(CGROUP_PIDS_PARENT.parent),
                 "--cgroup_pids_parent", CGROUP_PIDS_PARENT.name,
-                "--",
-                self.python_binary, "-Iqu", "-c", code
+                "--"
             )
 
             msg = "Executing code..."
             if DEBUG:
-                msg = f"{msg[:-3]}:\n{textwrap.indent(code, '    ')}"
+                msg = f"{msg[:-3]}:\n{textwrap.indent(exec_args[-1], '    ')}"
             log.info(msg)
 
+            args = nsjail_args + exec_args
             try:
                 result = subprocess.run(
                     args,
@@ -141,3 +150,15 @@ class NsJail:
             self._parse_log(log_lines)
 
         return result
+
+    def python3(self, code: str) -> CompletedProcess:
+        """Execute Python 3 code in an isolated environment and return the completed process."""
+        args = (self.python_binary, "-Iqu", "-c", code)
+
+        return self._jail_execute(NSJAIL_CFG_SNEKBOX, args)
+
+    def unix(self, cmd: str) -> CompletedProcess:
+        """Execute a unix command in an isolated system shell and return the completed process."""
+        args = (self.shell_binary, "-c", cmd)
+
+        return self._jail_execute(NSJAIL_CFG_UNIXCMD, args)

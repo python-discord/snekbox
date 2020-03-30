@@ -1,6 +1,6 @@
 import falcon
 
-from .resources import EvalResource
+from .resources import EvalResource, UnixCmdResource
 
 
 class SnekAPI(falcon.API):
@@ -11,6 +11,8 @@ class SnekAPI(falcon.API):
 
     - /eval
         Evaluation of Python code
+    - /unixcmd
+        Evaluation of Linux commands in a bash shell
 
     Error response format:
 
@@ -24,3 +26,4 @@ class SnekAPI(falcon.API):
         super().__init__(*args, **kwargs)
 
         self.add_route("/eval", EvalResource())
+        self.add_route("/unixcmd", UnixCmdResource())
