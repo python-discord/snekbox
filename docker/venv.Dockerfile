@@ -17,7 +17,11 @@ RUN if [ -n "${DEV}" ]; \
         pipenv install --deploy --system; \
     fi
 
-RUN [ -z "${NO_LINUXFS}" ] && pipenv run bootstrap-linux
+RUN if [ -z "${NO_LINUXFS}" ]; \
+    then \
+        mkdir linuxfs; \
+        debootstrap stable linuxfs http://deb.debian.org/debian/; \
+    fi
 
 # At the end to avoid re-installing dependencies when only a config changes.
 COPY config/ /snekbox/config
