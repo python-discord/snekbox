@@ -1,18 +1,12 @@
-import logging
-import unittest
+from logging import DEBUG
 from textwrap import dedent
 
-from snekbox.nsjail import MEM_MAX, NsJail
+from tests.nsjail import NsJailTestCase
+
+from snekbox.nsjail import MEM_MAX
 
 
-class NsJailTests(unittest.TestCase):
-    def setUp(self):
-        super().setUp()
-
-        self.nsjail = NsJail()
-        self.nsjail.DEBUG = False
-        self.logger = logging.getLogger("snekbox.nsjail")
-
+class Py3NsJailTests(NsJailTestCase):
     def test_print_returns_0(self):
         result = self.nsjail.python3("print('test')")
         self.assertEqual(result.returncode, 0)
@@ -113,7 +107,7 @@ class NsJailTests(unittest.TestCase):
             "Invalid Line"
         )
 
-        with self.assertLogs(self.logger, logging.DEBUG) as log:
+        with self.assertLogs(self.logger, DEBUG) as log:
             self.nsjail._parse_log(log_lines)
 
         self.assertIn("DEBUG:snekbox.nsjail:This is a debug message.", log.output)
