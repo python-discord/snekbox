@@ -80,3 +80,17 @@ class UnixNsJailTests(NsJailTestCase):
         self.assertEqual(result.returncode, 1)
         self.assertEqual(result.stdout, "mount: only root can do that\n")
         self.assertEqual(result.stderr, None)
+
+    def test_fail_gracefully_when_linuxfs_not_setup(self):
+        orig_binary = self.nsjail.shell_binary
+        self.nsjail.shell_binary = "/nonexistent/path"
+        cmd = dedent("""
+            whoami
+        """)
+
+        result = self.nsjail.unix(cmd)
+        self.assertEqual(result.returncode, None)
+        self.assertEqual(result.stdout, "LinuxFS not set up")
+        self.assertEqual(result.stderr, None)
+
+        self.nsjail.shell_binary = orig_binary  # clean up

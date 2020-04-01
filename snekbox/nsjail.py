@@ -22,12 +22,15 @@ LOG_BLACKLIST = ("Process will be ",)
 # Explicitly define constants for NsJail's default values.
 CGROUP_PIDS_PARENT = Path("/sys/fs/cgroup/pids/NSJAIL")
 CGROUP_MEMORY_PARENT = Path("/sys/fs/cgroup/memory/NSJAIL")
-
 NSJAIL_PATH = os.getenv("NSJAIL_PATH", "/usr/sbin/nsjail")
-NSJAIL_CFG_SNEKBOX = os.getenv("NSJAIL_CFG_SNEKBOX", "./config/snekbox.cfg")
 MEM_MAX = 52428800
 
+# python3-specifc configuration
+NSJAIL_CFG_SNEKBOX = os.getenv("NSJAIL_CFG_SNEKBOX", "./config/snekbox.cfg")
+
+# unix-specific configuration
 SHELL_PATH = os.getenv("SHELL_PATH", "/bin/bash")
+LINUXFS_DIR_PATH = os.getenv("LINUXFS_DIR_PATH", "/snekbox/linuxfs")
 NSJAIL_CFG_UNIXCMD = os.getenv("NSJAIL_CFG_UNIXCMD", "./config/unixcmd.cfg")
 
 
@@ -158,6 +161,10 @@ class NsJail:
 
     def unix(self, cmd: str) -> CompletedProcess:
         """Execute a unix command in an isolated system shell and return the completed process."""
+        if not Path(f"{LINUXFS_DIR_PATH}/{self.shell_binary}").is_file():
+            log.warning("Attempted to run Unix commands with no LinuxFS set up")
+            return CompletedProcess((), None, "LinuxFS not set up", None)
+
         args = (self.shell_binary, "-c", cmd)
 
         return self._jail_execute(NSJAIL_CFG_UNIXCMD, args)

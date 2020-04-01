@@ -44,7 +44,7 @@ class UnixCmdResource:
         Some noteworthy exceptions:
 
         - None
-            The NsJail process failed to launch
+            The NsJail process failed to launch. This will happen if LinuxFS is not set up.
         - 137 (SIGKILL)
             Typically because NsJail killed the Python process due to time or memory constraints
         - 255
