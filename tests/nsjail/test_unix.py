@@ -59,17 +59,19 @@ class UnixNsJailTests(NsJailTestCase):
         self.assertEqual(result.stderr, None)
 
     def test_readonly_filesystem(self):
-        cmd = dedent("""
-            for location in "/ /dev /tmp /proc /bin"; do
-                touch $location/test 2>/dev/null
-                [ $? -eq 0 ] && echo Success
-            done
-        """)
+        for path in ("/", "/etc", "/lib", "/lib64", "/snekbox", "/usr"):
+            with self.subTest(path=path):
+                cmd = dedent(f"""
+                    touch {path}/test
+                """)
 
-        result = self.nsjail.unix(cmd)
-        self.assertEqual(result.returncode, 1)
-        self.assertNotIn("Success", result.stdout)
-        self.assertEqual(result.stderr, None)
+                result = self.nsjail.unix(cmd)
+                self.assertEqual(result.returncode, 1)
+                self.assertTrue(
+                    ("Read-only file system" in result.stdout)
+                    or ("No such file or directory" in result.stdout)
+                )
+                self.assertEqual(result.stderr, None)
 
     def test_cannot_remount_rootfs(self):
         cmd = dedent("""
@@ -82,7 +84,6 @@ class UnixNsJailTests(NsJailTestCase):
         self.assertEqual(result.stderr, None)
 
     def test_fail_gracefully_when_linuxfs_not_setup(self):
-        orig_binary = self.nsjail.shell_binary
         self.nsjail.shell_binary = "/nonexistent/path"
         cmd = dedent("""
             whoami
@@ -92,5 +93,3 @@ class UnixNsJailTests(NsJailTestCase):
         self.assertEqual(result.returncode, None)
         self.assertEqual(result.stdout, "LinuxFS not set up")
         self.assertEqual(result.stderr, None)
-
-        self.nsjail.shell_binary = orig_binary  # clean up
