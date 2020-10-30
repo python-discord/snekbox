@@ -25,6 +25,7 @@ sentry-sdk = {extras = ["falcon"], version = "~= 0.14.2"}
 sympy = "~= 1.5"
 toml = "~= 0.10"
 yarl = "~= 1.4"
+lark = "~= 0.10"
 
 [dev-packages]
 coverage = ">= 4.4.2, == 4.*"
