@@ -1,4 +1,4 @@
-FROM python:3.8.0-slim-buster as builder
+FROM python:3.9-slim-buster as builder
 RUN apt-get -y update \
     && apt-get install -y \
         bison=2:3.3.* \
@@ -19,7 +19,7 @@ RUN git clone \
 WORKDIR /nsjail
 RUN make
 
-FROM python:3.8.0-slim-buster
+FROM python:3.9-slim-buster
 ENV PIP_NO_CACHE_DIR=false
 
 RUN apt-get -y update \
