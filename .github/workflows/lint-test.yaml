@@ -54,7 +54,7 @@ jobs:
           --hostname pdsnk-dev \
           -e PYTHONDONTWRITEBYTECODE=1 \
           -e PIPENV_PIPFILE='/snekbox/Pipfile\' \
-          -e ENV='${PWD}/scripts/.profile' \
+          -e ENV='${{ github.workspace }}/scripts/.profile' \
           --volume '${{ github.workspace }}':'${{ github.workspace }}' \
           --workdir '${{ github.workspace }}'\
           --entrypoint /bin/bash \
