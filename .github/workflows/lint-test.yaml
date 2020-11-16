@@ -14,9 +14,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
       - name: Login to Github Container Registry
         uses: docker/login-action@v1
         with:
@@ -24,46 +21,20 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GHCR_TOKEN  }}
 
-      - name: Cache Base Image Layers
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.base-buildx-cache
-          key: ${{ runner.os }}-buildx-base-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-base-
-
-      - name: Cache Venv Image Layers
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.venv-buildx-cache
-          key: ${{ runner.os }}-buildx-venv-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-venv-
-
       - name: Build base image
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: ./docker/base.Dockerfile
-          push: false
-          load: true
-          cache-from: type=local,src=/tmp/.base-buildx-cache
-          cache-to: type=local,type=local,dest=/tmp/.base-buildx-cache,mode=max
-          tags: ghcr.io/python-discord/snekbox-base:latest
+        run: "docker build \
+          -f docker/base.Dockerfile \
+          -t pythondiscord/snekbox-base:latest\
+          ."
 
       - name: Show Containers
         run: docker image ls
 
-      - name: Build venv image
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: ./docker/venv.Dockerfile
-          push: false
-          load: true
-          cache-from: type=local,src=/tmp/.venv-buildx-cache
-          cache-to: type=local,type=local,dest=/tmp/.venv-buildx-cache,mode=max
-          tags: ghcr.io/python-discord/snekbox-venv:latest
+      - name: Build base image
+        run: "docker build \
+          -f docker/venv.Dockerfile \
+          -t pythondiscord/snekbox-venv:latest\
+          ."
 
       - name: Show Containers
         run: docker image ls
