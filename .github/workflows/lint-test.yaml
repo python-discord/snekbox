@@ -27,6 +27,7 @@ jobs:
         run: "docker build \
           -f docker/base.Dockerfile \
           -t ghcr.io/python-discord/snekbox-base:latest \
+          --cache-from ghcr.io/python-discord/snekbox-base:latest \
           --build-arg BUILDKIT_INLINE_CACHE=1 \
           ."
 
@@ -37,31 +38,32 @@ jobs:
         run: "docker build \
           -f docker/venv.Dockerfile \
           -t ghcr.io/python-discord/snekbox-venv:latest \
+          --cache-from ghcr.io/python-discord/snekbox-venv:latest \
           --build-arg BUILDKIT_INLINE_CACHE=1 \
           ."
 
       - name: Show Containers
         run: docker image ls
 
-#      - name: Start Container
-#        run: 'docker run \
-#          --tty \
-#          --detach \
-#          --name snekbox_test \
-#          --privileged \
-#          --hostname pdsnk-dev \
-#          -e PYTHONDONTWRITEBYTECODE=1 \
-#          -e PIPENV_PIPFILE="/snekbox/Pipfile" \
-#          -e ENV="${PWD}/scripts/.profile" \
-#          --volume "${PWD}":"${PWD}" \
-#          --workdir "${PWD}"\
-#          --entrypoint /bin/bash \
-#          pythondiscord/snekbox-venv:latest'
-#
-#      - name: Install dependencies
-#        run: "docker exec snekbox_test /bin/bash -c \
-#          'pipenv install --system --deploy --dev'"
-#
-#      - name: Run linter
-#        run: "docker exec snekbox_test /bin/bash -c 'flake8 \
-#          --format \"::error file=%(path)s,line=%(row)d,col=%(col)d::[flake8] %(code)s: %(text)s\"'"
+      - name: Start Container
+        run: 'docker run \
+          --tty \
+          --detach \
+          --name snekbox_test \
+          --privileged \
+          --hostname pdsnk-dev \
+          -e PYTHONDONTWRITEBYTECODE=1 \
+          -e PIPENV_PIPFILE="/snekbox/Pipfile" \
+          -e ENV="${PWD}/scripts/.profile" \
+          --volume "${PWD}":"${PWD}" \
+          --workdir "${PWD}"\
+          --entrypoint /bin/bash \
+          pythondiscord/snekbox-venv:latest'
+
+      - name: Install dependencies
+        run: "docker exec snekbox_test /bin/bash -c \
+          'pipenv install --system --deploy --dev'"
+
+      - name: Run linter
+        run: "docker exec snekbox_test /bin/bash -c 'flake8 \
+          --format \"::error file=%(path)s,line=%(row)d,col=%(col)d::[flake8] %(code)s: %(text)s\"'"
