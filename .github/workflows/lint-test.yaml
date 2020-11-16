@@ -3,7 +3,7 @@ name: Build, Lint, Test
 on:
   push:
     branches:
-      - master
+      - sebastiaan/backend/migrate-ci-to-github-actions
 
 
 jobs:
