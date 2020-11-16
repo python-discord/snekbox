@@ -52,7 +52,7 @@ jobs:
           tags: ghcr.io/python-discord/snekbox-base:latest
 
       - name: Show Containers
-        run: docker container ls -a
+        run: docker image ls
 
 #      - name: Build venv image
 #        uses: docker/build-push-action@v2
