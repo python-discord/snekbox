@@ -75,10 +75,18 @@ jobs:
         run: "docker exec snekbox_test /bin/bash -c \
           'coverage run -m unittest; coverage report -m'"
 
+      - name: Setup python
+        id: python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
       # This step will publish the coverage reports coveralls.io and
       # print a "job" link in the output of the GitHub Action
       - name: Publish coverage report to coveralls.io
         if: always()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: coveralls
+        run: |
+          pip install coveralls~=2.1
+          coveralls
