@@ -63,7 +63,8 @@ jobs:
           tags: ghcr.io/python-discord/snekbox-venv:latest
 
       - name: Start Container
-        run: docker run \
+        run: |
+        docker run \
           --tty \
           --detach \
           --name snekbox_test \
