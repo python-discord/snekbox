@@ -63,8 +63,7 @@ jobs:
           tags: ghcr.io/python-discord/snekbox-venv:latest
 
       - name: Start Container
-        run: |
-        docker run \
+        run: 'docker run \
           --tty \
           --detach \
           --name snekbox_test \
@@ -76,14 +75,12 @@ jobs:
           --volume "${PWD}":"${PWD}" \
           --workdir "${PWD}"\
           --entrypoint /bin/bash \
-          pythondiscord/snekbox-venv:latest
+          pythondiscord/snekbox-venv:latest'
 
       - name: Install dependencies
-        run: |
-          docker exec snekbox_test /bin/bash -c \
-          'pipenv install --system --deploy --dev'
+        run: "docker exec snekbox_test /bin/bash -c \
+          'pipenv install --system --deploy --dev'"
 
       - name: Run linter
-        run: |
-          docker exec snekbox_test /bin/bash -c 'flake8 \
-          --format "::error file=%(path)s,line=%(row)d,col=%(col)d::[flake8] %(code)s: %(text)s"'
+        run: "docker exec snekbox_test /bin/bash -c 'flake8 \
+          --format \"::error file=%(path)s,line=%(row)d,col=%(col)d::[flake8] %(code)s: %(text)s\"'"
