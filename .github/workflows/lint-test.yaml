@@ -9,6 +9,8 @@ on:
 jobs:
   lint-test:
     runs-on: ubuntu-latest
+    env:
+      DOCKER_BUILDKIT: 1
 
     steps:
       - name: Checkout code
@@ -24,7 +26,8 @@ jobs:
       - name: Build base image
         run: "docker build \
           -f docker/base.Dockerfile \
-          -t pythondiscord/snekbox-base:latest \
+          -t ghcr.io/python-discord/snekbox-base:latest \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
           ."
 
       - name: Show Containers
@@ -33,7 +36,8 @@ jobs:
       - name: Build base image
         run: "docker build \
           -f docker/venv.Dockerfile \
-          -t pythondiscord/snekbox-venv:latest \
+          -t ghcr.io/python-discord/snekbox-venv:latest \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
           ."
 
       - name: Show Containers
