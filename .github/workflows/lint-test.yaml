@@ -11,6 +11,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
@@ -43,6 +46,7 @@ jobs:
           context: .
           file: ./docker/base.Dockerfile
           push: false
+          load: true
           cache-from: type=local,src=/tmp/.base-buildx-cache
           cache-to: type=local,type=local,dest=/tmp/.base-buildx-cache,mode=max
           tags: ghcr.io/python-discord/snekbox-base:latest
@@ -53,6 +57,7 @@ jobs:
           context: .
           file: ./docker/venv.Dockerfile
           push: false
+          load: true
           cache-from: type=local,src=/tmp/.venv-buildx-cache
           cache-to: type=local,type=local,dest=/tmp/.venv-buildx-cache,mode=max
           tags: ghcr.io/python-discord/snekbox-venv:latest
