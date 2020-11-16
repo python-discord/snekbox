@@ -54,17 +54,20 @@ jobs:
       - name: Show Containers
         run: docker image ls
 
-#      - name: Build venv image
-#        uses: docker/build-push-action@v2
-#        with:
-#          context: .
-#          file: ./docker/venv.Dockerfile
-#          push: false
-#          load: true
-#          cache-from: type=local,src=/tmp/.venv-buildx-cache
-#          cache-to: type=local,type=local,dest=/tmp/.venv-buildx-cache,mode=max
-#          tags: ghcr.io/python-discord/snekbox-venv:latest
-#
+      - name: Build venv image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./docker/venv.Dockerfile
+          push: false
+          load: true
+          cache-from: type=local,src=/tmp/.venv-buildx-cache
+          cache-to: type=local,type=local,dest=/tmp/.venv-buildx-cache,mode=max
+          tags: ghcr.io/python-discord/snekbox-venv:latest
+
+      - name: Show Containers
+        run: docker image ls
+
 #      - name: Start Container
 #        run: 'docker run \
 #          --tty \
