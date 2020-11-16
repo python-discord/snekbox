@@ -46,19 +46,19 @@ jobs:
         run: docker image ls
 
       - name: Start Container
-        run: 'docker run \
+        run: "docker run \
           --tty \
           --detach \
           --name snekbox_test \
           --privileged \
           --hostname pdsnk-dev \
           -e PYTHONDONTWRITEBYTECODE=1 \
-          -e PIPENV_PIPFILE="/snekbox/Pipfile" \
-          -e ENV="${PWD}/scripts/.profile" \
-          --volume "${PWD}":"${PWD}" \
-          --workdir "${PWD}"\
+          -e PIPENV_PIPFILE='/snekbox/Pipfile\' \
+          -e ENV='${PWD}/scripts/.profile' \
+          --volume '${PWD}':'${PWD}' \
+          --workdir '${PWD}'\
           --entrypoint /bin/bash \
-          pythondiscord/snekbox-venv:latest'
+          ghcr.io/python-discord/snekbox-base:latest"
 
       - name: Install dependencies
         run: "docker exec snekbox_test /bin/bash -c \
