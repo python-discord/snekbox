@@ -1,4 +1,4 @@
-FROM pythondiscord/snekbox-base:latest
+FROM ghcr.io/python-discord/snekbox-base:latest
 
 ARG DEV
 ENV PIP_NO_CACHE_DIR=false \
