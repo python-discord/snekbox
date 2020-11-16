@@ -67,3 +67,18 @@ jobs:
       - name: Run linter
         run: "docker exec snekbox_test /bin/bash -c 'flake8 \
           --format \"::error file=%(path)s,line=%(row)d,col=%(col)d::[flake8] %(code)s: %(text)s\"'"
+
+      - name: Disable swap memory
+        run: sudo swapoff -a
+
+      - name: Run unit tests and generate coverage report
+        run: "docker exec snekbox_test /bin/bash -c \
+          'coverage run -m unittest; coverage report -m'"
+
+      # This step will publish the coverage reports coveralls.io and
+      # print a "job" link in the output of the GitHub Action
+      - name: Publish coverage report to coveralls.io
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: coveralls
