@@ -35,8 +35,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /tmp/.base-buildx-cache
-          key: ${{ runner.os }}-buildx-base-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-base-${{ github.ref }}-${{ github.sha }}
           restore-keys: |
+            ${{ runner.os }}-buildx-base-${{ github.ref }}-
             ${{ runner.os }}-buildx-base-
 
       - name: Build base image
