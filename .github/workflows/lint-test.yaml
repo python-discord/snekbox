@@ -129,9 +129,7 @@ jobs:
           cache-from: |
             type=local,src=/tmp/.buildx-cache
             ghcr.io/python-discord/snekbox-base:latest
-          cache-to: |
-            type=local,dest=/tmp/.buildx-cache
-            ghcr.io/python-discord/snekbox-base:latest
+          cache-to: type=local,dest=/tmp/.buildx-cache
           tags: ghcr.io/python-discord/snekbox-base:latest
 
       - name: Push venv image
@@ -139,13 +137,11 @@ jobs:
         with:
           context: .
           file: ./docker/base.Dockerfile
-          target: base
+          target: venv
           push: true
           cache-from: |
             type=local,src=/tmp/.buildx-cache
             ghcr.io/python-discord/snekbox-base:latest
             ghcr.io/python-discord/snekbox-venv:latest
-          cache-to: |
-            type=local,dest=/tmp/.buildx-cache
-            ghcr.io/python-discord/snekbox-venv:latest
+          cache-to: ghcr.io/python-discord/snekbox-venv:latest
           tags: ghcr.io/python-discord/snekbox-venv:latest
