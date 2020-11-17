@@ -52,7 +52,7 @@ jobs:
             type=local,src=/tmp/.buildx-cache
             ghcr.io/python-discord/snekbox-base:latest
             ghcr.io/python-discord/snekbox-venv:latest
-          cache-to: type=local,dest=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
           tags: ghcr.io/python-discord/snekbox-venv:${{ steps.sha_tag.outputs.tag }}
 
       - name: Start Container
@@ -108,8 +108,6 @@ jobs:
           context: .
           file: ./docker/Dockerfile
           push: true
-          build-args: |
-            BUILDKIT_INLINE_CACHE=1
           cache-from: |
             type=local,src=/tmp/.buildx-cache
             ghcr.io/python-discord/snekbox-base:latest
@@ -125,12 +123,10 @@ jobs:
           file: ./docker/Dockerfile
           target: base
           push: true
-          build-args: |
-            BUILDKIT_INLINE_CACHE=1
           cache-from: |
             type=local,src=/tmp/.buildx-cache
             ghcr.io/python-discord/snekbox-base:latest
-          cache-to: type=local,dest=/tmp/.buildx-cache
+          cache-to: type=inline
           tags: ghcr.io/python-discord/snekbox-base:latest
 
       - name: Push venv image
@@ -140,11 +136,9 @@ jobs:
           file: ./docker/Dockerfile
           target: venv
           push: true
-          build-args: |
-            BUILDKIT_INLINE_CACHE=1
           cache-from: |
             type=local,src=/tmp/.buildx-cache
             ghcr.io/python-discord/snekbox-base:latest
             ghcr.io/python-discord/snekbox-venv:latest
-          cache-to: type=local,dest=/tmp/.buildx-cache
+          cache-to: type=inline
           tags: ghcr.io/python-discord/snekbox-venv:latest
