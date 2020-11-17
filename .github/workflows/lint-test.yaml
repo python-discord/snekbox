@@ -116,6 +116,8 @@ jobs:
         with:
           context: .
           file: ./docker/Dockerfile
+          build-args: |
+            IMAGE_TAG="${{ steps.sha_tag.outputs.tag }}"
           push: true
           cache-from: |
             type=local,src=/tmp/.base-buildx-cache
