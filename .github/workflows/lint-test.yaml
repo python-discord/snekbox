@@ -90,3 +90,20 @@ jobs:
         run: |
           pip install coveralls~=2.1
           coveralls
+
+      - name: Build final image
+        run: "docker build \
+          -f docker/Dockerfile \
+          -t ghcr.io/python-discord/snekbox:latest \
+          --cache-from ghcr.io/python-discord/snekbox:latest \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          ."
+
+      - name: Push base image
+        run: docker push ghcr.io/python-discord/snekbox-base:latest
+
+      - name: Push venv image
+        run: docker push ghcr.io/python-discord/snekbox-venv:latest
+
+      - name: Push final image
+        run: docker push ghcr.io/python-discord/snekbox:latest
