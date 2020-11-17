@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DOCKER_BUILDKIT: 1
+      BASE_IMAGE: ghcr.io/python-discord/snekbox-base:${{ steps.sha_tag.outputs.tag }}
 
     steps:
       - name: Create SHA Container Tag
@@ -47,9 +48,9 @@ jobs:
           file: ./docker/base.Dockerfile
           push: false
           load: true
-          cache-from: type=local,src=/tmp/.base-buildx-cache
-          cache-to: type=local,type=local,dest=/tmp/.base-buildx-cache
-          tags: ghcr.io/python-discord/snekbox-base:${{ steps.sha_tag.outputs.tag }}
+          cache-from: type=local,src=/tmp/.base-buildx-cache,
+          cache-to: type=local,dest=/tmp/.base-buildx-cache,
+          tags: ${{ env.BASE_IMAGE }}
 
       - name: Show Containers
         run: docker image ls
@@ -67,7 +68,7 @@ jobs:
           --volume \"${PWD}\":\"${PWD}\" \
           --workdir \"${PWD}\" \
           --entrypoint /bin/bash \
-          ghcr.io/python-discord/snekbox-venv:latest"
+          ghcr.io/python-discord/snekbox-base:${{ steps.sha_tag.outputs.tag }}"
 
       - name: Install dependencies
         run: "docker exec snekbox_test /bin/bash -c \
@@ -102,3 +103,32 @@ jobs:
 
       - name: Push base image
         run: docker push ghcr.io/python-discord/snekbox-base:${{ steps.sha_tag.outputs.tag }}
+
+      - name: Cache Final Image Layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.final-buildx-cache
+          key: ${{ runner.os }}-buildx-final-${{ github.ref }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-final-${{ github.ref }}-
+            ${{ runner.os }}-buildx-final-
+
+      - name: Build base image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./docker/base.Dockerfile
+          push: true
+          cache-from: type=local,dest=/tmp/.final-buildx-cache,type=local,src=/tmp/.base-buildx-cache
+          cache-to: type=local,dest=/tmp/.final-buildx-cache,
+          tags: ghcr.io/python-discord/snekbox:latest
+
+      - name: Build builder image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./docker/base.Dockerfile
+          push: true
+          cache-from: type=local,src=/tmp/.base-buildx-cache,
+          cache-to: type=local,dest=/tmp/.base-buildx-cache,
+          tags: ghcr.io/python-discord/snekbox:latest
