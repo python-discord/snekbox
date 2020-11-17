@@ -111,6 +111,9 @@ jobs:
             ${{ runner.os }}-buildx-final-${{ github.ref }}-
             ${{ runner.os }}-buildx-final-
 
+      - name: Push intermediate base container to registry
+        run: docker push ghcr.io/python-discord/snekbox-base:${{ steps.sha_tag.outputs.tag }}
+
       - name: Build base image
         uses: docker/build-push-action@v2
         with:
