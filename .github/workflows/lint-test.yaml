@@ -55,9 +55,6 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache
           tags: ghcr.io/python-discord/snekbox-venv:${{ steps.sha_tag.outputs.tag }}
 
-      - name: Show Containers
-        run: docker image ls
-
       - name: Start Container
         run: "docker run \
           --tty \
