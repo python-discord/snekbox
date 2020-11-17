@@ -35,10 +35,10 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-0-buildx-${{ github.ref }}-${{ github.sha }}
+          key: ${{ runner.os }}-1-buildx-${{ github.ref }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-0-buildx-${{ github.ref }}-
-            ${{ runner.os }}-0-buildx-
+            ${{ runner.os }}-1-buildx-${{ github.ref }}-
+            ${{ runner.os }}-1-buildx-
 
       - name: Build image for linting and testing
         uses: docker/build-push-action@v2
