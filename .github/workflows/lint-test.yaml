@@ -108,7 +108,7 @@ jobs:
           context: .
           file: ./docker/Dockerfile
           push: true
-          builds-args: |
+          build-args: |
             BUILDKIT_INLINE_CACHE=1
           cache-from: |
             type=local,src=/tmp/.buildx-cache
@@ -125,7 +125,7 @@ jobs:
           file: ./docker/Dockerfile
           target: base
           push: true
-          builds-args: |
+          build-args: |
             BUILDKIT_INLINE_CACHE=1
           cache-from: |
             type=local,src=/tmp/.buildx-cache
@@ -140,7 +140,7 @@ jobs:
           file: ./docker/Dockerfile
           target: venv
           push: true
-          builds-args: |
+          build-args: |
             BUILDKIT_INLINE_CACHE=1
           cache-from: |
             type=local,src=/tmp/.buildx-cache
