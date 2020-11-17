@@ -143,5 +143,5 @@ jobs:
             type=local,src=/tmp/.buildx-cache
             ghcr.io/python-discord/snekbox-base:latest
             ghcr.io/python-discord/snekbox-venv:latest
-          cache-to: ghcr.io/python-discord/snekbox-venv:latest
+          cache-to: type=local,src=/tmp/.buildx-cache
           tags: ghcr.io/python-discord/snekbox-venv:latest
