@@ -50,7 +50,7 @@ jobs:
           cache-from: |
             type=local,src=/tmp/.base-buildx-cache
             ghcr.io/python-discord/snekbox-base:latest
-          cache-to: type=local,type=local,dest=/tmp/.base-buildx-cache
+          cache-to: type=local,dest=/tmp/.base-buildx-cache
           tags: ghcr.io/python-discord/snekbox-base:${{ steps.sha_tag.outputs.tag }}
 
       - name: Show Containers
@@ -116,13 +116,12 @@ jobs:
         with:
           context: .
           file: ./docker/Dockerfile
-          build-args: IMAGE_TAG=${{ steps.sha_tag.outputs.tag }}
           push: true
           cache-from: |
             type=local,src=/tmp/.base-buildx-cache
             type=local,src=/tmp/.final-buildx-cache
             ghcr.io/python-discord/snekbox:latest
-          cache-to: type=local,dest=/tmp/.final-buildx-cache,
+          cache-to: type=local,dest=/tmp/.final-buildx-cache
           tags: ghcr.io/python-discord/snekbox:latest
 
       - name: Build builder image
@@ -131,6 +130,6 @@ jobs:
           context: .
           file: ./docker/base.Dockerfile
           push: true
-          cache-from: type=local,src=/tmp/.base-buildx-cache,
-          cache-to: type=local,dest=/tmp/.base-buildx-cache,
+          cache-from: type=local,src=/tmp/.base-buildx-cache
+          cache-to: type=local,dest=/tmp/.base-buildx-cache
           tags: ghcr.io/python-discord/snekbox:latest
