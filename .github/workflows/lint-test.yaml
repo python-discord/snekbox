@@ -120,7 +120,7 @@ jobs:
           push: true
           cache-from: |
             type=local,src=/tmp/.base-buildx-cache
-            type=local,dest=/tmp/.final-buildx-cache
+            type=local,src=/tmp/.final-buildx-cache
             ghcr.io/python-discord/snekbox:latest
           cache-to: type=local,dest=/tmp/.final-buildx-cache,
           tags: ghcr.io/python-discord/snekbox:latest
