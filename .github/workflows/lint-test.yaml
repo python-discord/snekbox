@@ -3,7 +3,7 @@ name: Build, Lint, Test
 on:
   push:
     branches:
-      - sebastiaan/backend/migrate-ci-to-github-actions
+      - sebastiaan/backend/cache-docker-images
 
 
 jobs:
@@ -13,8 +13,16 @@ jobs:
       DOCKER_BUILDKIT: 1
 
     steps:
+      - name: Create SHA Container Tag
+        id: sha_tag
+        run: |
+          tag=$(cut -c 1-7 <<< $GITHUB_SHA)
+          echo "::set-output name=tag::$tag"
       - name: Checkout code
         uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
 
       - name: Login to Github Container Registry
         uses: docker/login-action@v1
@@ -23,24 +31,24 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GHCR_TOKEN  }}
 
-      - name: Build base image
-        run: "docker build \
-          -f docker/base.Dockerfile \
-          -t ghcr.io/python-discord/snekbox-base:latest \
-          --cache-from ghcr.io/python-discord/snekbox-base:latest \
-          --build-arg BUILDKIT_INLINE_CACHE=1 \
-          ."
-
-      - name: Show Containers
-        run: docker image ls
+      - name: Cache Base Image Layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.base-buildx-cache
+          key: ${{ runner.os }}-buildx-base-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-base-
 
       - name: Build base image
-        run: "docker build \
-          -f docker/venv.Dockerfile \
-          -t ghcr.io/python-discord/snekbox-venv:latest \
-          --cache-from ghcr.io/python-discord/snekbox-venv:latest \
-          --build-arg BUILDKIT_INLINE_CACHE=1 \
-          ."
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./docker/base.Dockerfile
+          push: false
+          load: true
+          cache-from: type=local,src=/tmp/.base-buildx-cache
+          cache-to: type=local,type=local,dest=/tmp/.base-buildx-cache
+          tags: ghcr.io/python-discord/snekbox-base:${{ steps.sha_tag.outputs.tag }}
 
       - name: Show Containers
         run: docker image ls
@@ -91,19 +99,5 @@ jobs:
           pip install coveralls~=2.1
           coveralls
 
-      - name: Build final image
-        run: "docker build \
-          -f docker/Dockerfile \
-          -t ghcr.io/python-discord/snekbox:latest \
-          --cache-from ghcr.io/python-discord/snekbox:latest \
-          --build-arg BUILDKIT_INLINE_CACHE=1 \
-          ."
-
       - name: Push base image
-        run: docker push ghcr.io/python-discord/snekbox-base:latest
-
-      - name: Push venv image
-        run: docker push ghcr.io/python-discord/snekbox-venv:latest
-
-      - name: Push final image
-        run: docker push ghcr.io/python-discord/snekbox:latest
+        run: docker push ghcr.io/python-discord/snekbox-base:${{ steps.sha_tag.outputs.tag }}
