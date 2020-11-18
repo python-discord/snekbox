@@ -61,13 +61,13 @@ devsh = "sh scripts/dev.sh"
 build = """
     docker build \
         -t ghcr.io/python-discord/snekbox:latest \
-        -f docker/Dockerfile \
+        -f Dockerfile \
         .
 """
 builddev = """
     docker build \
         -t ghcr.io/python-discord/snekbox-venv:dev \
-        -f docker/Dockerfile \
+        -f Dockerfile \
         --target venv \
         --build-arg DEV=1 \
         .

@@ -9,7 +9,7 @@ if [ "$1" = "--build" ]; then
 
     docker build \
         -t ghcr.io/python-discord/snekbox-venv:dev \
-        -f docker/Dockerfile \
+        -f Dockerfile \
         --build-arg DEV=1 \
         --target venv \
         -q \
