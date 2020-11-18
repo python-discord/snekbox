@@ -9,6 +9,8 @@ on:
 jobs:
   lint-test:
     runs-on: ubuntu-latest
+    env:
+      production_build: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/sebastiaan/backend/cache-docker-images' }}
 
     steps:
       # Create a short SHA-tag to tag built images
@@ -147,13 +149,14 @@ jobs:
       - name: print output
         run: |
           echo "${{ github.ref }}"
-          echo "${{ github.event_name != 'pull_request' && github.ref == 'sebastiaan/backend/cache-docker-images' }}"
+          echo "${{ env.production_build }}"
+          echo "${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/sebastiaan/backend/cache-docker-images' }}"
 
       # Build the final production image and push it to GHCR, tagging it
       # both with the short commit SHA and 'latest'. This step should use
       # the cache that was just generated when we built the test container.
       - name: Build final image
-        if: github.event_name != 'pull_request' && github.ref == 'sebastiaan/backend/cache-docker-images'
+        if: env.production_build
         uses: docker/build-push-action@v2
         with:
           context: .
@@ -174,7 +177,7 @@ jobs:
       # "local" cache failed to be restored. GHCR does not support pushing a
       # separate cache manifest, meaning we have to use an "inline" manifest.
       - name: Push base image
-        if: github.event_name != 'pull_request' && github.ref == 'sebastiaan/backend/cache-docker-images'
+        if: env.production_build
         uses: docker/build-push-action@v2
         with:
           context: .
@@ -190,7 +193,7 @@ jobs:
       # Push the venv image to GHCR *with* an inline cache manifest. See
       # the comment attached to the previous step for more information.
       - name: Push venv image
-        if: github.event_name != 'pull_request' && github.ref == 'sebastiaan/backend/cache-docker-images'
+        if: env.production_build
         uses: docker/build-push-action@v2
         with:
           context: .
