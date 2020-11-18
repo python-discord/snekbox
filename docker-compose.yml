@@ -3,11 +3,11 @@ services:
   snekbox:
     container_name: snekbox
     privileged: true
-    image: pythondiscord/snekbox:latest
+    image: ghcr.io/python-discord/snekbox:latest
     ports:
      - 8060:8060
     init: true
     ipc: none
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: Dockerfile

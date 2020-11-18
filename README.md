@@ -1,4 +1,4 @@
-[![Build Status][1]][2]
+[![Build Status][1]][2] [![Coverage Status][3]][4]
 
 # snekbox
 
@@ -33,10 +33,10 @@ See [`snekapi.py`] and [`resources`] for API documentation.
 
 ## Running snekbox
 
-A Docker image is available on [Docker Hub]. A container can be started with the following command, which will also pull the image if it doesn't currently exist locally:
+A Docker image is available in the [GitHub Container Registry]. A container can be started with the following command, which will also pull the image if it doesn't currently exist locally:
 
 ```
-docker run --ipc=none --privileged -p 8060:8060 pythondiscord/snekbox
+docker run --ipc=none --privileged -p 8060:8060 ghcr.io/python-discord/snekbox
 ```
 
 To run it in the background, use the `-d` option. See the documentation on [`docker run`] for more information.
@@ -47,7 +47,7 @@ The above command will make the API accessible on the host via `http://localhost
 
 ### Initial Setup
 
-A Python 3.8 interpreter and the [pipenv] package are required. Once those requirements are satisfied, install the project's dependencies:
+A Python 3.9 interpreter and the [pipenv] package are required. Once those requirements are satisfied, install the project's dependencies:
 
 ```
 pipenv sync --dev
@@ -67,11 +67,9 @@ pipenv run lint
 
 ### Running snekbox
 
-The Docker images can be built with:
+The Docker image can be built with:
 
 ```
-pipenv run buildbase
-pipenv run buildvenv
 pipenv run build
 ```
 
@@ -142,8 +140,10 @@ nsjpy "print('hello world!')"
 
 The alias can be found in `./scripts/.profile`, which is automatically added when the shell is launched in the container.
 
-[1]: https://dev.azure.com/python-discord/Python%20Discord/_apis/build/status/Snekbox?branchName=master
-[2]: https://dev.azure.com/python-discord/Python%20Discord/_build/latest?definitionId=13&branchName=master
+[1]: https://github.com/python-discord/snekbox/workflows/Lint,%20Test,%20Build,%20Push/badge.svg?branch=master
+[2]: https://github.com/python-discord/snekbox/actions?query=workflow%3A%22Lint%2C+Test%2C+Build%2C+Push%22+branch%3Amaster
+[3]: https://coveralls.io/repos/github/python-discord/snekbox/badge.svg?branch=master
+[4]: https://coveralls.io/github/python-discord/snekbox?branch=master
 [`snekbox.cfg`]: config/snekbox.cfg
 [`snekapi.py`]: snekbox/api/snekapi.py
 [`resources`]: snekbox/api/resources
@@ -151,5 +151,5 @@ The alias can be found in `./scripts/.profile`, which is automatically added whe
 [nsjail]: https://github.com/google/nsjail
 [falcon]: https://falconframework.org/
 [gunicorn]: https://gunicorn.org/
-[docker hub]: https://hub.docker.com/r/pythondiscord/snekbox
+[GitHub Container Registry]: https://github.com/orgs/python-discord/packages/container/package/snekbox
 [pipenv]: https://docs.pipenv.org/en/latest/

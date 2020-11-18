@@ -1,0 +1,201 @@
+name: Lint, Test, Build, Push
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+
+jobs:
+  lint-test-build-push:
+    runs-on: ubuntu-latest
+    env:
+      # Determine whether or not we should build the
+      # final production image and push it to GHCR.
+      production_build: ${{ github.event_name != 'pull_request' &&
+        github.ref == 'refs/heads/master' }}
+
+    steps:
+      # Create a short SHA-tag to tag built images
+      - name: Create SHA Container Tag
+        id: sha_tag
+        run: |
+          tag=$(cut -c 1-7 <<< $GITHUB_SHA)
+          echo "::set-output name=tag::$tag"
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # The current version (v2) of Docker's build-push action uses
+      # buildx, which comes with BuildKit features that help us speed
+      # up our builds using additional cache features. Buildx also
+      # has a lot of other features that are not as relevant to us.
+      #
+      # See https://github.com/docker/build-push-action
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to Github Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GHCR_TOKEN  }}
+
+      # Create a local cache directory for PR builds, as the image
+      # we build for PRs may start to deviate from the "latest" image
+      # currently registered in the GHCR. For master, the best we can
+      # do is use the previous master build, which can be cached from
+      # the GHCR.
+      - name: Cache Image Layers
+        if: github.event_name == 'pull_request'
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-v0-buildx-${{ github.ref }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-v0-buildx-${{ github.ref }}-
+
+      # Build the image we need for linting and testing using the
+      # `venv` target stage within our Dockerfile. We load the image
+      # into the runner's Docker image collection so we can run it
+      # later.
+      #
+      # The image includes an inline cache manifest to support caching
+      # from the GHCR, which means that a build can pull the layers it
+      # can reuse instead of building them from scratch.
+      - name: Build image for linting and testing
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          load: true
+          target: venv
+          cache-from: |
+            type=local,src=/tmp/.buildx-cache
+            ghcr.io/python-discord/snekbox-base:latest
+            ghcr.io/python-discord/snekbox-venv:latest
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
+          tags: ghcr.io/python-discord/snekbox-venv:${{ steps.sha_tag.outputs.tag }}
+
+      - name: Start Container
+        run: >-
+          docker run
+          --tty
+          --detach
+          --name snekbox_test
+          --privileged
+          --hostname pdsnk-dev
+          -e PYTHONDONTWRITEBYTECODE=1
+          -e PIPENV_PIPFILE='/snekbox/Pipfile'
+          -e ENV="${PWD}/scripts/.profile"
+          --volume "${PWD}":"${PWD}"
+          --workdir "${PWD}"
+          --entrypoint /bin/bash
+          ghcr.io/python-discord/snekbox-venv:${{ steps.sha_tag.outputs.tag }}
+
+      - name: Install dependencies
+        run: "docker exec snekbox_test /bin/bash -c \
+          'pipenv install --system --deploy --dev'"
+
+      # This runs `flake8` in the container and asks `flake8` to output
+      # linting errors in the format of the command for registering workflow
+      # error messages/annotations. This means that Github Actions will pick
+      # up on this output to generate nice annotations to indicate what went
+      # wrong where.
+      - name: Run linter
+        run: "docker exec snekbox_test /bin/bash -c 'flake8 \
+          --format \"::error file=%(path)s,line=%(row)d,col=%(col)d::\
+          [flake8] %(code)s: %(text)s\"'"
+
+      # Memory limit tests would fail if this isn't disabled.
+      - name: Disable swap memory
+        run: sudo swapoff -a
+
+      # Run unittests and generate coverage report in the container
+      - name: Run unit tests and generate coverage report
+        id: run_tests
+        run: |
+          echo '::set-output name=started::true'
+          cmd='coverage run -m unittest; coverage report -m'
+          docker exec snekbox_test /bin/bash -c "${cmd}"
+
+      # Set-up a Python version to process the coverage reports
+      # Note: This step runs even if the test step failed to make
+      # sure we process the coverage reports.
+      - name: Setup python
+        if: always() && steps.run_tests.outputs.started == 'true'
+        id: python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      # We'll only ever need a single dependency in this python
+      # environment and we'll only use it in the CI, so let's
+      # install it directly here and run it.
+      #
+      # This step will publish the coverage results to coveralls.io
+      # print a job link in the output. It will also register a
+      # step in the check suite visible in the PR with a link to
+      # the job.
+      - name: Publish coverage report to coveralls.io
+        if: always() && steps.run_tests.outputs.started == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pip install coveralls~=2.1
+          coveralls
+
+      # Final build stage. This is run in the same job with conditions
+      # in order to use the local build cache generated by buildx while
+      # building the `venv` image in the lint/test phase.
+
+      # Build the final production image and push it to GHCR, tagging it
+      # both with the short commit SHA and 'latest'. This step should use
+      # the local build cache of the current run.
+      - name: Build final image
+        if: env.production_build == 'true'
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          cache-from: |
+            ghcr.io/python-discord/snekbox-base:latest
+            ghcr.io/python-discord/snekbox-venv:latest
+            ghcr.io/python-discord/snekbox:latest
+          cache-to: type=inline
+          tags: |
+            ghcr.io/python-discord/snekbox:latest
+            ghcr.io/python-discord/snekbox:${{ steps.sha_tag.outputs.tag }}
+
+      # Push the base image to GHCR, with an inline cache manifest
+      - name: Push base image
+        if: env.production_build == 'true'
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          target: base
+          push: true
+          cache-from: |
+            ghcr.io/python-discord/snekbox-base:latest
+          cache-to: type=inline
+          tags: ghcr.io/python-discord/snekbox-base:latest
+
+      # Push the venv image to GHCR, with an inline cache manifest
+      - name: Push venv image
+        if: env.production_build == 'true'
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          target: venv
+          push: true
+          cache-from: |
+            ghcr.io/python-discord/snekbox-base:latest
+            ghcr.io/python-discord/snekbox-venv:latest
+          cache-to: type=inline
+          tags: ghcr.io/python-discord/snekbox-venv:latest

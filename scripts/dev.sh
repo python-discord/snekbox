@@ -5,12 +5,13 @@
 
 if [ "$1" = "--build" ]; then
     shift
-    printf "Building pythondiscord/snekbox-venv:dev..."
+    printf "Building ghcr.io/python-discord/snekbox-venv:dev..."
 
     docker build \
-        -t pythondiscord/snekbox-venv:dev \
-        -f docker/venv.Dockerfile \
+        -t ghcr.io/python-discord/snekbox-venv:dev \
+        -f Dockerfile \
         --build-arg DEV=1 \
+        --target venv \
         -q \
         . \
         >/dev/null \
@@ -46,7 +47,7 @@ docker run \
     --volume "${PWD}":"${PWD}" \
     --workdir "${PWD}"\
     --entrypoint /bin/bash \
-    pythondiscord/snekbox-venv:dev \
+    ghcr.io/python-discord/snekbox-venv:dev \
     >/dev/null \
 
 # Execute the given command(s)

@@ -41,7 +41,6 @@ flake8-tidy-imports = "~= 4.1"
 flake8-todo = "~= 0.7"
 pre-commit = "~= 2.8.2"
 pydocstyle = "~= 5.1"
-unittest-xml-reporting = "~= 3.0"
 
 [requires]
 python_version = "3.9"
@@ -61,26 +60,15 @@ snekbox = "gunicorn -c config/gunicorn.conf.py snekbox.api.app"
 devsh = "sh scripts/dev.sh"
 build = """
     docker build \
-        -t pythondiscord/snekbox:latest \
-        -f docker/Dockerfile \
-        .
-"""
-buildbase = """
-    docker build \
-        -t pythondiscord/snekbox-base:latest \
-        -f docker/base.Dockerfile \
-        .
-"""
-buildvenv = """
-    docker build \
-        -t pythondiscord/snekbox-venv:latest \
-        -f docker/venv.Dockerfile \
+        -t ghcr.io/python-discord/snekbox:latest \
+        -f Dockerfile \
         .
 """
 builddev = """
     docker build \
-        -t pythondiscord/snekbox-venv:dev \
-        -f docker/venv.Dockerfile \
+        -t ghcr.io/python-discord/snekbox-venv:dev \
+        -f Dockerfile \
+        --target venv \
         --build-arg DEV=1 \
         .
 """
