@@ -9,10 +9,9 @@ on:
 jobs:
   lint-test:
     runs-on: ubuntu-latest
-    env:
-      DOCKER_BUILDKIT: 1
 
     steps:
+      # Create a short SHA-tag to tag built images
       - name: Create SHA Container Tag
         id: sha_tag
         run: |
@@ -31,15 +30,33 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GHCR_TOKEN  }}
 
+      # Set up a caching directory for image layers. According to the docker
+      # documentation, it's recommended to use a SHA-based key to get the
+      # greatest change of finding the most relevant cached layer. We fall
+      # down to more generic containers by then matching by GitHub branch,
+      # to use cache generated earlier in the same branch, and finally to
+      # the latest cache in general. The `v0` is purely a cache version
+      # indicator that can be incremented manually if we want to invalidate
+      # old caches completely.
       - name: Cache Image Layers
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-1-buildx-${{ github.ref }}-${{ github.sha }}
+          key: ${{ runner.os }}-v0-buildx-${{ github.ref }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-1-buildx-${{ github.ref }}-
-            ${{ runner.os }}-1-buildx-
+            ${{ runner.os }}-v0-buildx-${{ github.ref }}-
+            ${{ runner.os }}-v0-buildx-
 
+      # Build the image we need for testing/linting the current codebase,
+      # without pushing the image to the GHCR. Instead, we load it into
+      # the runner's docker environment so we can run it later. The
+      # target of this build is the `venv` stage of the Dockerfile, as we
+      # don't want to include the final production entry point stage.
+      #
+      # This build caches to our GitHub Actions cache and uses that cache
+      # during the build process as well. If no GitHub Actions cache was
+      # available, it will use the latest intermediate images pushed to
+      # the GHCR as a cache source.
       - name: Build image for linting and testing
         uses: docker/build-push-action@v2
         with:
@@ -74,35 +91,64 @@ jobs:
         run: "docker exec snekbox_test /bin/bash -c \
           'pipenv install --system --deploy --dev'"
 
+      # This runs `flake8` in the container and asks `flake8` to output
+      # linting errors in the format of the command for registering workflow
+      # error messages/annotations. This means that Github Actions will pick
+      # up on this output to generate nice annotations to indicate what went
+      # wrong where.
       - name: Run linter
         run: "docker exec snekbox_test /bin/bash -c 'flake8 \
           --format \"::error file=%(path)s,line=%(row)d,col=%(col)d::[flake8] %(code)s: %(text)s\"'"
 
+      # Memory limit tests would fail if this isn't disabled.
       - name: Disable swap memory
         run: sudo swapoff -a
 
+      # Run unittests and generate coverage report in the container
       - name: Run unit tests and generate coverage report
-        run: "docker exec snekbox_test /bin/bash -c \
-          'coverage run -m unittest; coverage report -m'"
+        id: run_tests
+        run: |
+          echo '::set-output name=started::true'
+          cmd='coverage run -m unittest; coverage report -m'
+          docker exec snekbox_test /bin/bash -c "${cmd}"
 
+      # Set-up a Python version to process the coverage reports
+      # Note: This step runs even if the test step failed to make
+      # sure we process the coverage reports.
       - name: Setup python
-        if: always()
+        if: always() && steps.run_tests.outputs.started == 'true'
         id: python
         uses: actions/setup-python@v2
         with:
           python-version: '3.9'
 
-      # This step will publish the coverage reports coveralls.io and
-      # print a "job" link in the output of the GitHub Action
+      # We'll only ever need a single dependency in this python
+      # environment and we'll only use it in the CI, so let's
+      # install it directly here and run it.
+      #
+      # This step will publish the coverage results to coveralls.io
+      # print a job link in the output. It will also register a
+      # step in the check suite visible in the PR with a link to
+      # the job.
       - name: Publish coverage report to coveralls.io
-        if: always()
+        if: always() && steps.tests.outputs.started == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           pip install coveralls~=2.1
           coveralls
 
+      # Final build stage. This is run in the same job with conditions
+      # to prevent us from having to reload the caching directory. We
+      # already built a huge chunk of the image before this point in
+      # the run, so it does not make sense to drop down to a completely
+      # fresh build environment in a new worker/runner.
+
+      # Build the final production image and push it to GHCR, tagging it
+      # both with the short commit SHA and 'latest'. This step should use
+      # the cache that was just generated when we built the test container.
       - name: Build final image
+        if: github.event_name != 'pull_request' && github.ref == 'sebastiaan/backend/cache-docker-images'
         uses: docker/build-push-action@v2
         with:
           context: .
@@ -114,9 +160,16 @@ jobs:
             ghcr.io/python-discord/snekbox-venv:latest
             ghcr.io/python-discord/snekbox:latest
           cache-to: type=local,dest=/tmp/.buildx-cache
-          tags: ghcr.io/python-discord/snekbox:latest
+          tags: |
+            ghcr.io/python-discord/snekbox:latest
+            ghcr.io/python-discord/snekbox:${{ steps.sha_tag.outputs.tag }}
 
+      # Push the base image to GHCR, *with* an inline cache manifest to
+      # ensure we can use this image as a cache source if our GitHub Actions
+      # "local" cache failed to be restored. GHCR does not support pushing a
+      # separate cache manifest, meaning we have to use an "inline" manifest.
       - name: Push base image
+        if: github.event_name != 'pull_request' && github.ref == 'sebastiaan/backend/cache-docker-images'
         uses: docker/build-push-action@v2
         with:
           context: .
@@ -129,7 +182,10 @@ jobs:
           cache-to: type=inline
           tags: ghcr.io/python-discord/snekbox-base:latest
 
+      # Push the venv image to GHCR *with* an inline cache manifest. See
+      # the comment attached to the previous step for more information.
       - name: Push venv image
+        if: github.event_name != 'pull_request' && github.ref == 'sebastiaan/backend/cache-docker-images'
         uses: docker/build-push-action@v2
         with:
           context: .
