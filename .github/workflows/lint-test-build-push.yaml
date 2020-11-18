@@ -8,7 +8,7 @@ on:
 
 
 jobs:
-  lint-test:
+  lint-test-build-push:
     runs-on: ubuntu-latest
     env:
       # Determine whether or not we should build the
@@ -86,7 +86,7 @@ jobs:
           --privileged \
           --hostname pdsnk-dev \
           -e PYTHONDONTWRITEBYTECODE=1 \
-          -e PIPENV_PIPFILE='/snekbox/Pipfile\' \
+          -e PIPENV_PIPFILE='/snekbox/Pipfile' \
           -e ENV=\"${PWD}/scripts/.profile\" \
           --volume \"${PWD}\":\"${PWD}\" \
           --workdir \"${PWD}\" \
