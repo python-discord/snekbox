@@ -14,7 +14,7 @@ jobs:
       # Determine whether or not we should build the
       # final production image and push it to GHCR.
       production_build: ${{ github.event_name != 'pull_request' &&
-        github.ref == 'sebastiaan/backend/test-repository-caching' }}
+        github.ref == 'refs/heads/sebastiaan/backend/test-repository-caching' }}
 
     steps:
       # Create a short SHA-tag to tag built images
@@ -142,7 +142,7 @@ jobs:
         with:
           context: .
           file: ./docker/Dockerfile
-          push: false
+          push: true
           cache-from: |
             ghcr.io/python-discord/snekbox-venv:${{ steps.sha_tag.outputs.tag }}
             ghcr.io/python-discord/snekbox-base:latest
@@ -164,7 +164,7 @@ jobs:
           context: .
           file: ./docker/Dockerfile
           target: base
-          push: false
+          push: true
           cache-from: |
             ghcr.io/python-discord/snekbox-base:latest
           cache-to: type=inline
@@ -179,7 +179,7 @@ jobs:
           context: .
           file: ./docker/Dockerfile
           target: venv
-          push: false
+          push: true
           cache-from: |
             ghcr.io/python-discord/snekbox-base:latest
             ghcr.io/python-discord/snekbox-venv:latest
