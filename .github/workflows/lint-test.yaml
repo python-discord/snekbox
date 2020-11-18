@@ -10,7 +10,12 @@ jobs:
   lint-test:
     runs-on: ubuntu-latest
     env:
-      production_build: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/sebastiaan/backend/cache-docker-images' }}
+      # Determine whether or not we should build the
+      # final production image and push it to GHCR.
+      production_build: ${{
+        github.event_name != 'pull_request' &&
+        github.ref == 'refs/heads/master'
+      }}
 
     steps:
       # Create a short SHA-tag to tag built images
@@ -100,7 +105,8 @@ jobs:
       # wrong where.
       - name: Run linter
         run: "docker exec snekbox_test /bin/bash -c 'flake8 \
-          --format \"::error file=%(path)s,line=%(row)d,col=%(col)d::[flake8] %(code)s: %(text)s\"'"
+          --format \"::error file=%(path)s,line=%(row)d,col=%(col)d::\
+          [flake8] %(code)s: %(text)s\"'"
 
       # Memory limit tests would fail if this isn't disabled.
       - name: Disable swap memory
@@ -145,12 +151,6 @@ jobs:
       # already built a huge chunk of the image before this point in
       # the run, so it does not make sense to drop down to a completely
       # fresh build environment in a new worker/runner.
-
-      - name: print output
-        run: |
-          echo "${{ github.ref }}"
-          echo "${{ env.production_build }}"
-          echo "${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/sebastiaan/backend/cache-docker-images' }}"
 
       # Build the final production image and push it to GHCR, tagging it
       # both with the short commit SHA and 'latest'. This step should use
