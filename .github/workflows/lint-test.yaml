@@ -13,7 +13,7 @@ jobs:
       # Determine whether or not we should build the
       # final production image and push it to GHCR.
       production_build: ${{ github.event_name != 'pull_request' &&
-        github.ref == 'refs/heads/master' }}
+        github.ref == 'refs/heads/sebastiaan/backend/cache-docker-images' }}
 
     steps:
       # Create a short SHA-tag to tag built images
