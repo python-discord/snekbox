@@ -9,6 +9,7 @@ from sentry_sdk.integrations.falcon import FalconIntegration
 
 DEBUG = os.environ.get("DEBUG", False)
 
+# Add comment to invalidate cache partially
 sentry_sdk.init(
     dsn=os.environ.get("SNEKBOX_SENTRY_DSN", ""),
     integrations=[FalconIntegration()],
