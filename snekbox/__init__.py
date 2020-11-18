@@ -7,7 +7,7 @@ from gunicorn import glogging
 from gunicorn.config import Config
 from sentry_sdk.integrations.falcon import FalconIntegration
 
-DEBUG = os.environ.get( "DEBUG", False )
+DEBUG = os.environ.get("DEBUG", False)
 
 # Add comment to invalidate cache partially
 sentry_sdk.init(
