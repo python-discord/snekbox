@@ -12,7 +12,7 @@ jobs:
     env:
       # Determine whether or not we should build the
       # final production image and push it to GHCR.
-      production_build: ${{ github.event_name != 'pull_request' && \
+      production_build: ${{ github.event_name != 'pull_request' &&
         github.ref == 'refs/heads/master' }}
 
     steps:
