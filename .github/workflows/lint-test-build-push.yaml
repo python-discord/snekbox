@@ -14,7 +14,7 @@ jobs:
       # Determine whether or not we should build the
       # final production image and push it to GHCR.
       production_build: ${{ github.event_name != 'pull_request' &&
-        github.ref == 'refs/heads/sebastiaan/backend/cache-docker-images' }}
+        github.ref == 'refs/heads/master' }}
 
     steps:
       # Create a short SHA-tag to tag built images
@@ -79,19 +79,20 @@ jobs:
           tags: ghcr.io/python-discord/snekbox-venv:${{ steps.sha_tag.outputs.tag }}
 
       - name: Start Container
-        run: "docker run \
-          --tty \
-          --detach \
-          --name snekbox_test \
-          --privileged \
-          --hostname pdsnk-dev \
-          -e PYTHONDONTWRITEBYTECODE=1 \
-          -e PIPENV_PIPFILE='/snekbox/Pipfile' \
-          -e ENV=\"${PWD}/scripts/.profile\" \
-          --volume \"${PWD}\":\"${PWD}\" \
-          --workdir \"${PWD}\" \
-          --entrypoint /bin/bash \
-          ghcr.io/python-discord/snekbox-venv:${{ steps.sha_tag.outputs.tag }}"
+        run: >-
+          docker run
+          --tty
+          --detach
+          --name snekbox_test
+          --privileged
+          --hostname pdsnk-dev
+          -e PYTHONDONTWRITEBYTECODE=1
+          -e PIPENV_PIPFILE='/snekbox/Pipfile'
+          -e ENV="${PWD}/scripts/.profile"
+          --volume "${PWD}":"${PWD}"
+          --workdir "${PWD}"
+          --entrypoint /bin/bash
+          ghcr.io/python-discord/snekbox-venv:${{ steps.sha_tag.outputs.tag }}
 
       - name: Install dependencies
         run: "docker exec snekbox_test /bin/bash -c \
