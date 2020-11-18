@@ -59,5 +59,5 @@ FROM venv
 ENTRYPOINT ["gunicorn"]
 CMD ["-c", "config/gunicorn.conf.py", "snekbox.api.app"]
 
-COPY . /snekbox
+COPY docker /snekbox
 WORKDIR /snekbox

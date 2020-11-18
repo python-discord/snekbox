@@ -10,4 +10,4 @@ services:
     ipc: none
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: Dockerfile
