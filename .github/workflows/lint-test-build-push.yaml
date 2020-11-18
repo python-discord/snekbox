@@ -3,7 +3,7 @@ name: Lint, Test, Build, Push
 on:
   push:
     branches:
-      - master
+      - sebastiaan/backend/test-repository-caching
   pull_request:
 
 
@@ -14,7 +14,7 @@ jobs:
       # Determine whether or not we should build the
       # final production image and push it to GHCR.
       production_build: ${{ github.event_name != 'pull_request' &&
-        github.ref == 'refs/heads/master' }}
+        github.ref == 'sebastiaan/backend/test-repository-caching' }}
 
     steps:
       # Create a short SHA-tag to tag built images
@@ -36,23 +36,6 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GHCR_TOKEN  }}
 
-      # Set up a caching directory for image layers. According to the docker
-      # documentation, it's recommended to use a SHA-based key to get the
-      # greatest change of finding the most relevant cached layer. We fall
-      # down to more generic containers by then matching by GitHub branch,
-      # to use cache generated earlier in the same branch, and finally to
-      # the latest cache in general. The `v0` is purely a cache version
-      # indicator that can be incremented manually if we want to invalidate
-      # old caches completely.
-      - name: Cache Image Layers
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-v0-buildx-${{ github.ref }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-v0-buildx-${{ github.ref }}-
-            ${{ runner.os }}-v0-buildx-
-
       # Build the image we need for testing/linting the current codebase,
       # without pushing the image to the GHCR. Instead, we load it into
       # the runner's docker environment so we can run it later. The
@@ -68,14 +51,13 @@ jobs:
         with:
           context: .
           file: ./docker/Dockerfile
-          push: false
+          push: true
           load: true
           target: venv
           cache-from: |
-            type=local,src=/tmp/.buildx-cache
             ghcr.io/python-discord/snekbox-base:latest
             ghcr.io/python-discord/snekbox-venv:latest
-          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
+          cache-to: type=inline
           tags: ghcr.io/python-discord/snekbox-venv:${{ steps.sha_tag.outputs.tag }}
 
       - name: Start Container
@@ -161,13 +143,13 @@ jobs:
         with:
           context: .
           file: ./docker/Dockerfile
-          push: true
+          push: false
           cache-from: |
-            type=local,src=/tmp/.buildx-cache
+            ghcr.io/python-discord/snekbox-venv:${{ steps.sha_tag.outputs.tag }}
             ghcr.io/python-discord/snekbox-base:latest
             ghcr.io/python-discord/snekbox-venv:latest
             ghcr.io/python-discord/snekbox:latest
-          cache-to: type=local,dest=/tmp/.buildx-cache
+          cache-to: type=inline
           tags: |
             ghcr.io/python-discord/snekbox:latest
             ghcr.io/python-discord/snekbox:${{ steps.sha_tag.outputs.tag }}
@@ -183,9 +165,8 @@ jobs:
           context: .
           file: ./docker/Dockerfile
           target: base
-          push: true
+          push: false
           cache-from: |
-            type=local,src=/tmp/.buildx-cache
             ghcr.io/python-discord/snekbox-base:latest
           cache-to: type=inline
           tags: ghcr.io/python-discord/snekbox-base:latest
@@ -199,9 +180,8 @@ jobs:
           context: .
           file: ./docker/Dockerfile
           target: venv
-          push: true
+          push: false
           cache-from: |
-            type=local,src=/tmp/.buildx-cache
             ghcr.io/python-discord/snekbox-base:latest
             ghcr.io/python-discord/snekbox-venv:latest
           cache-to: type=inline
