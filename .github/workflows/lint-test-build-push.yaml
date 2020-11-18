@@ -143,46 +143,46 @@ jobs:
         with:
           context: .
           file: ./docker/Dockerfile
-          push: true
+          push: false
           cache-from: |
             ghcr.io/python-discord/snekbox-venv:${{ steps.sha_tag.outputs.tag }}
-            ghcr.io/python-discord/snekbox-base:latest
-            ghcr.io/python-discord/snekbox-venv:latest
-            ghcr.io/python-discord/snekbox:latest
+#            ghcr.io/python-discord/snekbox-base:latest
+#            ghcr.io/python-discord/snekbox-venv:latest
+#            ghcr.io/python-discord/snekbox:latest
           cache-to: type=inline
           tags: |
             ghcr.io/python-discord/snekbox:latest
             ghcr.io/python-discord/snekbox:${{ steps.sha_tag.outputs.tag }}
 
-      # Push the base image to GHCR, *with* an inline cache manifest to
-      # ensure we can use this image as a cache source if our GitHub Actions
-      # "local" cache failed to be restored. GHCR does not support pushing a
-      # separate cache manifest, meaning we have to use an "inline" manifest.
-      - name: Push base image
-        if: env.production_build == 'true'
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: ./docker/Dockerfile
-          target: base
-          push: true
-          cache-from: |
-            ghcr.io/python-discord/snekbox-base:latest
-          cache-to: type=inline
-          tags: ghcr.io/python-discord/snekbox-base:latest
-
-      # Push the venv image to GHCR *with* an inline cache manifest. See
-      # the comment attached to the previous step for more information.
-      - name: Push venv image
-        if: env.production_build == 'true'
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: ./docker/Dockerfile
-          target: venv
-          push: true
-          cache-from: |
-            ghcr.io/python-discord/snekbox-base:latest
-            ghcr.io/python-discord/snekbox-venv:latest
-          cache-to: type=inline
-          tags: ghcr.io/python-discord/snekbox-venv:latest
+#      # Push the base image to GHCR, *with* an inline cache manifest to
+#      # ensure we can use this image as a cache source if our GitHub Actions
+#      # "local" cache failed to be restored. GHCR does not support pushing a
+#      # separate cache manifest, meaning we have to use an "inline" manifest.
+#      - name: Push base image
+#        if: env.production_build == 'true'
+#        uses: docker/build-push-action@v2
+#        with:
+#          context: .
+#          file: ./docker/Dockerfile
+#          target: base
+#          push: true
+#          cache-from: |
+#            ghcr.io/python-discord/snekbox-base:latest
+#          cache-to: type=inline
+#          tags: ghcr.io/python-discord/snekbox-base:latest
+#
+#      # Push the venv image to GHCR *with* an inline cache manifest. See
+#      # the comment attached to the previous step for more information.
+#      - name: Push venv image
+#        if: env.production_build == 'true'
+#        uses: docker/build-push-action@v2
+#        with:
+#          context: .
+#          file: ./docker/Dockerfile
+#          target: venv
+#          push: true
+#          cache-from: |
+#            ghcr.io/python-discord/snekbox-base:latest
+#            ghcr.io/python-discord/snekbox-venv:latest
+#          cache-to: type=inline
+#          tags: ghcr.io/python-discord/snekbox-venv:latest
