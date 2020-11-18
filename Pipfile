@@ -64,20 +64,6 @@ build = """
         -f docker/Dockerfile \
         .
 """
-buildbase = """
-    docker build \
-        -t ghcr.io/python-discord/snekbox-base:latest \
-        -f docker/Dockerfile \
-        --target base \
-        .
-"""
-buildvenv = """
-    docker build \
-        -t ghcr.io/python-discord/snekbox-venv:latest \
-        -f docker/Dockerfile \
-        --target venv \
-        .
-"""
 builddev = """
     docker build \
         -t ghcr.io/python-discord/snekbox-venv:dev \

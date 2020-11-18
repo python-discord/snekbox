@@ -67,11 +67,9 @@ pipenv run lint
 
 ### Running snekbox
 
-The Docker images can be built with:
+The Docker image can be built with:
 
 ```
-pipenv run buildbase
-pipenv run buildvenv
 pipenv run build
 ```
 
