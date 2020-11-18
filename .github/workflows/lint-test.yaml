@@ -112,11 +112,14 @@ jobs:
           cmd='coverage run -m unittest; coverage report -m'
           docker exec snekbox_test /bin/bash -c "${cmd}"
 
+      - name: print output
+        run: echo "${{ steps.run_tests.outputs.started }}"
+
       # Set-up a Python version to process the coverage reports
       # Note: This step runs even if the test step failed to make
       # sure we process the coverage reports.
       - name: Setup python
-        if: always() && steps.run_tests.outputs.started == 'true'
+        # if: always() && steps.run_tests.outputs.started == 'true'
         id: python
         uses: actions/setup-python@v2
         with:
@@ -131,7 +134,7 @@ jobs:
       # step in the check suite visible in the PR with a link to
       # the job.
       - name: Publish coverage report to coveralls.io
-        if: always() && steps.tests.outputs.started == 'true'
+        # if: always() && steps.tests.outputs.started == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
