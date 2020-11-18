@@ -51,7 +51,8 @@ jobs:
         with:
           context: .
           file: ./docker/Dockerfile
-          push: true
+          push: false
+          load: true
           target: venv
           cache-from: |
             ghcr.io/python-discord/snekbox-base:latest
