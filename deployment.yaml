@@ -18,3 +18,5 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 8060
+          securityContext:
+            privileged: true
