@@ -173,12 +173,14 @@ jobs:
 
       # Deploy to Kubernetes
       - name: Authenticate with Kubernetes
+        if: env.production_build == 'true'
         uses: azure/k8s-set-context@v1
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBECONFIG }}
 
       - name: Deploy to Kubernetes
+        if: env.production_build == 'true'
         uses: Azure/k8s-deploy@v1
         with:
           manifests: |
