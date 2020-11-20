@@ -120,22 +120,18 @@ class NsJail:
         output_size = 0
         output = []
 
-        # We'll consume STDOUT as long as the NsJail subprocess is running
+        # We'll consume STDOUT as long as the NsJail subprocess is running.
         while nsjail.poll() is None:
-            # Read 100 characters from the STDOUT stream
             chars = nsjail.stdout.read(100)
-            chars_size = sys.getsizeof(chars)
+            output_size += sys.getsizeof(chars)
+            output.append(chars)
 
-            # Check if these characters take us over the output limit
-            if output_size + chars_size > OUTPUT_MAX:
-                # Ask nsjail to terminate itself using SIGTERM
+            if output_size > OUTPUT_MAX:
+                # Ask NsJail to terminate as we've gone over the output limit.
                 nsjail.terminate()
                 break
 
-            output_size += chars_size
-            output.append(chars)
-
-        # Ensure that we wait for the nsjail process to terminate
+        # Ensure that we wait for the NsJail subprocess to terminate.
         nsjail.wait()
 
         return "".join(output)
