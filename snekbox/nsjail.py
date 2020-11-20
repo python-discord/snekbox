@@ -116,7 +116,7 @@ class NsJail:
         is asked to terminate with a SIGKILL.
 
         Once the subprocess has exited, either naturally or because it was terminated,
-        we rturn the output as a single string.
+        we return the output as a single string.
         """
         output_size = 0
         output = []
