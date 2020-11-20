@@ -182,4 +182,4 @@ class NsJailTests(unittest.TestCase):
         """).strip()
 
         result = self.nsjail.python3(stdout_flood)
-        self.assertEqual(result.returncode, 143)
+        self.assertEqual(result.returncode, -9)

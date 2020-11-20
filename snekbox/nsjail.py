@@ -112,7 +112,7 @@ class NsJail:
         The aim of this function is to limit the size of the output received from
         NsJail to prevent container from claiming too much memory. If the output
         received from STDOUT goes over the OUTPUT_MAX limit, the NsJail subprocess
-        is asked to terminate with a SIGTERM.
+        is asked to terminate with a SIGKILL.
 
         Once the subprocess has exited, either naturally or because it was terminated,
         the output up to that point is returned as a string.
@@ -127,8 +127,8 @@ class NsJail:
             output.append(chars)
 
             if output_size > OUTPUT_MAX:
-                # Ask NsJail to terminate as we've gone over the output limit.
-                nsjail.terminate()
+                # Terminate the NsJail subprocess with SIGKILL.
+                nsjail.kill()
                 break
 
         # Ensure that we wait for the NsJail subprocess to terminate.
