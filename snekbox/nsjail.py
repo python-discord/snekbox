@@ -27,6 +27,10 @@ NSJAIL_PATH = os.getenv("NSJAIL_PATH", "/usr/sbin/nsjail")
 NSJAIL_CFG = os.getenv("NSJAIL_CFG", "./config/snekbox.cfg")
 MEM_MAX = 52428800
 
+# Limit of stdout bytes we consume before terminating nsjail
+OUTPUT_MAX = 1_000_000  # 1 MB
+READ_CHUNK_SIZE = 10_000  # chars
+
 
 class NsJail:
     """
@@ -101,6 +105,39 @@ class NsJail:
                 # Treat fatal as error.
                 log.error(msg)
 
+    @staticmethod
+    def _consume_stdout(nsjail: subprocess.Popen) -> str:
+        """
+        Consume STDOUT, stopping when the output limit is reached or NsJail has exited.
+
+        The aim of this function is to limit the size of the output received from
+        NsJail to prevent container from claiming too much memory. If the output
+        received from STDOUT goes over the OUTPUT_MAX limit, the NsJail subprocess
+        is asked to terminate with a SIGKILL.
+
+        Once the subprocess has exited, either naturally or because it was terminated,
+        we return the output as a single string.
+        """
+        output_size = 0
+        output = []
+
+        # We'll consume STDOUT as long as the NsJail subprocess is running.
+        while nsjail.poll() is None:
+            chars = nsjail.stdout.read(READ_CHUNK_SIZE)
+            output_size += sys.getsizeof(chars)
+            output.append(chars)
+
+            if output_size > OUTPUT_MAX:
+                # Terminate the NsJail subprocess with SIGKILL.
+                log.info("Output exceeded the output limit, sending SIGKILL to NsJail.")
+                nsjail.kill()
+                break
+
+        # Ensure that we wait for the NsJail subprocess to terminate.
+        nsjail.wait()
+
+        return "".join(output)
+
     def python3(self, code: str) -> CompletedProcess:
         """Execute Python 3 code in an isolated environment and return the completed process."""
         with NamedTemporaryFile() as nsj_log:
@@ -124,7 +161,7 @@ class NsJail:
             log.info(msg)
 
             try:
-                result = subprocess.run(
+                nsjail = subprocess.Popen(
                     args,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
@@ -133,11 +170,19 @@ class NsJail:
             except ValueError:
                 return CompletedProcess(args, None, "ValueError: embedded null byte", None)
 
+            output = self._consume_stdout(nsjail)
+
+            # When you send signal `N` to a subprocess to terminate it using Popen, it
+            # will return `-N` as its exit code. As we normally get `N + 128` back, we
+            # convert negative exit codes to the `N + 128` form.
+            returncode = -nsjail.returncode + 128 if nsjail.returncode < 0 else nsjail.returncode
+
             log_lines = nsj_log.read().decode("utf-8").splitlines()
-            if not log_lines and result.returncode == 255:
+            if not log_lines and returncode == 255:
                 # NsJail probably failed to parse arguments so log output will still be in stdout
-                log_lines = result.stdout.splitlines()
+                log_lines = output.splitlines()
 
             self._parse_log(log_lines)
 
-        return result
+        log.info(f"nsjail return code: {returncode}")
+        return CompletedProcess(args, returncode, output, None)

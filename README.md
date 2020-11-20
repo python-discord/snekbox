@@ -24,6 +24,7 @@ result <- |             |<----------|           | <----------+
 
 The code is executed in a Python process that is launched through [NsJail], which is responsible for sandboxing the Python process. See [`snekbox.cfg`] for the NsJail configuration.
 
+The output returned by snekbox is truncated at around 1 MB.
 
 ## HTTP REST API
 

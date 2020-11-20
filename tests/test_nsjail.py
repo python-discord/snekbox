@@ -1,8 +1,11 @@
+import io
 import logging
+import sys
 import unittest
+import unittest.mock
 from textwrap import dedent
 
-from snekbox.nsjail import MEM_MAX, NsJail
+from snekbox.nsjail import MEM_MAX, NsJail, OUTPUT_MAX, READ_CHUNK_SIZE
 
 
 class NsJailTests(unittest.TestCase):
@@ -174,3 +177,25 @@ class NsJailTests(unittest.TestCase):
             msg="stdout does not come before stderr"
         )
         self.assertEqual(result.stderr, None)
+
+    def test_stdout_flood_results_in_graceful_sigterm(self):
+        stdout_flood = dedent("""
+            while True:
+                print('abcdefghij')
+        """).strip()
+
+        result = self.nsjail.python3(stdout_flood)
+        self.assertEqual(result.returncode, 137)
+
+    def test_large_output_is_truncated(self):
+        chunk = "a" * READ_CHUNK_SIZE
+        expected_chunks = OUTPUT_MAX // sys.getsizeof(chunk) + 1
+
+        nsjail_subprocess = unittest.mock.Mock()
+
+        # Go 10 chunks over to make sure we exceed the limit
+        nsjail_subprocess.stdout = io.StringIO((expected_chunks + 10) * chunk)
+        nsjail_subprocess.poll.return_value = None
+
+        output = self.nsjail._consume_stdout(nsjail_subprocess)
+        self.assertEqual(output, chunk * expected_chunks)
