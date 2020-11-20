@@ -29,6 +29,7 @@ MEM_MAX = 52428800
 
 # Limit of stdout bytes we consume before terminating nsjail
 OUTPUT_MAX = 1_000_000  # 1 MB
+READ_CHUNK_SIZE = 10_000  # chars
 
 
 class NsJail:
@@ -122,7 +123,7 @@ class NsJail:
 
         # We'll consume STDOUT as long as the NsJail subprocess is running.
         while nsjail.poll() is None:
-            chars = nsjail.stdout.read(10_000)
+            chars = nsjail.stdout.read(READ_CHUNK_SIZE)
             output_size += sys.getsizeof(chars)
             output.append(chars)
 
