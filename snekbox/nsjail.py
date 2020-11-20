@@ -27,6 +27,9 @@ NSJAIL_PATH = os.getenv("NSJAIL_PATH", "/usr/sbin/nsjail")
 NSJAIL_CFG = os.getenv("NSJAIL_CFG", "./config/snekbox.cfg")
 MEM_MAX = 52428800
 
+# Limit of stdout bytes we consume before terminating nsjail
+OUTPUT_MAX = 1_000_000  # 1 MB
+
 
 class NsJail:
     """
@@ -124,7 +127,7 @@ class NsJail:
             log.info(msg)
 
             try:
-                result = subprocess.run(
+                nsjail = subprocess.Popen(
                     args,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
@@ -133,11 +136,33 @@ class NsJail:
             except ValueError:
                 return CompletedProcess(args, None, "ValueError: embedded null byte", None)
 
+            output_size = 0
+            output = []
+
+            # We'll consume STDOUT as long as the subprocess is running
+            while nsjail.poll() is None:
+                # Read 100 characters from the STDOUT stream
+                chars = nsjail.stdout.read(100)
+                chars_size = sys.getsizeof(chars)
+
+                # Check if these characters take us over the output limit
+                if output_size + chars_size > OUTPUT_MAX:
+                    # Ask nsjail to terminate itself using SIGTERM
+                    nsjail.terminate()
+                    break
+
+                output_size += chars_size
+                output.append(chars)
+
+            # Ensure that we wait for the nsjail process to terminate
+            nsjail.wait()
+
             log_lines = nsj_log.read().decode("utf-8").splitlines()
-            if not log_lines and result.returncode == 255:
+            if not log_lines and nsjail.returncode == 255:
                 # NsJail probably failed to parse arguments so log output will still be in stdout
-                log_lines = result.stdout.splitlines()
+                log_lines = "".join(output).splitlines()
 
             self._parse_log(log_lines)
 
-        return result
+        log.info(f"nsjail return code: {nsjail.returncode}")
+        return CompletedProcess(args, nsjail.returncode, "".join(output), None)

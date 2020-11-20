@@ -174,3 +174,12 @@ class NsJailTests(unittest.TestCase):
             msg="stdout does not come before stderr"
         )
         self.assertEqual(result.stderr, None)
+
+    def test_stdout_flood_results_in_graceful_sigterm(self):
+        stdout_flood = dedent("""
+            while True:
+                print('abcdefghij')
+        """).strip()
+
+        result = self.nsjail.python3(stdout_flood)
+        self.assertEqual(result.returncode, 143)
