@@ -122,7 +122,7 @@ class NsJail:
 
         # We'll consume STDOUT as long as the NsJail subprocess is running.
         while nsjail.poll() is None:
-            chars = nsjail.stdout.read(100)
+            chars = nsjail.stdout.read(10_000)
             output_size += sys.getsizeof(chars)
             output.append(chars)
 
