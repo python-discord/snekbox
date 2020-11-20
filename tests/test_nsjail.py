@@ -5,7 +5,7 @@ import unittest
 import unittest.mock
 from textwrap import dedent
 
-from snekbox.nsjail import MEM_MAX, NsJail, READ_CHUNK_SIZE, OUTPUT_MAX
+from snekbox.nsjail import MEM_MAX, NsJail, OUTPUT_MAX, READ_CHUNK_SIZE
 
 
 class NsJailTests(unittest.TestCase):
@@ -195,9 +195,7 @@ class NsJailTests(unittest.TestCase):
 
         # Go 10 chunks over to make sure we exceed the limit
         nsjail_subprocess.stdout = io.StringIO((expected_chunks + 10) * chunk)
-        nsjail_subprocess.returncode = -9
         nsjail_subprocess.poll.return_value = None
 
-        returncode, output = self.nsjail._consume_stdout(nsjail_subprocess)
-        self.assertEqual(returncode, 137)
+        output = self.nsjail._consume_stdout(nsjail_subprocess)
         self.assertEqual(output, chunk * expected_chunks)
