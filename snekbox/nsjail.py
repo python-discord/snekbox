@@ -7,7 +7,7 @@ import textwrap
 from pathlib import Path
 from subprocess import CompletedProcess
 from tempfile import NamedTemporaryFile
-from typing import Iterable
+from typing import Iterable, Tuple
 
 from snekbox import DEBUG
 
@@ -105,7 +105,7 @@ class NsJail:
                 log.error(msg)
 
     @staticmethod
-    def _consume_stdout(nsjail: subprocess.Popen) -> str:
+    def _consume_stdout(nsjail: subprocess.Popen) -> Tuple[int, str]:
         """
         Consume STDOUT, stopping when the output limit is reached or NsJail has exited.
 
@@ -115,7 +115,7 @@ class NsJail:
         is asked to terminate with a SIGKILL.
 
         Once the subprocess has exited, either naturally or because it was terminated,
-        the output up to that point is returned as a string.
+        we return the exit code as an int and the output as a single string.
         """
         output_size = 0
         output = []
@@ -128,13 +128,19 @@ class NsJail:
 
             if output_size > OUTPUT_MAX:
                 # Terminate the NsJail subprocess with SIGKILL.
+                log.info(f"Output exceeded the output limit, sending SIGKILL to NsJail.")
                 nsjail.kill()
                 break
 
         # Ensure that we wait for the NsJail subprocess to terminate.
         nsjail.wait()
 
-        return "".join(output)
+        # When you send signal `N` to a subprocess to terminate it using Popen, it
+        # will return `-N` as its exit code. As we normally get `N + 128` back, we
+        # convert negative exit codes to the `N + 128` form.
+        returncode = -nsjail.returncode + 128 if nsjail.returncode < 0 else nsjail.returncode
+
+        return returncode, "".join(output)
 
     def python3(self, code: str) -> CompletedProcess:
         """Execute Python 3 code in an isolated environment and return the completed process."""
@@ -168,14 +174,14 @@ class NsJail:
             except ValueError:
                 return CompletedProcess(args, None, "ValueError: embedded null byte", None)
 
-            output = self._consume_stdout(nsjail)
+            returncode, output = self._consume_stdout(nsjail)
 
             log_lines = nsj_log.read().decode("utf-8").splitlines()
-            if not log_lines and nsjail.returncode == 255:
+            if not log_lines and returncode == 255:
                 # NsJail probably failed to parse arguments so log output will still be in stdout
                 log_lines = output.splitlines()
 
             self._parse_log(log_lines)
 
-        log.info(f"nsjail return code: {nsjail.returncode}")
-        return CompletedProcess(args, nsjail.returncode, output, None)
+        log.info(f"nsjail return code: {returncode}")
+        return CompletedProcess(args, returncode, output, None)
