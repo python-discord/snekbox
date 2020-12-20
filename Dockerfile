@@ -35,11 +35,13 @@ RUN chmod +x /usr/sbin/nsjail
 
 FROM base as venv
 ARG DEV
+ARG git_sha="development"
 
 ENV PIP_NO_CACHE_DIR=false \
     PIPENV_DONT_USE_PYENV=1 \
     PIPENV_HIDE_EMOJIS=1 \
-    PIPENV_NOSPIN=1
+    PIPENV_NOSPIN=1 \
+    GIT_SHA=$git_sha
 
 COPY Pipfile Pipfile.lock /snekbox/
 WORKDIR /snekbox
