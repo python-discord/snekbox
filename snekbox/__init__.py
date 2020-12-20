@@ -8,11 +8,13 @@ from gunicorn.config import Config
 from sentry_sdk.integrations.falcon import FalconIntegration
 
 DEBUG = os.environ.get("DEBUG", False)
+GIT_SHA = os.environ.get("GIT_SHA", "development")
 
 sentry_sdk.init(
     dsn=os.environ.get("SNEKBOX_SENTRY_DSN", ""),
     integrations=[FalconIntegration()],
-    send_default_pii=True
+    send_default_pii=True,
+    release=f"snekbox@{GIT_SHA}"
 )
 
 
