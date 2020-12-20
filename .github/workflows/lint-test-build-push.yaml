@@ -170,6 +170,8 @@ jobs:
           tags: |
             ghcr.io/python-discord/snekbox:latest
             ghcr.io/python-discord/snekbox:${{ steps.sha_tag.outputs.tag }}
+          build-args: |
+            git_sha=${{ github.sha }}
 
       # Deploy to Kubernetes
       - name: Authenticate with Kubernetes
