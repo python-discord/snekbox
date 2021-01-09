@@ -102,6 +102,12 @@ jobs:
           docker exec snekbox_test /bin/bash -c
           'pipenv install --system --deploy --dev && pip install numpy'
 
+      # Skip the flake8 hook because the following step will run it.
+      - name: Run pre-commit hooks
+        run: >-
+          docker exec snekbox_test /bin/bash -c
+          'SKIP=flake8 pre-commit run --all-files'
+
       # This runs `flake8` in the container and asks `flake8` to output
       # linting errors in the format of the command for registering workflow
       # error messages/annotations. This means that Github Actions will pick
