@@ -20,6 +20,9 @@ spec:
             - containerPort: 8060
           securityContext:
             privileged: true
+          volumeMounts:
+            - name: snekbox-user-base-volume
+              mountPath: /snekbox/user_base
           lifecycle:
             postStart:
               exec:
@@ -46,3 +49,7 @@ spec:
                     sympy~=1.6
                     toml~=0.10
                     yarl~=1.6
+      volumes:
+        - name: snekbox-user-base-volume
+          configMap:
+            name: snekbox-user-base
