@@ -102,6 +102,12 @@ jobs:
           docker exec snekbox_test /bin/bash -c
           'pipenv install --system --deploy --dev && pip install numpy'
 
+      # Required by pre-commit.
+      - name: Install git
+        run: >-
+          docker exec snekbox_test /bin/bash -c
+          'apt-get -y update && apt-get install -y git=1:2.20.*'
+
       # Skip the flake8 hook because the following step will run it.
       - name: Run pre-commit hooks
         run: >-
