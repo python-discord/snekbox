@@ -98,8 +98,9 @@ jobs:
 
       # One of the unit tests needs to import numpy.
       - name: Install dependencies
-        run: "docker exec snekbox_test /bin/bash -c \
-          'pipenv install --system --deploy --dev && pip install numpy'"
+        run: >-
+          docker exec snekbox_test /bin/bash -c
+          'pipenv install --system --deploy --dev && pip install numpy'
 
       # This runs `flake8` in the container and asks `flake8` to output
       # linting errors in the format of the command for registering workflow
@@ -107,9 +108,10 @@ jobs:
       # up on this output to generate nice annotations to indicate what went
       # wrong where.
       - name: Run linter
-        run: "docker exec snekbox_test /bin/bash -c 'flake8 \
-          --format \"::error file=%(path)s,line=%(row)d,col=%(col)d::\
-          [flake8] %(code)s: %(text)s\"'"
+        run: >-
+          docker exec snekbox_test /bin/bash -c
+          'flake8 --format
+          "::error file=%(path)s,line=%(row)d,col=%(col)d::[flake8] %(code)s: %(text)s"'
 
       # Memory limit tests would fail if this isn't disabled.
       - name: Disable swap memory
