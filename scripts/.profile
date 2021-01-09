@@ -17,5 +17,5 @@ nsjpy() {
     nsjail \
         --config "${NSJAIL_CFG:-/snekbox/config/snekbox.cfg}" \
         $nsj_args -- \
-        /usr/local/bin/python -Iqu -c "$@"
+        /usr/local/bin/python -Squ -c "$@"
 }

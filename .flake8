@@ -16,7 +16,7 @@ ignore=
     ANN002,ANN003,ANN101,ANN102,ANN204,ANN206
 exclude=
     __pycache__,.cache,
-    venv,.venv
+    venv,.venv,user_base
 per-file-ignores=tests/*:D1,ANN
 import-order-style=pycharm
 inline-quotes="
