@@ -35,13 +35,11 @@ RUN chmod +x /usr/sbin/nsjail
 
 FROM base as venv
 ARG DEV
-ARG git_sha="development"
 
 ENV PIP_NO_CACHE_DIR=false \
     PIPENV_DONT_USE_PYENV=1 \
     PIPENV_HIDE_EMOJIS=1 \
     PIPENV_NOSPIN=1 \
-    GIT_SHA=$git_sha \
     PYTHONUSERBASE=/snekbox/user_base
 
 COPY Pipfile Pipfile.lock /snekbox/
@@ -55,6 +53,7 @@ RUN if [ -n "${DEV}" ]; \
     fi
 
 # At the end to avoid re-installing dependencies when only a config changes.
+# It's in the venv image because the final image is not used during development.
 COPY config/ /snekbox/config
 
 FROM venv
@@ -64,3 +63,7 @@ CMD ["-c", "config/gunicorn.conf.py", "snekbox.api.app"]
 
 COPY . /snekbox
 WORKDIR /snekbox
+
+# At the end to prevent it from invalidating the layer cache.
+ARG git_sha="development"
+ENV GIT_SHA=$git_sha
