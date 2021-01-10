@@ -27,7 +27,7 @@ spec:
             postStart:
               exec:
                 command:
-                  - "bin/sh"
+                  - "/bin/sh"
                   - "-c"
                   - >-
                     pip install --user
