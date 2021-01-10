@@ -83,11 +83,17 @@ class NsJail:
         mem.mkdir(parents=True, exist_ok=True)
 
         # Swap limit cannot be set to a value lower than memory.limit_in_bytes.
-        # Therefore, this must be set first.
+        # Therefore, this must be set before the swap limit.
+        #
+        # Since child cgroups are dynamically created, the swap limit has to be set on the parent
+        # instead so that children inherit it. Given the swap's dependency on the memory limit,
+        # the memory limit must also be set on the parent. NsJail only sets the memory limit for
+        # child cgroups, not the parent.
         (mem / "memory.limit_in_bytes").write_text(mem_max, encoding="utf-8")
 
         try:
             # Swap limit is specified as the sum of the memory and swap limits.
+            # Therefore, setting it equal to the memory limit effectively disables swapping.
             (mem / "memory.memsw.limit_in_bytes").write_text(mem_max, encoding="utf-8")
         except PermissionError:
             log.warning(
