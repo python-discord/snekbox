@@ -51,5 +51,6 @@ spec:
                     yarl~=1.6
       volumes:
         - name: snekbox-user-base-volume
-          configMap:
-            name: snekbox-user-base
+          hostPath:
+            path: /snekbox_dep_cache
+            type: Directory
