@@ -1,4 +1,5 @@
 version: "3.7"
+
 services:
   snekbox:
     container_name: snekbox
@@ -11,3 +12,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    volumes:
+      - user-base:/snekbox/user_base
+
+volumes:
+  user-base:

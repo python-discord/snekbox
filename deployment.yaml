@@ -20,3 +20,37 @@ spec:
             - containerPort: 8060
           securityContext:
             privileged: true
+          volumeMounts:
+            - name: snekbox-user-base-volume
+              mountPath: /snekbox/user_base
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - "bin/sh"
+                  - "-c"
+                  - >-
+                    pip install --user
+                    arrow~=0.17
+                    attrs~=20.3
+                    beautifulsoup4~=4.9
+                    forbiddenfruit~=0.1
+                    fuzzywuzzy~=0.18
+                    lark~=0.10
+                    more-itertools~=8.6
+                    networkx~=2.5
+                    numpy~=1.19
+                    pandas~=1.1
+                    pendulum~=2.1
+                    python-dateutil~=2.8
+                    python-levenshtein~=0.12.0
+                    pyyaml~= 5.3
+                    scipy~=1.5
+                    sympy~=1.6
+                    toml~=0.10
+                    yarl~=1.6
+      volumes:
+        - name: snekbox-user-base-volume
+          hostPath:
+            path: /snekbox_dep_cache
+            type: Directory

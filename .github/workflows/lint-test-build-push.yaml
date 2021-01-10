@@ -96,9 +96,10 @@ jobs:
           --entrypoint /bin/bash
           ghcr.io/python-discord/snekbox-venv:${{ steps.sha_tag.outputs.tag }}
 
+      # One of the unit tests needs to import numpy.
       - name: Install dependencies
         run: "docker exec snekbox_test /bin/bash -c \
-          'pipenv install --system --deploy --dev'"
+          'pipenv install --system --deploy --dev && pip install numpy'"
 
       # This runs `flake8` in the container and asks `flake8` to output
       # linting errors in the format of the command for registering workflow
