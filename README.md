@@ -42,7 +42,27 @@ docker run --ipc=none --privileged -p 8060:8060 ghcr.io/python-discord/snekbox
 
 To run it in the background, use the `-d` option. See the documentation on [`docker run`] for more information.
 
-The above command will make the API accessible on the host via `http://localhost:8060/`. Currently there's only one endpoint: `http://localhost:8060/eval`.
+The above command will make the API accessible on the host via `http://localhost:8060/`. Currently, there's only one endpoint: `http://localhost:8060/eval`.
+
+## Third-party Packages
+
+By default, the Python interpreter has no access to any packages besides the
+standard library. Even snekbox's own dependencies like Falcon and Gunicorn are
+not exposed.
+
+To expose third-party Python packages during evaluation, install them to the user site:
+
+```sh
+docker exec snekbox /bin/sh -c 'pip install --ignore-installed --user numpy' 
+```
+
+In the above command, `snekbox` is the name of the running container. The name may be different and can be checked with `docker ps`.
+
+It's important to use `--user` to install them to the user site, whose base is located at `/snekbox/user_base` within the Docker container. To persist the installed packages, a volume for the directory can be created with Docker. For an example, see [`docker-compose.yml`].
+
+`--ignore-installed` is only necessary if installing a package that happens to
+be a dependency of snekbox. Normally, pip would reject the installation because
+it doesn't make a distinction here between the global and user sites.
 
 ## Development Environment
 
@@ -148,6 +168,7 @@ The alias can be found in `./scripts/.profile`, which is automatically added whe
 [`snekbox.cfg`]: config/snekbox.cfg
 [`snekapi.py`]: snekbox/api/snekapi.py
 [`resources`]: snekbox/api/resources
+[`docker-compose.yml`]: docker-compose.yml
 [`docker run`]: https://docs.docker.com/engine/reference/commandline/run/
 [nsjail]: https://github.com/google/nsjail
 [falcon]: https://falconframework.org/
