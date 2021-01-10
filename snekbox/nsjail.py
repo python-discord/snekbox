@@ -47,8 +47,22 @@ class NsJail:
     def _read_config() -> NsJailConfig:
         """Read the NsJail config at `NSJAIL_CFG` and return a protobuf Message object."""
         config = NsJailConfig()
-        with open(NSJAIL_CFG, encoding="utf-8") as f:
-            text_format.Parse(f.read(), config)
+
+        try:
+            with open(NSJAIL_CFG, encoding="utf-8") as f:
+                config_text = f.read()
+        except FileNotFoundError:
+            log.fatal(f"The NsJail config at {NSJAIL_CFG!r} could not be found.")
+            sys.exit(1)
+        except OSError as e:
+            log.fatal(f"The NsJail config at {NSJAIL_CFG!r} could not read.", exc_info=e)
+            sys.exit(1)
+
+        try:
+            text_format.Parse(config_text, config)
+        except text_format.ParseError as e:
+            log.fatal(f"The NsJail config at {NSJAIL_CFG!r} could not be parsed.", exc_info=e)
+            sys.exit(1)
 
         return config
 
