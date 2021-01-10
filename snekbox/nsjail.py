@@ -37,9 +37,8 @@ class NsJail:
     See config/snekbox.cfg for the default NsJail configuration.
     """
 
-    def __init__(self, nsjail_binary: str = NSJAIL_PATH, python_binary: str = sys.executable):
+    def __init__(self, nsjail_binary: str = NSJAIL_PATH):
         self.nsjail_binary = nsjail_binary
-        self.python_binary = python_binary
         self.config = self._read_config()
 
         self._create_parent_cgroups()
@@ -154,7 +153,7 @@ class NsJail:
                 "--config", NSJAIL_CFG,
                 "--log", nsj_log.name,
                 "--",
-                self.python_binary, "-Squ", "-c", code
+                self.config.exec_bin.path, *self.config.exec_bin.arg, "-c", code
             )
 
             msg = "Executing code..."
