@@ -53,7 +53,7 @@ not exposed.
 To expose third-party Python packages during evaluation, install them to the user site:
 
 ```sh
-docker exec snekbox /bin/sh -c 'pip install --ignore-installed --user numpy' 
+docker exec snekbox /bin/sh -c 'pip install --ignore-installed --user numpy'
 ```
 
 In the above command, `snekbox` is the name of the running container. The name may be different and can be checked with `docker ps`.
