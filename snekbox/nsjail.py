@@ -9,7 +9,10 @@ from subprocess import CompletedProcess
 from tempfile import NamedTemporaryFile
 from typing import Iterable
 
+from google.protobuf import text_format
+
 from snekbox import DEBUG
+from snekbox.config import NsJailConfig
 
 log = logging.getLogger(__name__)
 
@@ -42,8 +45,18 @@ class NsJail:
     def __init__(self, nsjail_binary: str = NSJAIL_PATH, python_binary: str = sys.executable):
         self.nsjail_binary = nsjail_binary
         self.python_binary = python_binary
+        self.config = self._read_config()
 
         self._create_parent_cgroups()
+
+    @staticmethod
+    def _read_config() -> NsJailConfig:
+        """Read the NsJail config at `NSJAIL_CFG` and return a protobuf Message object."""
+        config = NsJailConfig()
+        with open(NSJAIL_CFG, encoding="utf-8") as f:
+            text_format.Parse(f.read(), config)
+
+        return config
 
     @staticmethod
     def _create_parent_cgroups(
