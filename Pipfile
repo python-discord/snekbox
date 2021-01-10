@@ -42,6 +42,7 @@ testb = """
 report = "coverage report"
 snekbox = "gunicorn -c config/gunicorn.conf.py snekbox.api.app"
 devsh = "sh scripts/dev.sh"
+protoc = "sh scripts/protoc.sh"
 build = """
     docker build \
         -t ghcr.io/python-discord/snekbox:latest \

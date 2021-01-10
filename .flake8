@@ -6,7 +6,7 @@ import-order-style = pycharm
 inline-quotes = "
 max-line-length = 100
 
-exclude = __pycache__,.cache,user_base,venv,.venv
+exclude = __pycache__,.cache,user_base,venv,.venv,snekbox/config.py
 
 ignore =
     W503,
