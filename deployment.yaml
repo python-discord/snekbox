@@ -53,4 +53,4 @@ spec:
         - name: snekbox-user-base-volume
           hostPath:
             path: /snekbox_dep_cache
-            type: Directory
+            type: DirectoryOrCreate
