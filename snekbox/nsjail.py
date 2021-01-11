@@ -165,13 +165,19 @@ class NsJail:
 
         return "".join(output)
 
-    def python3(self, code: str) -> CompletedProcess:
-        """Execute Python 3 code in an isolated environment and return the completed process."""
+    def python3(self, code: str, *args) -> CompletedProcess:
+        """
+        Execute Python 3 code in an isolated environment and return the completed process.
+
+        Additional arguments passed will be used to override the values in the NsJail config.
+        These arguments are only options for NsJail; they do not affect Python's arguments.
+        """
         with NamedTemporaryFile() as nsj_log:
             args = (
                 self.nsjail_binary,
                 "--config", NSJAIL_CFG,
                 "--log", nsj_log.name,
+                *args,
                 "--",
                 self.config.exec_bin.path, *self.config.exec_bin.arg, "-c", code
             )
