@@ -44,7 +44,6 @@ docker run \
     --ipc="none" \
     -e PYTHONDONTWRITEBYTECODE=1 \
     -e PIPENV_PIPFILE="/snekbox/Pipfile" \
-    -e BASH_ENV="${PWD}/scripts/.profile" \
     --volume "${PWD}":"${PWD}" \
     --workdir "${PWD}"\
     --entrypoint /bin/bash \
@@ -52,7 +51,7 @@ docker run \
     >/dev/null \
 
 # Execute the given command(s)
-docker exec -it snekbox_test /bin/bash --rcfile "${PWD}/scripts/.profile" "$@"
+docker exec -it snekbox_test /bin/bash "$@"
 
 # Fix ownership of coverage file
 # BusyBox doesn't support --reference for chown

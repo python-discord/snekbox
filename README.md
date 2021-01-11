@@ -153,13 +153,13 @@ pipenv run devsh [--build [--clean]] [bash_args ...]
 
 #### Invoking NsJail
 
-A shell alias named `nsjpy` is included and is basically `nsjail python -c <args>` but NsJail is configured as it would be if snekbox invoked it (such as the time and memory limits). It provides an easy way to run Python code inside NsJail without the need to run snekbox with its webserver and send HTTP requests. Example usage:
+NsJail can be invoked in a more direction manner that does not require using a web server or its API. See `python -m snekbox --help`. Example usage:
 
 ```bash
-nsjpy "print('hello world!')"
+python -m snekbox 'print("hello world!")' --time_limit 0
 ```
 
-The alias can be found in `./scripts/.profile`, which is automatically added when the shell is launched in the container.
+With this command, NsJail uses the same configuration normally used through the web API. It also has an alias, `pipenv run eval`.
 
 [1]: https://github.com/python-discord/snekbox/workflows/Lint,%20Test,%20Build,%20Push/badge.svg?branch=master
 [2]: https://github.com/python-discord/snekbox/actions?query=workflow%3A%22Lint%2C+Test%2C+Build%2C+Push%22+branch%3Amaster
