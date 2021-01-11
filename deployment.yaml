@@ -30,7 +30,7 @@ spec:
                   - "/bin/sh"
                   - "-c"
                   - >-
-                    pip install --user
+                    pip install --user --ignore-installed
                     arrow~=0.17
                     attrs~=20.3
                     beautifulsoup4~=4.9
