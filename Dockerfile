@@ -19,6 +19,7 @@ RUN git clone \
 WORKDIR /nsjail
 RUN make
 
+# ------------------------------------------------------------------------------
 FROM python:3.9-slim-buster as base
 ENV PIP_NO_CACHE_DIR=false \
     PIPENV_DONT_USE_PYENV=1 \
@@ -37,6 +38,7 @@ RUN pip install pipenv==2020.11.4
 COPY --from=builder /nsjail/nsjail /usr/sbin/
 RUN chmod +x /usr/sbin/nsjail
 
+# ------------------------------------------------------------------------------
 FROM base as venv
 ARG DEV
 
@@ -60,6 +62,7 @@ RUN if [ -n "${DEV}" ]; \
 # It's in the venv image because the final image is not used during development.
 COPY config/ /snekbox/config
 
+# ------------------------------------------------------------------------------
 FROM venv
 
 ENTRYPOINT ["gunicorn"]
