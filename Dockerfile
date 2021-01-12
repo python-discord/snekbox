@@ -20,7 +20,11 @@ WORKDIR /nsjail
 RUN make
 
 FROM python:3.9-slim-buster as base
-ENV PIP_NO_CACHE_DIR=false
+ENV PIP_NO_CACHE_DIR=false \
+    PIPENV_DONT_USE_PYENV=1 \
+    PIPENV_HIDE_EMOJIS=1 \
+    PIPENV_NOSPIN=1 \
+    PYTHONUSERBASE=/snekbox/user_base
 
 RUN apt-get -y update \
     && apt-get install -y \
