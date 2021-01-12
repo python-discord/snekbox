@@ -30,7 +30,8 @@ spec:
                   - "/bin/sh"
                   - "-c"
                   - >-
-                    pip install --user --ignore-installed
+                    PYTHONUSERBASE=/snekbox/user_base
+                    pip install --user
                     arrow~=0.17
                     attrs~=20.3
                     beautifulsoup4~=4.9
