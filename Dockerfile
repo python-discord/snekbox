@@ -51,12 +51,7 @@ ENV PIP_NO_CACHE_DIR=false \
 COPY Pipfile Pipfile.lock /snekbox/
 WORKDIR /snekbox
 
-RUN if [ -n "${DEV}" ]; \
-    then \
-        pipenv install --deploy --system --dev; \
-    else \
-        pipenv install --deploy --system; \
-    fi
+RUN pipenv install --deploy --system ${DEV:+--dev}
 
 # At the end to avoid re-installing dependencies when only a config changes.
 # It's in the venv image because the final image is not used during development.
