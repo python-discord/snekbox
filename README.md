@@ -50,19 +50,17 @@ By default, the Python interpreter has no access to any packages besides the
 standard library. Even snekbox's own dependencies like Falcon and Gunicorn are
 not exposed.
 
-To expose third-party Python packages during evaluation, install them to the user site:
+To expose third-party Python packages during evaluation, install them to a custom user site:
 
 ```sh
-docker exec snekbox /bin/sh -c 'pip install --ignore-installed --user numpy'
+docker exec snekbox /bin/sh -c 'PYTHONUSERBASE=/snekbox/user_base pip install numpy'
 ```
 
 In the above command, `snekbox` is the name of the running container. The name may be different and can be checked with `docker ps`.
 
-It's important to use `--user` to install them to the user site, whose base is located at `/snekbox/user_base` within the Docker container. To persist the installed packages, a volume for the directory can be created with Docker. For an example, see [`docker-compose.yml`].
+The packages will be installed to the user site within `/snekbox/user_base`. To persist the installed packages, a volume for the directory can be created with Docker. For an example, see [`docker-compose.yml`].
 
-`--ignore-installed` is only necessary if installing a package that happens to
-be a dependency of snekbox. Normally, pip would reject the installation because
-it doesn't make a distinction here between the global and user sites.
+If `pip`, `setuptools`, or `wheel` are dependencies or need to be exposed, then use the `--ignore-installed` option with pip. However, note that this will also re-install packages present in the custom user site, effectively making caching it futile. Current limitations of pip don't allow it to ignore packages extant outside the installation destination.
 
 ## Development Environment
 

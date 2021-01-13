@@ -19,8 +19,17 @@ RUN git clone \
 WORKDIR /nsjail
 RUN make
 
+# ------------------------------------------------------------------------------
 FROM python:3.9-slim-buster as base
-ENV PIP_NO_CACHE_DIR=false
+
+# Everything will be a user install to allow snekbox's dependencies to be kept
+# separate from the packages exposed during eval.
+ENV PATH=/root/.local/bin:$PATH \
+    PIP_NO_CACHE_DIR=false \
+    PIP_USER=1 \
+    PIPENV_DONT_USE_PYENV=1 \
+    PIPENV_HIDE_EMOJIS=1 \
+    PIPENV_NOSPIN=1
 
 RUN apt-get -y update \
     && apt-get install -y \
@@ -28,34 +37,26 @@ RUN apt-get -y update \
         libnl-route-3-200=3.4.* \
         libprotobuf17=3.6.* \
     && rm -rf /var/lib/apt/lists/*
-RUN pip install pipenv==2020.11.4
+RUN pip install pipenv==2020.11.15
 
 COPY --from=builder /nsjail/nsjail /usr/sbin/
 RUN chmod +x /usr/sbin/nsjail
 
+# ------------------------------------------------------------------------------
 FROM base as venv
 ARG DEV
-
-ENV PIP_NO_CACHE_DIR=false \
-    PIPENV_DONT_USE_PYENV=1 \
-    PIPENV_HIDE_EMOJIS=1 \
-    PIPENV_NOSPIN=1 \
-    PYTHONUSERBASE=/snekbox/user_base
 
 COPY Pipfile Pipfile.lock /snekbox/
 WORKDIR /snekbox
 
-RUN if [ -n "${DEV}" ]; \
-    then \
-        pipenv install --deploy --system --dev; \
-    else \
-        pipenv install --deploy --system; \
-    fi
+# Install to the default user site since PIP_USER is set.
+RUN pipenv install --deploy --system ${DEV:+--dev}
 
 # At the end to avoid re-installing dependencies when only a config changes.
 # It's in the venv image because the final image is not used during development.
 COPY config/ /snekbox/config
 
+# ------------------------------------------------------------------------------
 FROM venv
 
 ENTRYPOINT ["gunicorn"]
