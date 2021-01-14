@@ -153,7 +153,7 @@ pipenv run devsh [--build [--clean]] [bash_args ...]
 
 #### Invoking NsJail
 
-NsJail can be invoked in a more direction manner that does not require using a web server or its API. See `python -m snekbox --help`. Example usage:
+NsJail can be invoked in a more direct manner that does not require using a web server or its API. See `python -m snekbox --help`. Example usage:
 
 ```bash
 python -m snekbox 'print("hello world!")' --time_limit 0
