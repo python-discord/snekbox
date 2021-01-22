@@ -1,5 +1,5 @@
 [![Discord][5]][6]
-[![Build Status][1]][2] 
+[![Build Status][1]][2]
 [![Coverage Status][3]][4]
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
