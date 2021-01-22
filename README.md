@@ -1,4 +1,7 @@
-[![Build Status][1]][2] [![Coverage Status][3]][4]
+[![Discord][5]][6]
+[![Build Status][1]][2] 
+[![Coverage Status][3]][4]
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 # snekbox
 
@@ -163,6 +166,8 @@ The alias can be found in `./scripts/.profile`, which is automatically added whe
 [2]: https://github.com/python-discord/snekbox/actions?query=workflow%3A%22Lint%2C+Test%2C+Build%2C+Push%22+branch%3Amaster
 [3]: https://coveralls.io/repos/github/python-discord/snekbox/badge.svg?branch=master
 [4]: https://coveralls.io/github/python-discord/snekbox?branch=master
+[5]: https://raw.githubusercontent.com/python-discord/branding/master/logos/badge/badge_github.svg
+[6]: https://discord.gg/python
 [`snekbox.cfg`]: config/snekbox.cfg
 [`snekapi.py`]: snekbox/api/snekapi.py
 [`resources`]: snekbox/api/resources
