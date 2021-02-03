@@ -9,7 +9,10 @@ from subprocess import CompletedProcess
 from tempfile import NamedTemporaryFile
 from typing import Iterable
 
+from google.protobuf import text_format
+
 from snekbox import DEBUG
+from snekbox.config import NsJailConfig
 
 log = logging.getLogger(__name__)
 
@@ -19,13 +22,8 @@ LOG_PATTERN = re.compile(
 )
 LOG_BLACKLIST = ("Process will be ",)
 
-# Explicitly define constants for NsJail's default values.
-CGROUP_PIDS_PARENT = Path("/sys/fs/cgroup/pids/NSJAIL")
-CGROUP_MEMORY_PARENT = Path("/sys/fs/cgroup/memory/NSJAIL")
-
 NSJAIL_PATH = os.getenv("NSJAIL_PATH", "/usr/sbin/nsjail")
 NSJAIL_CFG = os.getenv("NSJAIL_CFG", "./config/snekbox.cfg")
-MEM_MAX = 52428800
 
 # Limit of stdout bytes we consume before terminating nsjail
 OUTPUT_MAX = 1_000_000  # 1 MB
@@ -39,17 +37,36 @@ class NsJail:
     See config/snekbox.cfg for the default NsJail configuration.
     """
 
-    def __init__(self, nsjail_binary: str = NSJAIL_PATH, python_binary: str = sys.executable):
+    def __init__(self, nsjail_binary: str = NSJAIL_PATH):
         self.nsjail_binary = nsjail_binary
-        self.python_binary = python_binary
+        self.config = self._read_config()
 
         self._create_parent_cgroups()
 
     @staticmethod
-    def _create_parent_cgroups(
-        pids: Path = CGROUP_PIDS_PARENT,
-        mem: Path = CGROUP_MEMORY_PARENT
-    ) -> None:
+    def _read_config() -> NsJailConfig:
+        """Read the NsJail config at `NSJAIL_CFG` and return a protobuf Message object."""
+        config = NsJailConfig()
+
+        try:
+            with open(NSJAIL_CFG, encoding="utf-8") as f:
+                config_text = f.read()
+        except FileNotFoundError:
+            log.fatal(f"The NsJail config at {NSJAIL_CFG!r} could not be found.")
+            sys.exit(1)
+        except OSError as e:
+            log.fatal(f"The NsJail config at {NSJAIL_CFG!r} could not be read.", exc_info=e)
+            sys.exit(1)
+
+        try:
+            text_format.Parse(config_text, config)
+        except text_format.ParseError as e:
+            log.fatal(f"The NsJail config at {NSJAIL_CFG!r} could not be parsed.", exc_info=e)
+            sys.exit(1)
+
+        return config
+
+    def _create_parent_cgroups(self) -> None:
         """
         Create the PIDs and memory cgroups which NsJail will use as its parent cgroups.
 
@@ -58,16 +75,26 @@ class NsJail:
 
         Disables memory swapping.
         """
+        pids = Path(self.config.cgroup_pids_mount, self.config.cgroup_pids_parent)
+        mem = Path(self.config.cgroup_mem_mount, self.config.cgroup_mem_parent)
+        mem_max = str(self.config.cgroup_mem_max)
+
         pids.mkdir(parents=True, exist_ok=True)
         mem.mkdir(parents=True, exist_ok=True)
 
         # Swap limit cannot be set to a value lower than memory.limit_in_bytes.
-        # Therefore, this must be set first.
-        (mem / "memory.limit_in_bytes").write_text(str(MEM_MAX), encoding="utf-8")
+        # Therefore, this must be set before the swap limit.
+        #
+        # Since child cgroups are dynamically created, the swap limit has to be set on the parent
+        # instead so that children inherit it. Given the swap's dependency on the memory limit,
+        # the memory limit must also be set on the parent. NsJail only sets the memory limit for
+        # child cgroups, not the parent.
+        (mem / "memory.limit_in_bytes").write_text(mem_max, encoding="utf-8")
 
         try:
             # Swap limit is specified as the sum of the memory and swap limits.
-            (mem / "memory.memsw.limit_in_bytes").write_text(str(MEM_MAX), encoding="utf-8")
+            # Therefore, setting it equal to the memory limit effectively disables swapping.
+            (mem / "memory.memsw.limit_in_bytes").write_text(mem_max, encoding="utf-8")
         except PermissionError:
             log.warning(
                 "Failed to set the memory swap limit for the cgroup. "
@@ -138,21 +165,21 @@ class NsJail:
 
         return "".join(output)
 
-    def python3(self, code: str) -> CompletedProcess:
-        """Execute Python 3 code in an isolated environment and return the completed process."""
+    def python3(self, code: str, *args) -> CompletedProcess:
+        """
+        Execute Python 3 code in an isolated environment and return the completed process.
+
+        Additional arguments passed will be used to override the values in the NsJail config.
+        These arguments are only options for NsJail; they do not affect Python's arguments.
+        """
         with NamedTemporaryFile() as nsj_log:
             args = (
                 self.nsjail_binary,
                 "--config", NSJAIL_CFG,
                 "--log", nsj_log.name,
-                f"--cgroup_mem_max={MEM_MAX}",
-                "--cgroup_mem_mount", str(CGROUP_MEMORY_PARENT.parent),
-                "--cgroup_mem_parent", CGROUP_MEMORY_PARENT.name,
-                "--cgroup_pids_max=1",
-                "--cgroup_pids_mount", str(CGROUP_PIDS_PARENT.parent),
-                "--cgroup_pids_parent", CGROUP_PIDS_PARENT.name,
+                *args,
                 "--",
-                self.python_binary, "-Squ", "-c", code
+                self.config.exec_bin.path, *self.config.exec_bin.arg, "-c", code
             )
 
             msg = "Executing code..."
