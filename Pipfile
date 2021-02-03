@@ -49,4 +49,4 @@ build = "docker build -t ghcr.io/python-discord/snekbox:latest ."
 devsh = "docker-compose run --entrypoint /bin/bash --rm snekbox"
 
 # Other
-protoc = "sh scripts/protoc.sh"
+protoc = "python -m scripts.protoc"
