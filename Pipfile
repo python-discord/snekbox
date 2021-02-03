@@ -39,24 +39,14 @@ precommit = "pre-commit install"
 
 # Testing
 report = "coverage report"
-test = "sh scripts/dev.sh -c 'pipenv run coverage run -m unittest'"
-testb = """
-    sh scripts/dev.sh \
-        --build \
-        --clean \
-        -c 'pipenv run coverage run -m unittest'
+test = """
+    docker-compose run --entrypoint /bin/bash --rm snekbox -c \
+    'coverage run -m unittest'
 """
 
 # Docker
 build = "docker build -t ghcr.io/python-discord/snekbox:latest ."
-builddev = """
-    docker build \
-        -t ghcr.io/python-discord/snekbox-venv:dev \
-        --target venv \
-        --build-arg DEV=1 \
-        .
-"""
-devsh = "sh scripts/dev.sh"
+devsh = "docker-compose run --entrypoint /bin/bash --rm snekbox"
 
 # Other
 protoc = "sh scripts/protoc.sh"
