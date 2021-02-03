@@ -31,7 +31,7 @@ python_version = "3.9"
 
 [scripts]
 eval = "python -m snekbox"
-snekbox = "gunicorn -c config/gunicorn.conf.py snekbox.api.app"
+webserver = "gunicorn -c config/gunicorn.conf.py snekbox.api.app"
 
 # Linting
 lint = "pre-commit run --all-files"
