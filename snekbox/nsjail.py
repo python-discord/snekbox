@@ -55,7 +55,7 @@ class NsJail:
             log.fatal(f"The NsJail config at {NSJAIL_CFG!r} could not be found.")
             sys.exit(1)
         except OSError as e:
-            log.fatal(f"The NsJail config at {NSJAIL_CFG!r} could not read.", exc_info=e)
+            log.fatal(f"The NsJail config at {NSJAIL_CFG!r} could not be read.", exc_info=e)
             sys.exit(1)
 
         try:
