@@ -90,5 +90,15 @@ python -m snekbox 'print("hello world!")' --time_limit 0
 
 With this command, NsJail uses the same configuration normally used through the web API. It also has an alias, `pipenv run eval`.
 
+## Updating NsJail
+
+Updating NsJail mainly involves two steps:
+
+1. Change the version used by the `git clone` command in the [Dockerfile]
+2. Use `pipenv run protoc` to generate new Python code from the config protobuf
+
+Other things to look out for are breaking changes to NsJail's config format, its command-line interface, or its logging format. Additionally, dependencies may have to be adjusted in the Dockerfile to get a new version to build or run.
+
 [pipenv]: https://docs.pipenv.org/en/latest/
 [readme]: README.md
+[Dockerfile]: Dockerfile
