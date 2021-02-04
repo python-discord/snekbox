@@ -30,8 +30,15 @@ pydocstyle = "~= 5.1"
 python_version = "3.9"
 
 [scripts]
+eval = "python -m snekbox"
+snekbox = "gunicorn -c config/gunicorn.conf.py snekbox.api.app"
+
+# Linting
 lint = "pre-commit run --all-files"
 precommit = "pre-commit install"
+
+# Testing
+report = "coverage report"
 test = "sh scripts/dev.sh -c 'pipenv run coverage run -m unittest'"
 testb = """
     sh scripts/dev.sh \
@@ -39,22 +46,17 @@ testb = """
         --clean \
         -c 'pipenv run coverage run -m unittest'
 """
-report = "coverage report"
-snekbox = "gunicorn -c config/gunicorn.conf.py snekbox.api.app"
-eval = "python -m snekbox"
-devsh = "sh scripts/dev.sh"
-protoc = "sh scripts/protoc.sh"
-build = """
-    docker build \
-        -t ghcr.io/python-discord/snekbox:latest \
-        -f Dockerfile \
-        .
-"""
+
+# Docker
+build = "docker build -t ghcr.io/python-discord/snekbox:latest ."
 builddev = """
     docker build \
         -t ghcr.io/python-discord/snekbox-venv:dev \
-        -f Dockerfile \
         --target venv \
         --build-arg DEV=1 \
         .
 """
+devsh = "sh scripts/dev.sh"
+
+# Other
+protoc = "sh scripts/protoc.sh"
