@@ -39,9 +39,10 @@ precommit = "pre-commit install"
 
 # Testing
 report = "coverage report"
+# Fix ownership of the coverage file even if tests fail & preserve exit code
 test = """
     docker-compose run --entrypoint /bin/bash --rm snekbox -c \
-    'coverage run -m unittest'
+    'coverage run -m unittest; e=$?; chown --reference=. .coverage; exit $e'
 """
 
 # Docker
