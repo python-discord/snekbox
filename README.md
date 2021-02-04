@@ -25,7 +25,7 @@ result <- |             |<----------|           | <----------+
 
 ```
 
-The code is executed in a Python process that is launched through [NsJail], which is responsible for sandboxing the Python process. See [`snekbox.cfg`] for the NsJail configuration.
+The code is executed in a Python process that is launched through [NsJail], which is responsible for sandboxing the Python process.
 
 The output returned by snekbox is truncated at around 1 MB.
 
@@ -46,6 +46,40 @@ docker run --ipc=none --privileged -p 8060:8060 ghcr.io/python-discord/snekbox
 To run it in the background, use the `-d` option. See the documentation on [`docker run`] for more information.
 
 The above command will make the API accessible on the host via `http://localhost:8060/`. Currently, there's only one endpoint: `http://localhost:8060/eval`.
+
+## Configuration
+
+Configuration files can be edited directly. However, this requires rebuilding the image. Alternatively, a Docker volume or bind mounts can be used to override the configuration files at their default locations.
+
+### NsJail
+
+The main features of the default configuration are:
+
+* Time limit
+* Memory limit
+* Process count limit
+* No networking
+* Restricted, read-only filesystem
+
+NsJail is configured through [`snekbox.cfg`]. It contains the exact values for the items listed above. The configuration format is defined by a [protobuf file][7] which can be referred to for documentation. The command-line options of NsJail can also serve as documentation since they closely follow the config file format.
+
+### Gunicorn
+
+[Gunicorn settings] can be found in [`gunicorn.conf.py`]. In the default configuration, the worker count and the bind address are likely the only things of any interest. Since it uses the default synchronous workers, the [worker count] effectively determines how many concurrent code evaluations can be performed.
+
+### Environment Variables
+
+All environment variables have defaults and are therefore not required to be set.
+
+Name | Description
+---- | -----------
+`DEBUG` | Enable debug logging if set to a non-empty value.
+`GIT_SHA` | [Sentry release] identifier. Set in CI.
+`NSJAIL_CFG` | Path to the NsJail configuration file.
+`NSJAIL_PATH` | Path to the NsJail binary.
+`SNEKBOX_SENTRY_DSN` | [Data Source Name] for Sentry. Sentry is disabled if left unset.
+
+Note: relative paths are relative to the root of the repository.
 
 ## Third-party Packages
 
@@ -76,6 +110,8 @@ See [DEVELOPING.md](DEVELOPING.md).
 [4]: https://coveralls.io/github/python-discord/snekbox?branch=master
 [5]: https://raw.githubusercontent.com/python-discord/branding/master/logos/badge/badge_github.svg
 [6]: https://discord.gg/python
+[7]: https://github.com/google/nsjail/blob/master/config.proto
+[`gunicorn.conf.py`]: config/gunicorn.conf.py
 [`snekbox.cfg`]: config/snekbox.cfg
 [`snekapi.py`]: snekbox/api/snekapi.py
 [`resources`]: snekbox/api/resources
@@ -84,4 +120,8 @@ See [DEVELOPING.md](DEVELOPING.md).
 [nsjail]: https://github.com/google/nsjail
 [falcon]: https://falconframework.org/
 [gunicorn]: https://gunicorn.org/
+[gunicorn settings]: https://docs.gunicorn.org/en/latest/settings.html
+[worker count]: https://docs.gunicorn.org/en/latest/design.html#how-many-workers
+[sentry release]: https://docs.sentry.io/platforms/python/configuration/releases/
+[data source name]: https://docs.sentry.io/product/sentry-basics/dsn-explainer/
 [GitHub Container Registry]: https://github.com/orgs/python-discord/packages/container/package/snekbox
