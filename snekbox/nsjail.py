@@ -148,20 +148,19 @@ class NsJail:
         output_size = 0
         output = []
 
-        # We'll consume STDOUT as long as the NsJail subprocess is running.
-        while nsjail.poll() is None:
-            chars = nsjail.stdout.read(READ_CHUNK_SIZE)
-            output_size += sys.getsizeof(chars)
-            output.append(chars)
+        # Context manager will wait for process to terminate and close file descriptors.
+        with nsjail:
+            # We'll consume STDOUT as long as the NsJail subprocess is running.
+            while nsjail.poll() is None:
+                chars = nsjail.stdout.read(READ_CHUNK_SIZE)
+                output_size += sys.getsizeof(chars)
+                output.append(chars)
 
-            if output_size > OUTPUT_MAX:
-                # Terminate the NsJail subprocess with SIGKILL.
-                log.info("Output exceeded the output limit, sending SIGKILL to NsJail.")
-                nsjail.kill()
-                break
-
-        # Ensure that we wait for the NsJail subprocess to terminate.
-        nsjail.wait()
+                if output_size > OUTPUT_MAX:
+                    # Terminate the NsJail subprocess with SIGKILL.
+                    log.info("Output exceeded the output limit, sending SIGKILL to NsJail.")
+                    nsjail.kill()
+                    break
 
         return "".join(output)
 

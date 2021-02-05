@@ -192,7 +192,7 @@ class NsJailTests(unittest.TestCase):
         chunk = "a" * READ_CHUNK_SIZE
         expected_chunks = OUTPUT_MAX // sys.getsizeof(chunk) + 1
 
-        nsjail_subprocess = unittest.mock.Mock()
+        nsjail_subprocess = unittest.mock.MagicMock()
 
         # Go 10 chunks over to make sure we exceed the limit
         nsjail_subprocess.stdout = io.StringIO((expected_chunks + 10) * chunk)
