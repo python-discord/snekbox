@@ -5,7 +5,7 @@ import unittest
 import unittest.mock
 from textwrap import dedent
 
-from snekbox.nsjail import MEM_MAX, NsJail, OUTPUT_MAX, READ_CHUNK_SIZE
+from snekbox.nsjail import NsJail, OUTPUT_MAX, READ_CHUNK_SIZE
 
 
 class NsJailTests(unittest.TestCase):
@@ -40,7 +40,7 @@ class NsJailTests(unittest.TestCase):
     def test_memory_returns_137(self):
         # Add a kilobyte just to be safe.
         code = dedent(f"""
-            x = ' ' * {MEM_MAX + 1000}
+            x = ' ' * {self.nsjail.config.cgroup_mem_max + 1000}
         """).strip()
 
         result = self.nsjail.python3(code)
