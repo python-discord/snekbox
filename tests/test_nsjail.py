@@ -13,7 +13,6 @@ class NsJailTests(unittest.TestCase):
         super().setUp()
 
         self.nsjail = NsJail()
-        self.nsjail.DEBUG = False
         self.logger = logging.getLogger("snekbox.nsjail")
         self.logger.setLevel(logging.WARNING)
 
@@ -101,6 +100,7 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.stdout, "ValueError: embedded null byte")
         self.assertEqual(result.stderr, None)
 
+    @unittest.mock.patch("snekbox.nsjail.DEBUG", new=False)
     def test_log_parser(self):
         log_lines = (
             "[D][2019-06-22T20:07:00+0000][16] void foo::bar()():100 This is a debug message.",
