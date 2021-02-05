@@ -30,31 +30,24 @@ pydocstyle = "~= 5.1"
 python_version = "3.9"
 
 [scripts]
+eval = "python -m snekbox"
+webserver = "gunicorn -c config/gunicorn.conf.py snekbox.api.app"
+
+# Linting
 lint = "pre-commit run --all-files"
 precommit = "pre-commit install"
-test = "sh scripts/dev.sh -c 'pipenv run coverage run -m unittest'"
-testb = """
-    sh scripts/dev.sh \
-        --build \
-        --clean \
-        -c 'pipenv run coverage run -m unittest'
-"""
+
+# Testing
 report = "coverage report"
-snekbox = "gunicorn -c config/gunicorn.conf.py snekbox.api.app"
-eval = "python -m snekbox"
-devsh = "sh scripts/dev.sh"
-protoc = "sh scripts/protoc.sh"
-build = """
-    docker build \
-        -t ghcr.io/python-discord/snekbox:latest \
-        -f Dockerfile \
-        .
+# Fix ownership of the coverage file even if tests fail & preserve exit code
+test = """
+    docker-compose run --entrypoint /bin/bash --rm snekbox -c \
+    'coverage run -m unittest; e=$?; chown --reference=. .coverage; exit $e'
 """
-builddev = """
-    docker build \
-        -t ghcr.io/python-discord/snekbox-venv:dev \
-        -f Dockerfile \
-        --target venv \
-        --build-arg DEV=1 \
-        .
-"""
+
+# Docker
+build = "docker build -t ghcr.io/python-discord/snekbox:latest ."
+devsh = "docker-compose run --entrypoint /bin/bash --rm snekbox"
+
+# Other
+protoc = "python -m scripts.protoc"

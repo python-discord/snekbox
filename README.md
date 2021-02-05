@@ -25,7 +25,7 @@ result <- |             |<----------|           | <----------+
 
 ```
 
-The code is executed in a Python process that is launched through [NsJail], which is responsible for sandboxing the Python process. See [`snekbox.cfg`] for the NsJail configuration.
+The code is executed in a Python process that is launched through [NsJail], which is responsible for sandboxing the Python process.
 
 The output returned by snekbox is truncated at around 1 MB.
 
@@ -47,6 +47,40 @@ To run it in the background, use the `-d` option. See the documentation on [`doc
 
 The above command will make the API accessible on the host via `http://localhost:8060/`. Currently, there's only one endpoint: `http://localhost:8060/eval`.
 
+## Configuration
+
+Configuration files can be edited directly. However, this requires rebuilding the image. Alternatively, a Docker volume or bind mounts can be used to override the configuration files at their default locations.
+
+### NsJail
+
+The main features of the default configuration are:
+
+* Time limit
+* Memory limit
+* Process count limit
+* No networking
+* Restricted, read-only filesystem
+
+NsJail is configured through [`snekbox.cfg`]. It contains the exact values for the items listed above. The configuration format is defined by a [protobuf file][7] which can be referred to for documentation. The command-line options of NsJail can also serve as documentation since they closely follow the config file format.
+
+### Gunicorn
+
+[Gunicorn settings] can be found in [`gunicorn.conf.py`]. In the default configuration, the worker count and the bind address are likely the only things of any interest. Since it uses the default synchronous workers, the [worker count] effectively determines how many concurrent code evaluations can be performed.
+
+### Environment Variables
+
+All environment variables have defaults and are therefore not required to be set.
+
+Name | Description
+---- | -----------
+`DEBUG` | Enable debug logging if set to a non-empty value.
+`GIT_SHA` | [Sentry release] identifier. Set in CI.
+`NSJAIL_CFG` | Path to the NsJail configuration file.
+`NSJAIL_PATH` | Path to the NsJail binary.
+`SNEKBOX_SENTRY_DSN` | [Data Source Name] for Sentry. Sentry is disabled if left unset.
+
+Note: relative paths are relative to the root of the repository.
+
 ## Third-party Packages
 
 By default, the Python interpreter has no access to any packages besides the
@@ -67,100 +101,8 @@ If `pip`, `setuptools`, or `wheel` are dependencies or need to be exposed, then 
 
 ## Development Environment
 
-### Initial Setup
+See [DEVELOPING.md](DEVELOPING.md).
 
-A Python 3.9 interpreter and the [pipenv] package are required. Once those requirements are satisfied, install the project's dependencies:
-
-```
-pipenv sync --dev
-```
-
-Follow that up with setting up the pre-commit hook:
-
-```
-pipenv run precommit
-```
-
-Now Flake8 will run and lint staged changes whenever an attempt to commit the changes is made. Flake8 can still be invoked manually:
-
-```
-pipenv run lint
-```
-
-### Running snekbox
-
-The Docker image can be built with:
-
-```
-pipenv run build
-```
-
-Use Docker Compose to start snekbox:
-
-```
-docker-compose up
-```
-
-### Running Tests
-
-Tests are run through coverage.py using unittest. Before tests can run, the dev venv Docker image has to be built:
-
-```
-pipenv run builddev
-```
-
-Alternatively, the following command will build the image and then run the tests:
-
-```
-pipenv run testb
-```
-
-If the image doesn't need to be built, the tests can be run with:
-
-```
-pipenv run test
-```
-
-### Coverage
-
-To see a coverage report, run
-
-```
-pipenv run report
-```
-
-Alternatively, a report can be generated as HTML:
-
-```
-pipenv run coverage html
-```
-
-The HTML will output to `./htmlcov/` by default
-
-
-### The `devsh` Helper Script
-
-This script starts a `bash` shell inside the venv Docker container and attaches to it. Unlike the production image, the venv image that is built by this script contains dev dependencies too. The project directory is mounted inside the container so any filesystem changes made inside the container affect the actual local project.
-
-#### Usage
-
-```
-pipenv run devsh [--build [--clean]] [bash_args ...]
-```
-
-* `--build` Build the venv Docker image
-* `--clean` Clean up dangling Docker images (only works if `--build` precedes it)
-* `bash_args` Arguments to pass to `/bin/bash` (for example `-c "echo hello"`). An interactive shell is launched if no arguments are given
-
-#### Invoking NsJail
-
-NsJail can be invoked in a more direct manner that does not require using a web server or its API. See `python -m snekbox --help`. Example usage:
-
-```bash
-python -m snekbox 'print("hello world!")' --time_limit 0
-```
-
-With this command, NsJail uses the same configuration normally used through the web API. It also has an alias, `pipenv run eval`.
 
 [1]: https://github.com/python-discord/snekbox/workflows/Lint,%20Test,%20Build,%20Push/badge.svg?branch=master
 [2]: https://github.com/python-discord/snekbox/actions?query=workflow%3A%22Lint%2C+Test%2C+Build%2C+Push%22+branch%3Amaster
@@ -168,6 +110,8 @@ With this command, NsJail uses the same configuration normally used through the 
 [4]: https://coveralls.io/github/python-discord/snekbox?branch=master
 [5]: https://raw.githubusercontent.com/python-discord/branding/master/logos/badge/badge_github.svg
 [6]: https://discord.gg/python
+[7]: https://github.com/google/nsjail/blob/master/config.proto
+[`gunicorn.conf.py`]: config/gunicorn.conf.py
 [`snekbox.cfg`]: config/snekbox.cfg
 [`snekapi.py`]: snekbox/api/snekapi.py
 [`resources`]: snekbox/api/resources
@@ -176,5 +120,8 @@ With this command, NsJail uses the same configuration normally used through the 
 [nsjail]: https://github.com/google/nsjail
 [falcon]: https://falconframework.org/
 [gunicorn]: https://gunicorn.org/
+[gunicorn settings]: https://docs.gunicorn.org/en/latest/settings.html
+[worker count]: https://docs.gunicorn.org/en/latest/design.html#how-many-workers
+[sentry release]: https://docs.sentry.io/platforms/python/configuration/releases/
+[data source name]: https://docs.sentry.io/product/sentry-basics/dsn-explainer/
 [GitHub Container Registry]: https://github.com/orgs/python-discord/packages/container/package/snekbox
-[pipenv]: https://docs.pipenv.org/en/latest/
