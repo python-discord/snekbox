@@ -15,6 +15,7 @@ class NsJailTests(unittest.TestCase):
         self.nsjail = NsJail()
         self.nsjail.DEBUG = False
         self.logger = logging.getLogger("snekbox.nsjail")
+        self.logger.setLevel(logging.WARNING)
 
     def test_print_returns_0(self):
         result = self.nsjail.python3("print('test')")
