@@ -81,37 +81,27 @@ jobs:
           tags: ghcr.io/python-discord/snekbox-venv:${{ steps.sha_tag.outputs.tag }}
 
       - name: Start Container
-        run: >-
-          docker run
-          --tty
-          --detach
-          --name snekbox_test
-          --privileged
-          --hostname pdsnk-dev
-          -e PYTHONDONTWRITEBYTECODE=1
-          -e PIPENV_PIPFILE='/snekbox/Pipfile'
-          --volume "${PWD}":"${PWD}"
-          --workdir "${PWD}"
-          --entrypoint /bin/bash
-          ghcr.io/python-discord/snekbox-venv:${{ steps.sha_tag.outputs.tag }}
+        run: |
+          export IMAGE_SUFFIX='-venv:${{ steps.sha_tag.outputs.tag }}'
+          docker-compose up --no-build -d
 
       # One of the unit tests needs to import numpy.
       - name: Install dependencies
         run: >-
-          docker exec snekbox_test /bin/bash -c
+          docker exec snekbox_dev /bin/bash -c
           'pipenv install --system --deploy --dev && pip install numpy'
 
       # Required by pre-commit.
       - name: Install git
         run: >-
-          docker exec snekbox_test /bin/bash -c
+          docker exec snekbox_dev /bin/bash -c
           'apt-get -y update && apt-get install -y git=1:2.20.*'
 
       # pre-commit's venv doesn't work with user installs.
       # Skip the flake8 hook because the following step will run it.
       - name: Run pre-commit hooks
         run: >-
-          docker exec snekbox_test /bin/bash -c
+          docker exec snekbox_dev /bin/bash -c
           'PIP_USER=0 SKIP=flake8 pre-commit run --all-files'
 
       # This runs `flake8` in the container and asks `flake8` to output
@@ -121,7 +111,7 @@ jobs:
       # wrong where.
       - name: Run linter
         run: >-
-          docker exec snekbox_test /bin/bash -c
+          docker exec snekbox_dev /bin/bash -c
           'flake8 --format
           "::error file=%(path)s,line=%(row)d,col=%(col)d::[flake8] %(code)s: %(text)s"'
 
@@ -135,7 +125,7 @@ jobs:
         run: |
           echo '::set-output name=started::true'
           cmd='coverage run -m unittest; coverage report -m'
-          docker exec snekbox_test /bin/bash -c "${cmd}"
+          docker exec snekbox_dev /bin/bash -c "${cmd}"
 
       # Set-up a Python version to process the coverage reports
       # Note: This step runs even if the test step failed to make

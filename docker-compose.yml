@@ -2,17 +2,29 @@ version: "3.7"
 
 services:
   snekbox:
-    container_name: snekbox
+    container_name: snekbox_dev
+    hostname: snekbox_dev
     privileged: true
-    image: ghcr.io/python-discord/snekbox:latest
+    image: ghcr.io/python-discord/snekbox${IMAGE_SUFFIX:-:dev}
     ports:
      - 8060:8060
     init: true
     ipc: none
+    tty: true
+    working_dir: $PWD
+    environment:
+      DEBUG: 1
+      PIPENV_PIPFILE: /snekbox/Pipfile
+      PYTHONDONTWRITEBYTECODE: 1
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        DEV: 1
+      cache_from:
+        - ghcr.io/python-discord/snekbox:latest
     volumes:
+      - $PWD:$PWD
       - user-base:/snekbox/user_base
 
 volumes:

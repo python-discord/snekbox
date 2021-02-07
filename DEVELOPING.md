@@ -1,0 +1,104 @@
+# Development Environment
+
+## Initial Setup
+
+A Python 3.9 interpreter and the [pipenv] package are required. Once those requirements are satisfied, install the project's dependencies:
+
+```
+pipenv sync --dev
+```
+
+Follow that up with setting up the pre-commit hook:
+
+```
+pipenv run precommit
+```
+
+Now Flake8 will run and lint staged changes whenever an attempt to commit the changes is made. Flake8 can still be invoked manually:
+
+```
+pipenv run lint
+```
+
+## Running snekbox
+
+Use Docker Compose to start snekbox in development mode. The optional `--build` argument can be passed to force the image to be rebuilt.
+
+```
+docker-compose up
+```
+
+The container has all development dependencies. The repository on the host is mounted within the container; changes made to local files will also affect the container.
+
+Note that the compose file depends on the environment variable `PWD` being set to the current working directory. It needs it to create the aforementioned bind mount. Unix shells normally have this set already. If for some reason it is not set, it needs to be manually set. A convenient way to set it is to define it in a `.env` file which Docker Compose will automatically read.
+
+To build a normal container that can be used in production, run
+
+```
+pipenv run build
+```
+
+Refer to the [README] for how to run the container normally.
+
+## Running Tests
+
+Tests are run through coverage.py using unittest. To run the tests within a development container, run
+
+```
+pipenv run test
+```
+
+## Coverage
+
+To see a coverage report, run
+
+```
+pipenv run report
+```
+
+Alternatively, a report can be generated as HTML with
+
+```
+pipenv run coverage html
+```
+
+The HTML will output to `./htmlcov/` by default
+
+## Launching a Shell in the Container
+
+A bash shell can be launched in the development container using
+
+```
+pipenv run devsh
+```
+
+This creates a new container which will get deleted once the shell session ends.
+
+It's possible to run a command directly; it supports the same arguments that `bash` supports.
+
+```bash
+pipenv run devsh -c 'echo hello'
+```
+
+### Invoking NsJail
+
+NsJail can be invoked in a more direct manner that does not require using a web server or its API. See `python -m snekbox --help`. Example usage:
+
+```bash
+python -m snekbox 'print("hello world!")' --time_limit 0
+```
+
+With this command, NsJail uses the same configuration normally used through the web API. It also has an alias, `pipenv run eval`.
+
+## Updating NsJail
+
+Updating NsJail mainly involves two steps:
+
+1. Change the version used by the `git clone` command in the [Dockerfile]
+2. Use `pipenv run protoc` to generate new Python code from the config protobuf
+
+Other things to look out for are breaking changes to NsJail's config format, its command-line interface, or its logging format. Additionally, dependencies may have to be adjusted in the Dockerfile to get a new version to build or run.
+
+[pipenv]: https://docs.pipenv.org/en/latest/
+[readme]: README.md
+[Dockerfile]: Dockerfile
