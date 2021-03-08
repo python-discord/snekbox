@@ -4,6 +4,7 @@ import re
 import subprocess
 import sys
 import textwrap
+import uuid
 from pathlib import Path
 from subprocess import CompletedProcess
 from tempfile import NamedTemporaryFile
@@ -41,8 +42,6 @@ class NsJail:
         self.nsjail_binary = nsjail_binary
         self.config = self._read_config()
 
-        self._create_parent_cgroups()
-
     @staticmethod
     def _read_config() -> NsJailConfig:
         """Read the NsJail config at `NSJAIL_CFG` and return a protobuf Message object."""
@@ -66,17 +65,22 @@ class NsJail:
 
         return config
 
-    def _create_parent_cgroups(self) -> None:
+    def _create_dynamic_cgroups(self) -> str:
         """
-        Create the PIDs and memory cgroups which NsJail will use as its parent cgroups.
+        Create a PID and memory cgroup for NsJail to use as the parent cgroup.
+
+        Returns the name of the cgroup, located in the cgroup root.
 
         NsJail doesn't do this automatically because it requires privileges NsJail usually doesn't
         have.
 
         Disables memory swapping.
         """
-        pids = Path(self.config.cgroup_pids_mount, self.config.cgroup_pids_parent)
-        mem = Path(self.config.cgroup_mem_mount, self.config.cgroup_mem_parent)
+        # Pick a name for the cgroup
+        cgroup = "snekbox-" + str(uuid.uuid4())
+
+        pids = Path(self.config.cgroup_pids_mount, cgroup)
+        mem = Path(self.config.cgroup_mem_mount, cgroup)
         mem_max = str(self.config.cgroup_mem_max)
 
         pids.mkdir(parents=True, exist_ok=True)
@@ -101,6 +105,8 @@ class NsJail:
                 "This is probably because CONFIG_MEMCG_SWAP or CONFIG_MEMCG_SWAP_ENABLED is unset. "
                 "Please ensure swap memory is disabled on the system."
             )
+
+        return cgroup
 
     @staticmethod
     def _parse_log(log_lines: Iterable[str]) -> None:
@@ -171,11 +177,16 @@ class NsJail:
         Additional arguments passed will be used to override the values in the NsJail config.
         These arguments are only options for NsJail; they do not affect Python's arguments.
         """
+        cgroup = self._create_dynamic_cgroups()
+
         with NamedTemporaryFile() as nsj_log:
             args = (
                 self.nsjail_binary,
                 "--config", NSJAIL_CFG,
                 "--log", nsj_log.name,
+                # Set our dynamically created parent cgroups
+                "--cgroup_mem_parent", cgroup,
+                "--cgroup_pids_parent", cgroup,
                 *args,
                 "--",
                 self.config.exec_bin.path, *self.config.exec_bin.arg, "-c", code
@@ -211,4 +222,21 @@ class NsJail:
             self._parse_log(log_lines)
 
         log.info(f"nsjail return code: {returncode}")
+
+        # If we hit a cgroup limit then there is a chance the nsjail cgroups did not
+        # get removed. If we don't remove them then when we try remove the parents
+        # we will get a "Device or resource busy" error.
+
+        children = []
+
+        children.extend(Path(self.config.cgroup_mem_mount, cgroup).glob("NSJAIL.*"))
+        children.extend(Path(self.config.cgroup_pids_mount, cgroup).glob("NSJAIL.*"))
+
+        for child in children:
+            child.rmdir()
+
+        # Remove the dynamically created cgroups once we're done
+        Path(self.config.cgroup_mem_mount, cgroup).rmdir()
+        Path(self.config.cgroup_pids_mount, cgroup).rmdir()
+
         return CompletedProcess(args, returncode, output, None)
