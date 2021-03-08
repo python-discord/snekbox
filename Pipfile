@@ -7,8 +7,9 @@ name = "pypi"
 falcon = "~= 2.0.0"
 gunicorn = "~= 20.0"
 jsonschema = "~= 3.2"
-protobuf = "~= 3.14"
+protobuf = "== 3.14.0"
 sentry-sdk = {extras = ["falcon"], version = "~= 0.19.3"}
+python-prctl = {version = "~=1.8",sys_platform = "== 'linux'"}
 
 [dev-packages]
 coverage = "~= 5.3"
