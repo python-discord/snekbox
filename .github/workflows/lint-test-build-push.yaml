@@ -73,6 +73,7 @@ jobs:
           push: false
           load: true
           target: venv
+          build-args: DEV=1
           cache-from: |
             type=local,src=/tmp/.buildx-cache
             ghcr.io/python-discord/snekbox-base:latest
@@ -84,12 +85,6 @@ jobs:
         run: |
           export IMAGE_SUFFIX='-venv:${{ steps.sha_tag.outputs.tag }}'
           docker-compose up --no-build -d
-
-      # One of the unit tests needs to import numpy.
-      - name: Install dependencies
-        run: >-
-          docker exec snekbox_dev /bin/bash -c
-          'pipenv install --system --deploy --dev && pip install numpy'
 
       # Required by pre-commit.
       - name: Install git
