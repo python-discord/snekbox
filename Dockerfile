@@ -36,6 +36,8 @@ RUN apt-get -y update \
         gcc=4:8.3.* \
         libnl-route-3-200=3.4.* \
         libprotobuf17=3.6.* \
+        libcap-dev=1:2.25-* \
+        libc6-dev=2.28-* \
     && rm -rf /var/lib/apt/lists/*
 RUN pip install pipenv==2020.11.15
 
