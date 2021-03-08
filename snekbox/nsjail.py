@@ -42,6 +42,10 @@ class NsJail:
         self.nsjail_binary = nsjail_binary
         self.config = self._read_config()
 
+        if sys.platform == "linux":
+            import prctl
+            prctl.set_child_subreaper(1)
+
     @staticmethod
     def _read_config() -> NsJailConfig:
         """Read the NsJail config at `NSJAIL_CFG` and return a protobuf Message object."""
@@ -223,6 +227,22 @@ class NsJail:
             self._parse_log(log_lines)
 
         log.info(f"nsjail return code: {returncode}")
+
+        # Wait for child processes that were reparented after NSJail being killed
+        # to exit so that we can remove the cgroups.
+        os.wait()
+
+        # If we hit a cgroup limit then there is a chance the nsjail cgroups did not
+        # get removed. If we don't remove them then when we try remove the parents
+        # we will get a "Device or resource busy" error.
+
+        children = []
+
+        children.extend(Path(self.config.cgroup_mem_mount, cgroup).glob("NSJAIL.*"))
+        children.extend(Path(self.config.cgroup_pids_mount, cgroup).glob("NSJAIL.*"))
+
+        for child in children:
+            child.rmdir()
 
         # Remove the dynamically created cgroups once we're done
         Path(self.config.cgroup_mem_mount, cgroup).rmdir()
