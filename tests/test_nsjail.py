@@ -5,7 +5,7 @@ import unittest
 import unittest.mock
 from textwrap import dedent
 
-from snekbox.nsjail import MEM_MAX, NsJail, OUTPUT_MAX, READ_CHUNK_SIZE
+from snekbox.nsjail import NsJail, OUTPUT_MAX, READ_CHUNK_SIZE
 
 
 class NsJailTests(unittest.TestCase):
@@ -13,8 +13,8 @@ class NsJailTests(unittest.TestCase):
         super().setUp()
 
         self.nsjail = NsJail()
-        self.nsjail.DEBUG = False
         self.logger = logging.getLogger("snekbox.nsjail")
+        self.logger.setLevel(logging.WARNING)
 
     def test_print_returns_0(self):
         result = self.nsjail.python3("print('test')")
@@ -39,7 +39,7 @@ class NsJailTests(unittest.TestCase):
     def test_memory_returns_137(self):
         # Add a kilobyte just to be safe.
         code = dedent(f"""
-            x = ' ' * {MEM_MAX + 1000}
+            x = ' ' * {self.nsjail.config.cgroup_mem_max + 1000}
         """).strip()
 
         result = self.nsjail.python3(code)
@@ -100,6 +100,7 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.stdout, "ValueError: embedded null byte")
         self.assertEqual(result.stderr, None)
 
+    @unittest.mock.patch("snekbox.nsjail.DEBUG", new=False)
     def test_log_parser(self):
         log_lines = (
             "[D][2019-06-22T20:07:00+0000][16] void foo::bar()():100 This is a debug message.",
@@ -191,7 +192,7 @@ class NsJailTests(unittest.TestCase):
         chunk = "a" * READ_CHUNK_SIZE
         expected_chunks = OUTPUT_MAX // sys.getsizeof(chunk) + 1
 
-        nsjail_subprocess = unittest.mock.Mock()
+        nsjail_subprocess = unittest.mock.MagicMock()
 
         # Go 10 chunks over to make sure we exceed the limit
         nsjail_subprocess.stdout = io.StringIO((expected_chunks + 10) * chunk)
