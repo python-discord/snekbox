@@ -46,13 +46,24 @@ RUN chmod +x /usr/sbin/nsjail
 
 # ------------------------------------------------------------------------------
 FROM base as venv
-ARG DEV
 
 COPY Pipfile Pipfile.lock /snekbox/
 WORKDIR /snekbox
 
-# Install to the default user site since PIP_USER is set.
-RUN pipenv install --deploy --system ${DEV:+--dev}
+# Pipenv installs to the default user site since PIP_USER is set.
+RUN pipenv install --deploy --system
+
+# This must come after the first pipenv command! From the docs:
+# All RUN instructions following an ARG instruction use the ARG variable
+# implicitly (as an environment variable), thus can cause a cache miss.
+ARG DEV
+
+# Install numpy when in dev mode; one of the unit tests needs it.
+RUN if [ -n "${DEV}" ]; \
+    then \
+        pipenv install --deploy --system --dev \
+        && PYTHONUSERBASE=/snekbox/user_base pip install numpy~=1.19; \
+    fi
 
 # At the end to avoid re-installing dependencies when only a config changes.
 # It's in the venv image because the final image is not used during development.
