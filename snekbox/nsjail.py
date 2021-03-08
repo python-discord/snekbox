@@ -229,7 +229,10 @@ class NsJail:
 
         # Wait for child processes that were reparented after NSJail being killed
         # to exit so that we can remove the cgroups.
-        os.wait()
+        try:
+            os.wait()
+        except ChildProcessError:
+            pass
 
         # If we hit a cgroup limit then there is a chance the nsjail cgroups did not
         # get removed. If we don't remove them then when we try remove the parents
