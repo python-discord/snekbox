@@ -104,11 +104,11 @@ If `pip`, `setuptools`, or `wheel` are dependencies or need to be exposed, then 
 See [DEVELOPING.md](DEVELOPING.md).
 
 
-[1]: https://github.com/python-discord/snekbox/workflows/Lint,%20Test,%20Build,%20Push/badge.svg?branch=master
-[2]: https://github.com/python-discord/snekbox/actions?query=workflow%3A%22Lint%2C+Test%2C+Build%2C+Push%22+branch%3Amaster
-[3]: https://coveralls.io/repos/github/python-discord/snekbox/badge.svg?branch=master
-[4]: https://coveralls.io/github/python-discord/snekbox?branch=master
-[5]: https://raw.githubusercontent.com/python-discord/branding/master/logos/badge/badge_github.svg
+[1]: https://github.com/python-discord/snekbox/workflows/Lint,%20Test,%20Build,%20Push/badge.svg?branch=main
+[2]: https://github.com/python-discord/snekbox/actions?query=workflow%3A%22Lint%2C+Test%2C+Build%2C+Push%22+branch%3Amain
+[3]: https://coveralls.io/repos/github/python-discord/snekbox/badge.svg?branch=main
+[4]: https://coveralls.io/github/python-discord/snekbox?branch=main
+[5]: https://raw.githubusercontent.com/python-discord/branding/main/logos/badge/badge_github.svg
 [6]: https://discord.gg/python
 [7]: https://github.com/google/nsjail/blob/master/config.proto
 [`gunicorn.conf.py`]: config/gunicorn.conf.py

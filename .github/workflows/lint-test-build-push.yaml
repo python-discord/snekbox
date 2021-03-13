@@ -3,7 +3,7 @@ name: Lint, Test, Build, Push
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
 
 
@@ -14,7 +14,7 @@ jobs:
       # Determine whether or not we should build the
       # final production image and push it to GHCR.
       production_build: ${{ github.event_name != 'pull_request' &&
-        github.ref == 'refs/heads/master' }}
+        github.ref == 'refs/heads/main' }}
 
     steps:
       # Create a short SHA-tag to tag built images
@@ -45,8 +45,8 @@ jobs:
 
       # Create a local cache directory for PR builds, as the image
       # we build for PRs may start to deviate from the "latest" image
-      # currently registered in the GHCR. For master, the best we can
-      # do is use the previous master build, which can be cached from
+      # currently registered in the GHCR. For main, the best we can
+      # do is use the previous main build, which can be cached from
       # the GHCR.
       - name: Cache Image Layers
         if: github.event_name == 'pull_request'
