@@ -163,9 +163,10 @@ class NsJail:
                 output.append(chars)
 
                 if output_size > OUTPUT_MAX:
-                    # Terminate the NsJail subprocess with SIGKILL.
-                    log.info("Output exceeded the output limit, sending SIGKILL to NsJail.")
-                    nsjail.kill()
+                    # Terminate the NsJail subprocess with SIGTERM.
+                    # This in turn reaps and kills children with SIGKILL.
+                    log.info("Output exceeded the output limit, sending SIGTERM to NsJail.")
+                    nsjail.terminate()
                     break
 
         return "".join(output)
@@ -222,18 +223,6 @@ class NsJail:
             self._parse_log(log_lines)
 
         log.info(f"nsjail return code: {returncode}")
-
-        # If we hit a cgroup limit then there is a chance the nsjail cgroups did not
-        # get removed. If we don't remove them then when we try remove the parents
-        # we will get a "Device or resource busy" error.
-
-        children = []
-
-        children.extend(Path(self.config.cgroup_mem_mount, cgroup).glob("NSJAIL.*"))
-        children.extend(Path(self.config.cgroup_pids_mount, cgroup).glob("NSJAIL.*"))
-
-        for child in children:
-            child.rmdir()
 
         # Remove the dynamically created cgroups once we're done
         Path(self.config.cgroup_mem_mount, cgroup).rmdir()
