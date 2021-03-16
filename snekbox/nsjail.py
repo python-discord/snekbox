@@ -224,18 +224,6 @@ class NsJail:
 
         log.info(f"nsjail return code: {returncode}")
 
-        # If we hit a cgroup limit then there is a chance the nsjail cgroups did not
-        # get removed. If we don't remove them then when we try remove the parents
-        # we will get a "Device or resource busy" error.
-
-        children = []
-
-        children.extend(Path(self.config.cgroup_mem_mount, cgroup).glob("NSJAIL.*"))
-        children.extend(Path(self.config.cgroup_pids_mount, cgroup).glob("NSJAIL.*"))
-
-        for child in children:
-            child.rmdir()
-
         # Remove the dynamically created cgroups once we're done
         Path(self.config.cgroup_mem_mount, cgroup).rmdir()
         Path(self.config.cgroup_pids_mount, cgroup).rmdir()
