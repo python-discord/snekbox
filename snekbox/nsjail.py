@@ -163,9 +163,10 @@ class NsJail:
                 output.append(chars)
 
                 if output_size > OUTPUT_MAX:
-                    # Terminate the NsJail subprocess with SIGKILL.
-                    log.info("Output exceeded the output limit, sending SIGKILL to NsJail.")
-                    nsjail.kill()
+                    # Terminate the NsJail subprocess with SIGTERM.
+                    # This in turn reaps and kills children with SIGKILL.
+                    log.info("Output exceeded the output limit, sending SIGTERM to NsJail.")
+                    nsjail.terminate()
                     break
 
         return "".join(output)
