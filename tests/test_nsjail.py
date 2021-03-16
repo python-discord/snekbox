@@ -186,7 +186,7 @@ class NsJailTests(unittest.TestCase):
         """).strip()
 
         result = self.nsjail.python3(stdout_flood)
-        self.assertEqual(result.returncode, 137)
+        self.assertEqual(result.returncode, 143)
 
     def test_large_output_is_truncated(self):
         chunk = "a" * READ_CHUNK_SIZE
