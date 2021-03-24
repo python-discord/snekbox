@@ -34,7 +34,6 @@ spec:
                     pip install --user
                     arrow~=0.17
                     attrs~=20.3
-                    binarytree~=6.2
                     beautifulsoup4~=4.9
                     forbiddenfruit~=0.1
                     fuzzywuzzy~=0.18
