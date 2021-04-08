@@ -103,22 +103,18 @@ class NsJailTests(unittest.TestCase):
     def test_print_bad_unicode_encode_error(self):
         result = self.nsjail.python3("print(chr(56550))")
         self.assertEqual(result.returncode, 1)
-        unicode_traceback = (
-            "Traceback (most recent call last):\n"
-            '  File "<string>", line 1, in <module>\n'
-            "UnicodeEncodeError: 'utf-8' codec can't encode character '\\udce6'"
-            " in position 0: surrogates not allowed\n"
-        )
-        self.assertEqual(result.stdout, unicode_traceback)
+        self.assertIn("UnicodeEncodeError", result.stdout)
         self.assertEqual(result.stderr, None)
 
     def test_unicode_env_erase_escape_fails(self):
-        result = self.nsjail.python3(
-            "import os, sys\nos.unsetenv('PYTHONIOENCODING')\n"
-            "os.execl(sys.executable, 'python', '-c', 'print(chr(56550))')"
-        )
+        result = self.nsjail.python3(dedent("""
+            import os
+            import sys
+            os.unsetenv('PYTHONIOENCODING')
+            os.execl(sys.executable, 'python', '-c', 'print(chr(56550))')
+        """).strip())
         self.assertEqual(result.returncode, None)
-        self.assertEqual(result.stdout, "UnicodeDecodeError: invalid unicode in output pipe")
+        self.assertEqual(result.stdout, "UnicodeDecodeError: invalid Unicode in output pipe")
         self.assertEqual(result.stderr, None)
 
     @unittest.mock.patch("snekbox.nsjail.DEBUG", new=False)

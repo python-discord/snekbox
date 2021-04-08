@@ -214,7 +214,7 @@ class NsJail:
                 return CompletedProcess(
                     args,
                     None,
-                    "UnicodeDecodeError: invalid unicode in output pipe",
+                    "UnicodeDecodeError: invalid Unicode in output pipe",
                     None,
                 )
 
