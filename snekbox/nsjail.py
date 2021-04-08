@@ -208,7 +208,15 @@ class NsJail:
             except ValueError:
                 return CompletedProcess(args, None, "ValueError: embedded null byte", None)
 
-            output = self._consume_stdout(nsjail)
+            try:
+                output = self._consume_stdout(nsjail)
+            except UnicodeDecodeError:
+                return CompletedProcess(
+                    args,
+                    None,
+                    "UnicodeDecodeError: invalid Unicode in output pipe",
+                    None,
+                )
 
             # When you send signal `N` to a subprocess to terminate it using Popen, it
             # will return `-N` as its exit code. As we normally get `N + 128` back, we
