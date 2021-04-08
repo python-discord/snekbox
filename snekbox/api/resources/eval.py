@@ -41,7 +41,7 @@ class EvalResource:
         The return codes mostly resemble those of a Unix shell. Some noteworthy cases:
 
         - None
-            The NsJail process failed to launch or return valid unicode output
+            The NsJail process failed to launch or the output was invalid Unicode
         - 137 (SIGKILL)
             Typically because NsJail killed the Python process due to time or memory constraints
         - 255
