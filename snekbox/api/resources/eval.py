@@ -23,6 +23,12 @@ class EvalResource:
         "properties": {
             "input": {
                 "type": "string"
+            },
+            "args": {
+                "type": "array",
+                "contains": {
+                    "type": "string"
+                }
             }
         },
         "required": [
@@ -51,6 +57,7 @@ class EvalResource:
 
         >>> {
         ...     "input": "print(1 + 1)"
+        ...     "args": ["-m", "timeit"] # This is optional
         ... }
 
         Response format:
@@ -70,9 +77,10 @@ class EvalResource:
             Unsupported content type; only application/JSON is supported
         """
         code = req.media["input"]
+        args = req.media.get("args", ("-c",))
 
         try:
-            result = self.nsjail.python3(code)
+            result = self.nsjail.python3(code, extra_args=args)
         except Exception:
             log.exception("An exception occurred while trying to process the request")
             raise falcon.HTTPInternalServerError
