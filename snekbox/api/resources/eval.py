@@ -26,7 +26,7 @@ class EvalResource:
             },
             "args": {
                 "type": "array",
-                "contains": {
+                "items": {
                     "type": "string"
                 }
             }
@@ -44,6 +44,8 @@ class EvalResource:
         """
         Evaluate Python code and return stdout, stderr, and the return code.
 
+        The optional `args` parameter can be passed, and it woul replace the "-c" option.
+
         The return codes mostly resemble those of a Unix shell. Some noteworthy cases:
 
         - None
@@ -56,14 +58,14 @@ class EvalResource:
         Request body:
 
         >>> {
-        ...     "input": "print(1 + 1)"
+        ...     "input": "[i for i in range(1000)]",
         ...     "args": ["-m", "timeit"] # This is optional
         ... }
 
         Response format:
 
         >>> {
-        ...     "stdout": "2\\n",
+        ...     "10000 loops, best of 5: 23.8 usec per loop\n",
         ...     "returncode": 0
         ... }
 
@@ -80,7 +82,7 @@ class EvalResource:
         args = req.media.get("args", ("-c",))
 
         try:
-            result = self.nsjail.python3(code, extra_args=args)
+            result = self.nsjail.python3(code, py_args=args)
         except Exception:
             log.exception("An exception occurred while trying to process the request")
             raise falcon.HTTPInternalServerError
