@@ -217,3 +217,16 @@ class NsJailTests(unittest.TestCase):
 
         output = self.nsjail._consume_stdout(nsjail_subprocess)
         self.assertEqual(output, chunk * expected_chunks)
+
+    def test_nsjail_args(self):
+        args = ("foo", "bar")
+        result = self.nsjail.python3("", nsjail_args=args)
+
+        self.assertEqual(result.args[9:11], args)
+
+    def test_py_args(self):
+        args = ("-m", "timeit")
+        result = self.nsjail.python3("", py_args=args)
+
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(result.args[-3:-1], args)
