@@ -181,7 +181,7 @@ class NsJail:
         """
         Execute Python 3 code in an isolated environment and return the completed process.
 
-        Additional arguments passed will be used to override the values in the NsJail config.
+        The `nsjail_args` passed will be used to override the values in the NsJail config.
         These arguments are only options for NsJail; they do not affect Python's arguments.
 
         The `py_args` keyword argument can be given, and this would replace the "-c" argument
