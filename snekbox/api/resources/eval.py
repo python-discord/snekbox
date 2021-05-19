@@ -44,7 +44,9 @@ class EvalResource:
         """
         Evaluate Python code and return stdout, stderr, and the return code.
 
-        The optional `args` parameter can be passed, and it would replace the "-c" option.
+        A list of arguments for the Python subprocess can be specified as `args`.
+        Otherwise, the default argument "-c" is used to execute the input code.
+        The input code is always passed as the last argument to Python.
 
         The return codes mostly resemble those of a Unix shell. Some noteworthy cases:
 
