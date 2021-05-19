@@ -44,7 +44,7 @@ class EvalResource:
         """
         Evaluate Python code and return stdout, stderr, and the return code.
 
-        The optional `args` parameter can be passed, and it woul replace the "-c" option.
+        The optional `args` parameter can be passed, and it would replace the "-c" option.
 
         The return codes mostly resemble those of a Unix shell. Some noteworthy cases:
 
@@ -65,7 +65,7 @@ class EvalResource:
         Response format:
 
         >>> {
-        ...     "10000 loops, best of 5: 23.8 usec per loop\n",
+        ...     "stdout": "10000 loops, best of 5: 23.8 usec per loop\n",
         ...     "returncode": 0
         ... }
 
