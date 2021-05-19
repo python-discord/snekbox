@@ -23,6 +23,12 @@ class EvalResource:
         "properties": {
             "input": {
                 "type": "string"
+            },
+            "args": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
             }
         },
         "required": [
@@ -38,6 +44,10 @@ class EvalResource:
         """
         Evaluate Python code and return stdout, stderr, and the return code.
 
+        A list of arguments for the Python subprocess can be specified as `args`.
+        Otherwise, the default argument "-c" is used to execute the input code.
+        The input code is always passed as the last argument to Python.
+
         The return codes mostly resemble those of a Unix shell. Some noteworthy cases:
 
         - None
@@ -50,13 +60,14 @@ class EvalResource:
         Request body:
 
         >>> {
-        ...     "input": "print(1 + 1)"
+        ...     "input": "[i for i in range(1000)]",
+        ...     "args": ["-m", "timeit"] # This is optional
         ... }
 
         Response format:
 
         >>> {
-        ...     "stdout": "2\\n",
+        ...     "stdout": "10000 loops, best of 5: 23.8 usec per loop\n",
         ...     "returncode": 0
         ... }
 
@@ -70,9 +81,10 @@ class EvalResource:
             Unsupported content type; only application/JSON is supported
         """
         code = req.media["input"]
+        args = req.media.get("args", ("-c",))
 
         try:
-            result = self.nsjail.python3(code)
+            result = self.nsjail.python3(code, py_args=args)
         except Exception:
             log.exception("An exception occurred while trying to process the request")
             raise falcon.HTTPInternalServerError

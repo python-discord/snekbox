@@ -25,6 +25,24 @@ class TestEvalResource(SnekAPITestCase):
 
         self.assertEqual(expected, result.json)
 
+    def test_post_invalid_data_400(self):
+        bodies = (
+            {"input": 400}, {"input": "", "args": [400]}
+        )
+
+        for body in bodies:
+            with self.subTest():
+                result = self.simulate_post(self.PATH, json=body)
+
+                self.assertEqual(result.status_code, 400)
+
+                expected = {
+                    "title": "Request data failed validation",
+                    "description": "400 is not of type 'string'"
+                }
+
+                self.assertEqual(expected, result.json)
+
     def test_post_invalid_content_type_415(self):
         body = "{'input': 'foo'}"
         headers = {"Content-Type": "application/xml"}

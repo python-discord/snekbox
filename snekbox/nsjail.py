@@ -171,12 +171,21 @@ class NsJail:
 
         return "".join(output)
 
-    def python3(self, code: str, *args) -> CompletedProcess:
+    def python3(
+        self,
+        code: str,
+        *,
+        nsjail_args: Iterable[str] = (),
+        py_args: Iterable[str] = ("-c",)
+    ) -> CompletedProcess:
         """
         Execute Python 3 code in an isolated environment and return the completed process.
 
-        Additional arguments passed will be used to override the values in the NsJail config.
+        The `nsjail_args` passed will be used to override the values in the NsJail config.
         These arguments are only options for NsJail; they do not affect Python's arguments.
+
+        `py_args` are arguments to pass to the Python subprocess before the code,
+        which is the last argument. By default, it's "-c", which executes the code given.
         """
         cgroup = self._create_dynamic_cgroups()
 
@@ -188,9 +197,9 @@ class NsJail:
                 # Set our dynamically created parent cgroups
                 "--cgroup_mem_parent", cgroup,
                 "--cgroup_pids_parent", cgroup,
-                *args,
+                *nsjail_args,
                 "--",
-                self.config.exec_bin.path, *self.config.exec_bin.arg, "-c", code
+                self.config.exec_bin.path, *self.config.exec_bin.arg, *py_args, code
             )
 
             msg = "Executing code..."
