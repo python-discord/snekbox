@@ -24,7 +24,7 @@ services:
       cache_from:
         - ghcr.io/python-discord/snekbox:latest
     volumes:
-      - .:/snekbox
+      - $PWD:$PWD
       - user-base:/snekbox/user_base
 
 volumes:
