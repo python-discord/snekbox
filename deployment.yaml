@@ -49,6 +49,7 @@ spec:
                     scipy~=1.5
                     sympy~=1.6
                     toml~=0.10
+                    tzdata~=2021.1
                     yarl~=1.6
       volumes:
         - name: snekbox-user-base-volume
