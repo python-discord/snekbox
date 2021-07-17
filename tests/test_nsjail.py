@@ -50,12 +50,49 @@ class NsJailTests(unittest.TestCase):
     def test_subprocess_resource_unavailable(self):
         code = dedent("""
             import subprocess
-            print(subprocess.check_output('kill -9 6', shell=True).decode())
+
+            # Max PIDs is 5.
+            for _ in range(6):
+                print(subprocess.Popen(
+                    [
+                        '/usr/local/bin/python3',
+                        '-c',
+                        'import time; time.sleep(1)'
+                    ],
+                ).pid)
         """).strip()
 
         result = self.nsjail.python3(code)
         self.assertEqual(result.returncode, 1)
         self.assertIn("Resource temporarily unavailable", result.stdout)
+        self.assertEqual(result.stderr, None)
+
+    def test_multiprocess_resource_limits(self):
+        code = dedent("""
+            import time
+            from multiprocessing import Process
+
+            def f():
+                object = "A" * 40_000_000
+                time.sleep(0.5)
+
+
+            proc_1 = Process(target=f)
+            proc_2 = Process(target=f)
+
+            proc_1.start()
+            proc_2.start()
+
+            proc_1.join()
+            proc_2.join()
+
+            print(proc_1.exitcode, proc_2.exitcode)
+        """)
+
+        result = self.nsjail.python3(code)
+
+        exit_codes = result.stdout.strip().split()
+        self.assertIn("-9", exit_codes)
         self.assertEqual(result.stderr, None)
 
     def test_read_only_file_system(self):
