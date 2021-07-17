@@ -50,7 +50,16 @@ class NsJailTests(unittest.TestCase):
     def test_subprocess_resource_unavailable(self):
         code = dedent("""
             import subprocess
-            print(subprocess.check_output('kill -9 6', shell=True).decode())
+
+            # Max PIDs is 5.
+            for _ in range(6):
+                print(subprocess.Popen(
+                    [
+                        '/usr/local/bin/python3',
+                        '-c',
+                        'import time; time.sleep(1)'
+                    ],
+                ).pid)
         """).strip()
 
         result = self.nsjail.python3(code)
