@@ -26,7 +26,8 @@ RUN apt-get -y update \
         lzma-dev \
         tk-dev \
         uuid-dev \
-        zlib1g-dev
+        zlib1g-dev \
+        openssl
 RUN git clone \
     -b '2.9' \
     --single-branch \
