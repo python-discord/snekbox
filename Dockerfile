@@ -55,7 +55,7 @@ RUN make install
 WORKDIR /
 RUN rm -r python
 
-RUN pip install pipenv==2020.11.15
+RUN pip3 install pipenv==2020.11.15
 
 COPY --from=builder /nsjail/nsjail /usr/sbin/
 RUN chmod +x /usr/sbin/nsjail
@@ -78,7 +78,7 @@ ARG DEV
 RUN if [ -n "${DEV}" ]; \
     then \
         pipenv install --deploy --system --dev \
-        && PYTHONUSERBASE=/snekbox/user_base pip install numpy~=1.19; \
+        && PYTHONUSERBASE=/snekbox/user_base pip3 install numpy~=1.19; \
     fi
 
 # At the end to avoid re-installing dependencies when only a config changes.
