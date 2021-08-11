@@ -41,7 +41,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN  }}
+          password: ${{ secrets.DEPLOY_GITHUB_TOKEN  }}
 
       # Create a local cache directory for PR builds, as the image
       # we build for PRs may start to deviate from the "latest" image
@@ -76,10 +76,10 @@ jobs:
           build-args: DEV=1
           cache-from: |
             type=local,src=/tmp/.buildx-cache
-            ghcr.io/python-discord/snekbox-base:latest
-            ghcr.io/python-discord/snekbox-venv:latest
+            ghcr.io/hassanabouelela/snekbox-base:latest
+            ghcr.io/hassanabouelela/snekbox-venv:latest
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
-          tags: ghcr.io/python-discord/snekbox-venv:${{ steps.sha_tag.outputs.tag }}
+          tags: ghcr.io/hassanabouelela/snekbox-venv:${{ steps.sha_tag.outputs.tag }}
 
       - name: Start Container
         run: |
@@ -173,32 +173,32 @@ jobs:
           file: ./Dockerfile
           push: true
           cache-from: |
-            ghcr.io/python-discord/snekbox-base:latest
-            ghcr.io/python-discord/snekbox-venv:latest
-            ghcr.io/python-discord/snekbox:latest
+            ghcr.io/hassanabouelela/snekbox-base:latest
+            ghcr.io/hassanabouelela/snekbox-venv:latest
+            ghcr.io/hassanabouelela/snekbox:latest
           cache-to: type=inline
           tags: |
-            ghcr.io/python-discord/snekbox:latest
-            ghcr.io/python-discord/snekbox:${{ steps.sha_tag.outputs.tag }}
+            ghcr.io/hassanabouelela/snekbox:latest
+            ghcr.io/hassanabouelela/snekbox:${{ steps.sha_tag.outputs.tag }}
           build-args: |
             git_sha=${{ github.sha }}
 
-      # Deploy to Kubernetes
-      - name: Authenticate with Kubernetes
-        if: env.production_build == 'true'
-        uses: azure/k8s-set-context@v1
-        with:
-          method: kubeconfig
-          kubeconfig: ${{ secrets.KUBECONFIG }}
-
-      - name: Deploy to Kubernetes
-        if: env.production_build == 'true'
-        uses: Azure/k8s-deploy@v1
-        with:
-          manifests: |
-            deployment.yaml
-          images: 'ghcr.io/python-discord/snekbox:${{ steps.sha_tag.outputs.tag }}'
-          kubectl-version: 'latest'
+#      # Deploy to Kubernetes
+#      - name: Authenticate with Kubernetes
+#        if: env.production_build == 'true'
+#        uses: azure/k8s-set-context@v1
+#        with:
+#          method: kubeconfig
+#          kubeconfig: ${{ secrets.KUBECONFIG }}
+#
+#      - name: Deploy to Kubernetes
+#        if: env.production_build == 'true'
+#        uses: Azure/k8s-deploy@v1
+#        with:
+#          manifests: |
+#            deployment.yaml
+#          images: 'ghcr.io/hassanabouelela/snekbox:${{ steps.sha_tag.outputs.tag }}'
+#          kubectl-version: 'latest'
 
       # Push the base image to GHCR, with an inline cache manifest
       - name: Push base image
@@ -210,9 +210,9 @@ jobs:
           target: base
           push: true
           cache-from: |
-            ghcr.io/python-discord/snekbox-base:latest
+            ghcr.io/hassanabouelela/snekbox-base:latest
           cache-to: type=inline
-          tags: ghcr.io/python-discord/snekbox-base:latest
+          tags: ghcr.io/hassanabouelela/snekbox-base:latest
 
       # Push the venv image to GHCR, with an inline cache manifest
       - name: Push venv image
@@ -224,7 +224,7 @@ jobs:
           target: venv
           push: true
           cache-from: |
-            ghcr.io/python-discord/snekbox-base:latest
-            ghcr.io/python-discord/snekbox-venv:latest
+            ghcr.io/hassanabouelela/snekbox-base:latest
+            ghcr.io/hassanabouelela/snekbox-venv:latest
           cache-to: type=inline
-          tags: ghcr.io/python-discord/snekbox-venv:latest
+          tags: ghcr.io/hassanabouelela/snekbox-venv:latest

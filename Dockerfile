@@ -1,4 +1,4 @@
-FROM python:3.9-slim-buster as builder
+FROM debian:buster-slim as builder
 RUN apt-get -y update \
     && apt-get install -y \
         bison=2:3.3.* \
@@ -19,8 +19,23 @@ RUN git clone \
 WORKDIR /nsjail
 RUN make
 
+RUN git clone \
+    --branch 3.10 \
+    https://github.com/python/cpython.git /python
+WORKDIR /python
+RUN ./configure \
+    --enable-optimizations \
+    --with-ensurepip=install
+RUN make -j 4
+
 # ------------------------------------------------------------------------------
-FROM python:3.9-slim-buster as base
+FROM debian:buster-slim as base
+
+COPY --from=builder /python /python
+WORKDIR /python
+RUN make install
+WORKDIR /
+RUN rm -r python
 
 # Everything will be a user install to allow snekbox's dependencies to be kept
 # separate from the packages exposed during eval.
