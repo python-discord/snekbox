@@ -31,12 +31,6 @@ RUN make -j 4
 # ------------------------------------------------------------------------------
 FROM debian:buster-slim as base
 
-COPY --from=builder /python /python
-WORKDIR /python
-RUN make install
-WORKDIR /
-RUN rm -r python
-
 # Everything will be a user install to allow snekbox's dependencies to be kept
 # separate from the packages exposed during eval.
 ENV PATH=/root/.local/bin:$PATH \
@@ -51,7 +45,16 @@ RUN apt-get -y update \
         gcc=4:8.3.* \
         libnl-route-3-200=3.4.* \
         libprotobuf17=3.6.* \
+        make=4.2.* \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Python
+COPY --from=builder /python /python
+WORKDIR /python
+RUN make install
+WORKDIR /
+RUN rm -r python
+
 RUN pip install pipenv==2020.11.15
 
 COPY --from=builder /nsjail/nsjail /usr/sbin/
