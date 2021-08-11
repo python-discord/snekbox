@@ -12,13 +12,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@main
 
-      - name: Create a Sentry.io release
-        uses: tclindner/sentry-releases-action@v1.2.0
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: python-discord
-          SENTRY_PROJECT: snekbox
-        with:
-          tagName: ${{ github.sha }}
-          environment: production
-          releaseNamePrefix: snekbox@
+#      - name: Create a Sentry.io release
+#        uses: tclindner/sentry-releases-action@v1.2.0
+#        env:
+#          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+#          SENTRY_ORG: python-discord
+#          SENTRY_PROJECT: snekbox
+#        with:
+#          tagName: ${{ github.sha }}
+#          environment: production
+#          releaseNamePrefix: snekbox@
