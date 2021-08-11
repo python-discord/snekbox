@@ -10,7 +10,23 @@ RUN apt-get -y update \
         libnl-route-3-dev=3.4.* \
         make=4.2.* \
         pkg-config=0.29-6 \
-        protobuf-compiler=3.6.*
+        protobuf-compiler=3.6.* \
+        build-essential \
+        gdb \
+        lcov \
+        libbz2-dev \
+        libffi-dev \
+        libgdbm-dev \
+        liblzma-dev \
+        libncurses5-dev \
+        libreadline6-dev \
+        libsqlite3-dev \
+        libssl-dev \
+        lzma \
+        lzma-dev \
+        tk-dev \
+        uuid-dev \
+        zlib1g-dev
 RUN git clone \
     -b '2.9' \
     --single-branch \
@@ -21,6 +37,7 @@ RUN make
 
 RUN git clone \
     --branch 3.10 \
+    --depth 1 \
     https://github.com/python/cpython.git /python
 WORKDIR /python
 RUN ./configure \
