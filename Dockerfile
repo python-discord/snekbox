@@ -26,9 +26,7 @@ RUN apt-get -y update \
         lzma-dev \
         tk-dev \
         uuid-dev \
-        zlib1g-dev \
-        openssl \
-        openssl-devel
+        zlib1g-dev
 RUN git clone \
     -b '2.9' \
     --single-branch \
@@ -37,6 +35,7 @@ RUN git clone \
 WORKDIR /nsjail
 RUN make
 
+# Build and install python
 RUN git clone \
     --branch 3.10 \
     --depth 1 \
@@ -44,8 +43,10 @@ RUN git clone \
 WORKDIR /python
 RUN ./configure \
     --enable-optimizations \
-    --with-ensurepip=install
+    --with-ensurepip=install \
+    --prefix=/python/build
 RUN make -j 4
+RUN make install
 
 # ------------------------------------------------------------------------------
 FROM debian:buster-slim as base
@@ -67,14 +68,9 @@ RUN apt-get -y update \
         make=4.2.* \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python
-COPY --from=builder /python /python
-WORKDIR /python
-RUN make install
-WORKDIR /
-RUN rm -r python
-
-RUN pip3 install pipenv==2020.11.15
+# Install pipenv
+COPY --from=builder /python/build /python
+RUN /python/pip3 install pipenv==2020.11.15
 
 COPY --from=builder /nsjail/nsjail /usr/sbin/
 RUN chmod +x /usr/sbin/nsjail
