@@ -70,6 +70,9 @@ RUN apt-get -y update \
 
 # Install pipenv
 COPY --from=builder /python/build /python
+RUN ls /python
+RUN ls /python/bin
+RUN ls /python/build
 RUN /python/bin/pip3 install pipenv==2020.11.15
 
 COPY --from=builder /nsjail/nsjail /usr/sbin/
