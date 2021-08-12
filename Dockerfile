@@ -39,12 +39,12 @@ RUN make
 RUN git clone \
     --branch 3.10 \
     --depth 1 \
-    https://github.com/python/cpython.git /python
-WORKDIR /python
+    https://github.com/python/cpython.git /python_build
+WORKDIR /python_build
 RUN ./configure \
 #    --enable-optimizations \
     --with-ensurepip=install \
-    --prefix=/python/build
+    --prefix=/python
 RUN make -j 8
 RUN make install
 
@@ -68,12 +68,12 @@ RUN apt-get -y update \
         make=4.2.* \
     && rm -rf /var/lib/apt/lists/*
 
+# Copy python build, and add it to path
+COPY --from=builder /python /python
+ENV PATH="/python/bin:${PATH}"
+
 # Install pipenv
-COPY --from=builder /python/build /python
-RUN ls /python
-RUN ls /python/bin
-RUN ls /python/build
-RUN /python/bin/pip3 install pipenv==2020.11.15
+RUN pip3 install pipenv==2020.11.15
 
 COPY --from=builder /nsjail/nsjail /usr/sbin/
 RUN chmod +x /usr/sbin/nsjail
@@ -85,7 +85,7 @@ COPY Pipfile Pipfile.lock /snekbox/
 WORKDIR /snekbox
 
 # Pipenv installs to the default user site since PIP_USER is set.
-RUN pipenv install --deploy --system
+RUN pipenv install --deploy --system --python /python/bin/python3
 
 # This must come after the first pipenv command! From the docs:
 # All RUN instructions following an ARG instruction use the ARG variable
