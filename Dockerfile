@@ -66,6 +66,7 @@ RUN apt-get -y update \
         libnl-route-3-200=3.4.* \
         libprotobuf17=3.6.* \
         make=4.2.* \
+        libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy python build, and add it to path
