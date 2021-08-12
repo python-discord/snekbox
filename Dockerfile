@@ -42,10 +42,10 @@ RUN git clone \
     https://github.com/python/cpython.git /python
 WORKDIR /python
 RUN ./configure \
-    --enable-optimizations \
+#    --enable-optimizations \
     --with-ensurepip=install \
     --prefix=/python/build
-RUN make -j 4
+RUN make -j 8
 RUN make install
 
 # ------------------------------------------------------------------------------
