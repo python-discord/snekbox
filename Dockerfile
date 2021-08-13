@@ -58,8 +58,7 @@ ENV PATH=/root/.local/bin:$PATH \
     PIP_USER=1 \
     PIPENV_DONT_USE_PYENV=1 \
     PIPENV_HIDE_EMOJIS=1 \
-    PIPENV_NOSPIN=1 \
-    PYTHONHOME=/python
+    PIPENV_NOSPIN=1
 
 RUN apt-get -y update \
     && apt-get install -y \
@@ -88,6 +87,8 @@ RUN chmod +x /usr/sbin/nsjail
 
 # ------------------------------------------------------------------------------
 FROM base as venv
+
+ENV PYTHONHOME=/python
 
 COPY Pipfile Pipfile.lock /snekbox/
 WORKDIR /snekbox
