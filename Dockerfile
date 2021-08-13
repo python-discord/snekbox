@@ -42,7 +42,7 @@ RUN git clone \
     https://github.com/python/cpython.git /python_build
 WORKDIR /python_build
 RUN ./configure \
-#    --enable-optimizations \
+    --enable-optimizations \
     --with-ensurepip=install \
     --prefix=/python
 RUN make -j 8
@@ -102,8 +102,6 @@ RUN chmod +x /usr/sbin/nsjail
 # ------------------------------------------------------------------------------
 FROM base as venv
 
-ENV PYTHONHOME=/python
-
 COPY Pipfile Pipfile.lock /snekbox/
 WORKDIR /snekbox
 
@@ -137,4 +135,5 @@ WORKDIR /snekbox
 
 # At the end to prevent it from invalidating the layer cache.
 ARG git_sha="development"
-ENV GIT_SHA=$git_sha
+ENV GIT_SHA=$git_sha \
+    PYTHONHOME=/usr/local/bin
