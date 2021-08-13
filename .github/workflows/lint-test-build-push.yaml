@@ -122,15 +122,15 @@ jobs:
         run: sudo swapoff -a
 
       # Run unittests and generate coverage report in the container
-#      - name: Run unit tests
-#        id: run_tests
-#        run: |
-#          echo '::set-output name=started::true'
-#          docker exec snekbox_dev /bin/bash -c 'coverage run -m unittest'
-#
-#      - name: Generate coverage report
-#        if: always() && steps.run_tests.outputs.started == 'true'
-#        run: docker exec snekbox_dev /bin/bash -c 'coverage report -m'
+      - name: Run unit tests
+        id: run_tests
+        run: |
+          echo '::set-output name=started::true'
+          docker exec snekbox_dev /bin/bash -c 'coverage run -m unittest'
+
+      - name: Generate coverage report
+        if: always() && steps.run_tests.outputs.started == 'true'
+        run: docker exec snekbox_dev /bin/bash -c 'coverage report -m'
 
       # Set-up a Python version to process the coverage reports
       # Note: This step runs even if the test step failed to make
