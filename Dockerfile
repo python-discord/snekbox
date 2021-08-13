@@ -52,7 +52,7 @@ RUN apt-get -y update \
         lzma-dev \
         tk-dev \
         uuid-dev \
-        zlib1g-dev
+        zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Build and install python
