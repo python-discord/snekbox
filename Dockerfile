@@ -58,7 +58,8 @@ ENV PATH=/root/.local/bin:$PATH \
     PIP_USER=1 \
     PIPENV_DONT_USE_PYENV=1 \
     PIPENV_HIDE_EMOJIS=1 \
-    PIPENV_NOSPIN=1
+    PIPENV_NOSPIN=1 \
+    PYTHONHOME=/python
 
 RUN apt-get -y update \
     && apt-get install -y \
