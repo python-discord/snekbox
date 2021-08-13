@@ -5,7 +5,7 @@ services:
     container_name: snekbox_dev
     hostname: snekbox_dev
     privileged: true
-    image: ghcr.io/python-discord/snekbox${IMAGE_SUFFIX:-:dev}
+    image: ghcr.io/hassanabouelela/snekbox${IMAGE_SUFFIX:-:dev}
     ports:
      - 8060:8060
     init: true
@@ -22,7 +22,7 @@ services:
       args:
         DEV: 1
       cache_from:
-        - ghcr.io/python-discord/snekbox:latest
+        - ghcr.io/hassanabouelela/snekbox:latest
     volumes:
       - $PWD:$PWD
       - user-base:/snekbox/user_base
