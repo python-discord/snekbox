@@ -74,6 +74,11 @@ RUN apt-get -y update \
 COPY --from=builder /python /python
 ENV PATH="/python/bin:${PATH}"
 
+# Add symlinks to python in the usr folder
+RUN ln -s /python/bin/python3 /usr/local/bin/python
+RUN ln -s /python/bin/python3 /usr/local/bin/python3
+RUN ln -s /python/bin/python3 /usr/local/bin/python3.10
+
 # Install pipenv
 RUN pip3 install pipenv==2020.11.15
 
