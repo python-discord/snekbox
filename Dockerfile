@@ -67,6 +67,7 @@ RUN apt-get -y update \
         libprotobuf17=3.6.* \
         make=4.2.* \
         libssl-dev \
+        libsqlite3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy python build, and add it to path
