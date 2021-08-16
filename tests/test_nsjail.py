@@ -55,7 +55,7 @@ class NsJailTests(unittest.TestCase):
             for _ in range(6):
                 print(subprocess.Popen(
                     [
-                        '/usr/local/bin/python3',
+                        '/python/bin/python3',
                         '-c',
                         'import time; time.sleep(1)'
                     ],

@@ -27,6 +27,8 @@ RUN apt-get -y update \
         tk-dev \
         uuid-dev \
         zlib1g-dev
+
+# Build NsJail
 RUN git clone \
     -b '2.9' \
     --single-branch \
@@ -88,11 +90,6 @@ RUN apt-get -y update \
 COPY --from=builder /python /python
 ENV PATH="/python/bin:${PATH}"
 
-# Add symlinks to python in the usr folder
-RUN ln -s /python/bin/python3 /usr/local/bin/python
-RUN ln -s /python/bin/python3 /usr/local/bin/python3
-RUN ln -s /python/bin/python3 /usr/local/bin/python3.10
-
 # Install pipenv
 RUN pip3 install pipenv==2020.11.15
 
@@ -135,5 +132,4 @@ WORKDIR /snekbox
 
 # At the end to prevent it from invalidating the layer cache.
 ARG git_sha="development"
-ENV GIT_SHA=$git_sha \
-    PYTHONHOME=/usr/local/bin
+ENV GIT_SHA=$git_sha
