@@ -183,22 +183,22 @@ jobs:
           build-args: |
             git_sha=${{ github.sha }}
 
-#      # Deploy to Kubernetes
-#      - name: Authenticate with Kubernetes
-#        if: env.production_build == 'true'
-#        uses: azure/k8s-set-context@v1
-#        with:
-#          method: kubeconfig
-#          kubeconfig: ${{ secrets.KUBECONFIG }}
-#
-#      - name: Deploy to Kubernetes
-#        if: env.production_build == 'true'
-#        uses: Azure/k8s-deploy@v1
-#        with:
-#          manifests: |
-#            deployment.yaml
-#          images: 'ghcr.io/hassanabouelela/snekbox:${{ steps.sha_tag.outputs.tag }}'
-#          kubectl-version: 'latest'
+      # Deploy to Kubernetes
+      - name: Authenticate with Kubernetes
+        if: env.production_build == 'true'
+        uses: azure/k8s-set-context@v1
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+
+      - name: Deploy to Kubernetes
+        if: env.production_build == 'true'
+        uses: Azure/k8s-deploy@v1
+        with:
+          manifests: |
+            deployment.yml
+          images: 'ghcr.io/hassanabouelela/snekbox:${{ steps.sha_tag.outputs.tag }}'
+          kubectl-version: 'latest'
 
       # Push the base image to GHCR, with an inline cache manifest
       - name: Push base image
