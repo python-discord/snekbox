@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: snekbox
+  namespace: apps
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: snekbox
+  template:
+    metadata:
+      labels:
+        app: snekbox
+    spec:
+      containers:
+        - name: snekbox
+          image: ghcr.io/hassanabouelela/snekbox:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8060
+          securityContext:
+            privileged: true
