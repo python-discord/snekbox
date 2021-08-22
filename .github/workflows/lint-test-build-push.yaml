@@ -199,6 +199,7 @@ jobs:
             deployment.yml
           images: 'ghcr.io/hassanabouelela/snekbox:${{ steps.sha_tag.outputs.tag }}'
           kubectl-version: 'latest'
+          namespace: 'apps'
 
       # Push the base image to GHCR, with an inline cache manifest
       - name: Push base image
