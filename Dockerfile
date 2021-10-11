@@ -1,4 +1,4 @@
-FROM python:3.9-slim-buster as builder
+FROM python:3.10-slim-buster as builder
 RUN apt-get -y update \
     && apt-get install -y \
         bison=2:3.3.* \
@@ -20,7 +20,7 @@ WORKDIR /nsjail
 RUN make
 
 # ------------------------------------------------------------------------------
-FROM python:3.9-slim-buster as base
+FROM python:3.10-slim-buster as base
 
 # Everything will be a user install to allow snekbox's dependencies to be kept
 # separate from the packages exposed during eval.
