@@ -140,7 +140,7 @@ jobs:
         id: python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.9'
+          python-version: '3.10'
 
       # We'll only ever need a single dependency in this python
       # environment and we'll only use it in the CI, so let's

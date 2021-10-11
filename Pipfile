@@ -11,7 +11,7 @@ protobuf = "~= 3.14"
 sentry-sdk = {extras = ["falcon"], version = "~= 0.19.3"}
 
 [dev-packages]
-coverage = "~= 5.3"
+coverage = "~= 6.0"
 flake8 = "~= 3.8.4"
 flake8-annotations = "~= 2.5.0"
 flake8-bugbear = "~= 20.11"
@@ -27,7 +27,7 @@ pre-commit = "~= 2.9.3"
 pydocstyle = "~= 5.1"
 
 [requires]
-python_version = "3.9"
+python_version = "3.10"
 
 [scripts]
 eval = "python -m snekbox"
