@@ -36,6 +36,7 @@ spec:
                     arrow~=0.17
                     attrs~=20.3
                     beautifulsoup4~=4.9
+                    fishhook~=0.1
                     forbiddenfruit~=0.1
                     fuzzywuzzy~=0.18
                     lark~=0.11
