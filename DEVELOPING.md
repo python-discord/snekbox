@@ -2,7 +2,7 @@
 
 ## Initial Setup
 
-A Python 3.9 interpreter and the [pipenv] package are required. Once those requirements are satisfied, install the project's dependencies:
+A Python 3.10 interpreter and the [pipenv] package are required. Once those requirements are satisfied, install the project's dependencies:
 
 ```
 pipenv sync --dev
