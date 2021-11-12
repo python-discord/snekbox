@@ -76,10 +76,10 @@ jobs:
           build-args: DEV=1
           cache-from: |
             type=local,src=/tmp/.buildx-cache
-            ghcr.io/hassanabouelela/snekbox-base:latest
-            ghcr.io/hassanabouelela/snekbox-venv:latest
+            ghcr.io/${{ github.repository_owner }}/snekbox-base:latest
+            ghcr.io/${{ github.repository_owner }}/snekbox-venv:latest
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
-          tags: ghcr.io/hassanabouelela/snekbox-venv:${{ steps.sha_tag.outputs.tag }}
+          tags: ghcr.io/${{ github.repository_owner }}/snekbox-venv:${{ steps.sha_tag.outputs.tag }}
 
       - name: Start Container
         run: |
@@ -173,13 +173,13 @@ jobs:
           file: ./Dockerfile
           push: true
           cache-from: |
-            ghcr.io/hassanabouelela/snekbox-base:latest
-            ghcr.io/hassanabouelela/snekbox-venv:latest
-            ghcr.io/hassanabouelela/snekbox:latest
+            ghcr.io/${{ github.repository_owner }}/snekbox-base:latest
+            ghcr.io/${{ github.repository_owner }}/snekbox-venv:latest
+            ghcr.io/${{ github.repository_owner }}/snekbox:latest
           cache-to: type=inline
           tags: |
-            ghcr.io/hassanabouelela/snekbox:latest
-            ghcr.io/hassanabouelela/snekbox:${{ steps.sha_tag.outputs.tag }}
+            ghcr.io/${{ github.repository_owner }}/snekbox:latest
+            ghcr.io/${{ github.repository_owner }}/snekbox:${{ steps.sha_tag.outputs.tag }}
           build-args: |
             git_sha=${{ github.sha }}
 
@@ -197,7 +197,7 @@ jobs:
         with:
           manifests: |
             deployment.yml
-          images: 'ghcr.io/hassanabouelela/snekbox:${{ steps.sha_tag.outputs.tag }}'
+          images: 'ghcr.io/${{ github.repository_owner }}/snekbox:${{ steps.sha_tag.outputs.tag }}'
           kubectl-version: 'latest'
           namespace: 'apps'
 
@@ -211,9 +211,9 @@ jobs:
           target: base
           push: true
           cache-from: |
-            ghcr.io/hassanabouelela/snekbox-base:latest
+            ghcr.io/${{ github.repository_owner }}/snekbox-base:latest
           cache-to: type=inline
-          tags: ghcr.io/hassanabouelela/snekbox-base:latest
+          tags: ghcr.io/${{ github.repository_owner }}/snekbox-base:latest
 
       # Push the venv image to GHCR, with an inline cache manifest
       - name: Push venv image
@@ -225,7 +225,7 @@ jobs:
           target: venv
           push: true
           cache-from: |
-            ghcr.io/hassanabouelela/snekbox-base:latest
-            ghcr.io/hassanabouelela/snekbox-venv:latest
+            ghcr.io/${{ github.repository_owner }}/snekbox-base:latest
+            ghcr.io/${{ github.repository_owner }}/snekbox-venv:latest
           cache-to: type=inline
-          tags: ghcr.io/hassanabouelela/snekbox-venv:latest
+          tags: ghcr.io/${{ github.repository_owner }}/snekbox-venv:latest
