@@ -7,7 +7,7 @@ name = "pypi"
 falcon = "~= 2.0.0"
 gunicorn = "~= 20.0"
 jsonschema = "~= 3.2"
-protobuf = "~= 3.14"
+protobuf = "== 3.19.*"
 sentry-sdk = {extras = ["falcon"], version = "~= 0.19.3"}
 
 [dev-packages]
