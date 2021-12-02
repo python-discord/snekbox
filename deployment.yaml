@@ -33,7 +33,7 @@ spec:
                     PYTHONUSERBASE=/snekbox/user_base
                     pip install --user
                     anyio[trio]~=3.2
-                    arrow~=0.17
+                    arrow~=1.2.1
                     attrs~=20.3
                     beautifulsoup4~=4.9
                     fishhook~=0.1
