@@ -44,10 +44,12 @@ class NsJail:
     def __init__(self, nsjail_binary: str = NSJAIL_PATH):
         self.nsjail_binary = nsjail_binary
         self.config = self._read_config()
-    
+
+        log.info(f"Cgroups version: {self._probe_cgroup_version()}")
+
     @staticmethod
     def _probe_cgroup_version() -> int:
-        """Poll the filesystem and return the guessed cgroup version"""
+        """Poll the filesystem and return the guessed cgroup version."""
         # Right now we check whenever the controller path exists
         version = 2 if CGROUPV2_PROBE_PATH.exists() else 1
 
