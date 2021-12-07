@@ -26,6 +26,9 @@ LOG_BLACKLIST = ("Process will be ",)
 NSJAIL_PATH = os.getenv("NSJAIL_PATH", "/usr/sbin/nsjail")
 NSJAIL_CFG = os.getenv("NSJAIL_CFG", "./config/snekbox.cfg")
 
+# If this file is present, cgroupv2 should be enabled
+CGROUPV2_PROBE_PATH = Path("/sys/fs/cgroup/cgroup.controllers")
+
 # Limit of stdout bytes we consume before terminating nsjail
 OUTPUT_MAX = 1_000_000  # 1 MB
 READ_CHUNK_SIZE = 10_000  # chars
@@ -41,6 +44,19 @@ class NsJail:
     def __init__(self, nsjail_binary: str = NSJAIL_PATH):
         self.nsjail_binary = nsjail_binary
         self.config = self._read_config()
+
+        log.info(f"Cgroups version: {self._probe_cgroup_version()}")
+
+    @staticmethod
+    def _probe_cgroup_version() -> int:
+        """Poll the filesystem and return the guessed cgroup version."""
+        # Right now we check whenever the controller path exists
+        version = 2 if CGROUPV2_PROBE_PATH.exists() else 1
+
+        if DEBUG:
+            log.info(f"Guessed cgroups version: {version}")
+
+        return version
 
     @staticmethod
     def _read_config() -> NsJailConfig:
@@ -190,6 +206,9 @@ class NsJail:
         cgroup = self._create_dynamic_cgroups()
 
         with NamedTemporaryFile() as nsj_log:
+            if self._probe_cgroup_version() == 2:
+                nsjail_args = (["--use_cgroupv2"]).extend(nsjail_args)
+
             args = (
                 self.nsjail_binary,
                 "--config", NSJAIL_CFG,
@@ -204,7 +223,7 @@ class NsJail:
 
             msg = "Executing code..."
             if DEBUG:
-                msg = f"{msg[:-3]}:\n{textwrap.indent(code, '    ')}"
+                msg = f"{msg[:-3]}:\n{textwrap.indent(code, '    ')}\nWith the arguments {args}."
             log.info(msg)
 
             try:
