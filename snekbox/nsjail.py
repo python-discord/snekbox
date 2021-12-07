@@ -44,19 +44,15 @@ class NsJail:
     def __init__(self, nsjail_binary: str = NSJAIL_PATH):
         self.nsjail_binary = nsjail_binary
         self.config = self._read_config()
+        self.cgroups_version = self._probe_cgroup_version()
 
-        log.info(f"Cgroups version: {self._probe_cgroup_version()}")
+        log.info(f"Cgroups version: {self.cgroups_version}")
 
     @staticmethod
     def _probe_cgroup_version() -> int:
         """Poll the filesystem and return the guessed cgroup version."""
         # Right now we check whenever the controller path exists
-        version = 2 if CGROUPV2_PROBE_PATH.exists() else 1
-
-        if DEBUG:
-            log.info(f"Guessed cgroups version: {version}")
-
-        return version
+        return 2 if CGROUPV2_PROBE_PATH.exists() else 1
 
     @staticmethod
     def _read_config() -> NsJailConfig:
@@ -102,6 +98,14 @@ class NsJail:
         pids.mkdir(parents=True, exist_ok=True)
         mem.mkdir(parents=True, exist_ok=True)
 
+        # Cgroups v2 renamed the limit file in their new API
+        if self.cgroups_version == 2:
+            limit_name = "max"
+            swap_name = "swap"
+        else:
+            limit_name = "limit_in_bytes"
+            swap_name = "memsw"
+
         # Swap limit cannot be set to a value lower than memory.limit_in_bytes.
         # Therefore, this must be set before the swap limit.
         #
@@ -109,12 +113,12 @@ class NsJail:
         # instead so that children inherit it. Given the swap's dependency on the memory limit,
         # the memory limit must also be set on the parent. NsJail only sets the memory limit for
         # child cgroups, not the parent.
-        (mem / "memory.limit_in_bytes").write_text(mem_max, encoding="utf-8")
+        (mem / f"memory.{limit_name}").write_text(mem_max, encoding="utf-8")
 
         try:
             # Swap limit is specified as the sum of the memory and swap limits.
             # Therefore, setting it equal to the memory limit effectively disables swapping.
-            (mem / "memory.memsw.limit_in_bytes").write_text(mem_max, encoding="utf-8")
+            (mem / f"memory.{swap_name}.{limit_name}").write_text(mem_max, encoding="utf-8")
         except PermissionError:
             log.warning(
                 "Failed to set the memory swap limit for the cgroup. "
@@ -206,7 +210,7 @@ class NsJail:
         cgroup = self._create_dynamic_cgroups()
 
         with NamedTemporaryFile() as nsj_log:
-            if self._probe_cgroup_version() == 2:
+            if self.cgroups_version == 2:
                 nsjail_args = (["--use_cgroupv2"]).extend(nsjail_args)
 
             args = (
