@@ -25,7 +25,6 @@ LOG_BLACKLIST = ("Process will be ",)
 NSJAIL_PATH = os.getenv("NSJAIL_PATH", "/usr/sbin/nsjail")
 NSJAIL_CFG = os.getenv("NSJAIL_CFG", "./config/snekbox.cfg")
 
-
 # Limit of stdout bytes we consume before terminating nsjail
 OUTPUT_MAX = 1_000_000  # 1 MB
 READ_CHUNK_SIZE = 10_000  # chars
@@ -41,8 +40,9 @@ class NsJail:
     def __init__(self, nsjail_binary: str = NSJAIL_PATH):
         self.nsjail_binary = nsjail_binary
         self.config = self._read_config()
+        self.cgroup_version = utils.cgroup.get_version(self.config)
 
-        log.info(f"Cgroups version: {utils.cgroup.probe_version()}")
+        log.info(f"Assuming cgroup version {self.cgroup_version}.")
 
     @staticmethod
     def _read_config() -> NsJailConfig:
@@ -149,16 +149,13 @@ class NsJail:
         cgroup = utils.cgroup.create_dynamic(self.config)
 
         with NamedTemporaryFile() as nsj_log:
-            if utils.cgroup.probe_version() == 2:
+            if self.cgroup_version == 2:
                 nsjail_args = (["--use_cgroupv2"]).extend(nsjail_args)
 
             args = (
                 self.nsjail_binary,
                 "--config", NSJAIL_CFG,
                 "--log", nsj_log.name,
-                # Set our dynamically created parent cgroups
-                "--cgroup_mem_parent", cgroup,
-                "--cgroup_pids_parent", cgroup,
                 *nsjail_args,
                 "--",
                 self.config.exec_bin.path, *self.config.exec_bin.arg, *py_args, code
