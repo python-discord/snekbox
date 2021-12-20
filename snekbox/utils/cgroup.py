@@ -89,11 +89,8 @@ def get_version(config: NsJailConfig) -> int:
 
 
 def init_v2(config: NsJailConfig) -> None:
-    """Ensure cgroupv2 children have controllers enabled and memory swapping is disabled."""
+    """Ensure cgroupv2 children have controllers enabled."""
     cgroup_mount = Path(config.cgroupv2_mount)
-
-    # Swap has to be disabled since NsJail doesn't do it.
-    (cgroup_mount / "memory.swap.max").write_text("0")
 
     # If the root's subtree_control already has some controllers enabled,
     # no further action is necessary.
