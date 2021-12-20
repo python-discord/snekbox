@@ -1,4 +1,4 @@
-The Python code at snekbox/config.py was generated from config.proto in nsjail
+The Python code at snekbox/config_pb2.py was generated from config.proto in nsjail
 Copyright 2014 Google Inc. All Rights Reserved.
 Copyright 2016 Sergiusz Bazanski. All Rights Reserved.
 
