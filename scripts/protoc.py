@@ -50,9 +50,8 @@ def main() -> None:
                 file.write(response.read())
             compile_proto(file_path)
 
-    # Remove the _pb suffix from the generated Python file.
     if generated_py := next(SRC_DIR.glob(f"{FILE_NAME}_pb*.py"), None):
-        generated_py.rename(generated_py.with_stem(FILE_NAME))
+        print(f"Build output: {generated_py.absolute()}.")
     else:
         print(f"Could not find the generated Python file in {SRC_DIR}.", file=sys.stderr)
         sys.exit(1)
