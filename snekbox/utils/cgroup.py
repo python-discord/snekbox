@@ -35,12 +35,12 @@ def create_dynamic(config: NsJailConfig) -> str:
     # instead so that children inherit it. Given the swap's dependency on the memory limit,
     # the memory limit must also be set on the parent. NsJail only sets the memory limit for
     # child cgroups, not the parent.
-    (mem / "memory.limit_in_bytes").write_text(mem_max, encoding="utf-8")
+    (mem / "memory.limit_in_bytes").write_text(mem_max)
 
     try:
         # Swap limit is specified as the sum of the memory and swap limits.
         # Therefore, setting it equal to the memory limit effectively disables swapping.
-        (mem / "memory.memsw.limit_in_bytes").write_text(mem_max, encoding="utf-8")
+        (mem / "memory.memsw.limit_in_bytes").write_text(mem_max)
     except PermissionError:
         log.warning(
             "Failed to set the memory swap limit for the cgroup. "
