@@ -1,4 +1,7 @@
 FROM python:3.10-slim-buster as builder
+
+WORKDIR /nsjail
+
 RUN apt-get -y update \
     && apt-get install -y \
         bison=2:3.3.* \
@@ -11,12 +14,8 @@ RUN apt-get -y update \
         make=4.2.* \
         pkg-config=0.29-6 \
         protobuf-compiler=3.6.*
-RUN git clone \
-    -b '2.9' \
-    --single-branch \
-    --depth 1 \
-    https://github.com/google/nsjail.git /nsjail
-WORKDIR /nsjail
+RUN git clone -b master --single-branch https://github.com/google/nsjail.git . \
+    && git checkout dccf911fd2659e7b08ce9507c25b2b38ec2c5800
 RUN make
 
 # ------------------------------------------------------------------------------
