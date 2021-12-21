@@ -24,6 +24,7 @@ FROM python:3.10-slim-buster as base
 # Everything will be a user install to allow snekbox's dependencies to be kept
 # separate from the packages exposed during eval.
 ENV PATH=/root/.local/bin:$PATH \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=false \
     PIP_USER=1 \
     PIPENV_DONT_USE_PYENV=1 \
