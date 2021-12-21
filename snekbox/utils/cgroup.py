@@ -75,6 +75,13 @@ def get_version(config: NsJailConfig) -> int:
         # Probably hybrid mode. Use whatever is set in the config.
         return config_version
     elif v1_exists:
+        if config_version == 2:
+            log.warning(
+                "NsJail is configured to use cgroupv2, but only cgroupv1 was detected on the "
+                "system. Either use_cgroupv2 or cgroupv2_mount is incorrect. Snekbox is unable "
+                "to override use_cgroupv2. If NsJail has been configured to use cgroups, then "
+                "it will fail. In such case, please correct the config manually."
+            )
         return 1
     elif v2_exists:
         return 2
