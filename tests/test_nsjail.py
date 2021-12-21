@@ -259,7 +259,8 @@ class NsJailTests(unittest.TestCase):
         args = ("foo", "bar")
         result = self.nsjail.python3("", nsjail_args=args)
 
-        self.assertEqual(result.args[9:11], args)
+        end = result.args.index("--")
+        self.assertEqual(result.args[end - len(args):end], args)
 
     def test_py_args(self):
         args = ("-m", "timeit")
