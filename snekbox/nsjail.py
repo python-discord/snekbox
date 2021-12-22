@@ -4,7 +4,6 @@ import re
 import subprocess
 import sys
 import textwrap
-from pathlib import Path
 from subprocess import CompletedProcess
 from tempfile import NamedTemporaryFile
 from typing import Iterable
@@ -40,10 +39,7 @@ class NsJail:
     def __init__(self, nsjail_binary: str = NSJAIL_PATH):
         self.nsjail_binary = nsjail_binary
         self.config = self._read_config()
-        self.cgroup_version = utils.cgroup.get_version(self.config)
-
-        if self.cgroup_version == 2:
-            utils.cgroup.init_v2(self.config)
+        self.cgroup_version = utils.cgroup.init(self.config)
 
         log.info(f"Assuming cgroup version {self.cgroup_version}.")
 
@@ -149,15 +145,7 @@ class NsJail:
         `py_args` are arguments to pass to the Python subprocess before the code,
         which is the last argument. By default, it's "-c", which executes the code given.
         """
-        cgroup = None
-        if self.cgroup_version == 1:
-            cgroup = utils.cgroup.create_dynamic(self.config)
-            nsjail_args = (
-                "--cgroup_mem_parent", cgroup,
-                "--cgroup_pids_parent", cgroup,
-                *nsjail_args,
-            )
-        else:
+        if self.cgroup_version == 2:
             nsjail_args = ("--use_cgroupv2", *nsjail_args)
 
         with NamedTemporaryFile() as nsj_log:
@@ -208,10 +196,5 @@ class NsJail:
             self._parse_log(log_lines)
 
         log.info(f"nsjail return code: {returncode}")
-
-        # Remove the dynamically created cgroups once we're done
-        if self.cgroup_version == 1:
-            Path(self.config.cgroup_mem_mount, cgroup).rmdir()
-            Path(self.config.cgroup_pids_mount, cgroup).rmdir()
 
         return CompletedProcess(args, returncode, output, None)

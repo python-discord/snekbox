@@ -1,54 +1,9 @@
 import logging
-import uuid
 from pathlib import Path
 
 from snekbox.config_pb2 import NsJailConfig
 
 log = logging.getLogger(__name__)
-
-
-def create_dynamic(config: NsJailConfig) -> str:
-    """
-    Create a PID and memory cgroup for NsJail to use as the parent cgroup.
-
-    Returns the name of the cgroup, located in the cgroup root.
-
-    NsJail doesn't do this automatically because it requires privileges NsJail usually doesn't
-    have.
-
-    Disables memory swapping.
-    """
-    # Pick a name for the cgroup
-    cgroup = "snekbox-" + str(uuid.uuid4())
-
-    pids = Path(config.cgroup_pids_mount, cgroup)
-    mem = Path(config.cgroup_mem_mount, cgroup)
-    mem_max = str(config.cgroup_mem_max)
-
-    pids.mkdir(parents=True, exist_ok=True)
-    mem.mkdir(parents=True, exist_ok=True)
-
-    # Swap limit cannot be set to a value lower than memory.limit_in_bytes.
-    # Therefore, this must be set before the swap limit.
-    #
-    # Since child cgroups are dynamically created, the swap limit has to be set on the parent
-    # instead so that children inherit it. Given the swap's dependency on the memory limit,
-    # the memory limit must also be set on the parent. NsJail only sets the memory limit for
-    # child cgroups, not the parent.
-    (mem / "memory.limit_in_bytes").write_text(mem_max)
-
-    try:
-        # Swap limit is specified as the sum of the memory and swap limits.
-        # Therefore, setting it equal to the memory limit effectively disables swapping.
-        (mem / "memory.memsw.limit_in_bytes").write_text(mem_max)
-    except PermissionError:
-        log.warning(
-            "Failed to set the memory swap limit for the cgroup. "
-            "This is probably because CONFIG_MEMCG_SWAP or CONFIG_MEMCG_SWAP_ENABLED is unset. "
-            "Please ensure swap memory is disabled on the system."
-        )
-
-    return cgroup
 
 
 def get_version(config: NsJailConfig) -> int:
@@ -93,6 +48,31 @@ def get_version(config: NsJailConfig) -> int:
             "Falling back to the use_cgroupv2 NsJail setting."
         )
         return config_version
+
+
+def init(config: NsJailConfig) -> int:
+    """Determine the cgroup version, initialise the cgroups for NsJail, and return the version."""
+    version = get_version(config)
+    if version == 1:
+        init_v1(config)
+    else:
+        init_v2(config)
+
+    return version
+
+
+def init_v1(config: NsJailConfig) -> None:
+    """
+    Create a PID and memory cgroup for NsJail to use as the parent cgroup for each controller.
+
+    NsJail doesn't do this automatically because it requires privileges NsJail usually doesn't
+    have.
+    """
+    pids = Path(config.cgroup_pids_mount, config.cgroup_pids_parent)
+    mem = Path(config.cgroup_mem_mount, config.cgroup_mem_parent)
+
+    pids.mkdir(parents=True, exist_ok=True)
+    mem.mkdir(parents=True, exist_ok=True)
 
 
 def init_v2(config: NsJailConfig) -> None:
