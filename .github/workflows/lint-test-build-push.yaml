@@ -9,7 +9,16 @@ on:
 
 jobs:
   lint-test-build-push:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, self-hosted]
+        include:
+          - os: ubuntu-20.04
+            full: true
+          - os: self-hosted
+            full: false # Only run tests.
+
     env:
       # Determine whether or not we should build the
       # final production image and push it to GHCR.
@@ -88,6 +97,7 @@ jobs:
 
       # Required by pre-commit.
       - name: Install git
+        if: matrix.full
         run: >-
           docker exec snekbox_dev /bin/bash -c
           'apt-get -y update && apt-get install -y git=1:2.20.*'
@@ -96,12 +106,13 @@ jobs:
       # Skip the flake8 hook because the following step will run it.
       - name: Run pre-commit hooks
         id: run-pre-commit-hooks
+        if: matrix.full
         run: >-
           docker exec snekbox_dev /bin/bash -c
           'PIP_USER=0 SKIP=flake8 pre-commit run --all-files'
 
       - name: Show pre-commit logs
-        if: always() && steps.run-pre-commit-hooks.outcome != 'success'
+        if: matrix.full && always() && steps.run-pre-commit-hooks.outcome != 'success'
         run: >-
           docker exec snekbox_dev /bin/bash -c
           'cat /root/.cache/pre-commit/pre-commit.log'
@@ -112,6 +123,7 @@ jobs:
       # up on this output to generate nice annotations to indicate what went
       # wrong where.
       - name: Run linter
+        if: matrix.full
         run: >-
           docker exec snekbox_dev /bin/bash -c
           'flake8 --format
@@ -166,7 +178,7 @@ jobs:
       # both with the short commit SHA and 'latest'. This step should use
       # the local build cache of the current run.
       - name: Build final image
-        if: env.production_build == 'true'
+        if: matrix.full && env.production_build == 'true'
         uses: docker/build-push-action@v2
         with:
           context: .
@@ -185,7 +197,7 @@ jobs:
 
       # Deploy to Kubernetes
       - name: Authenticate with Kubernetes
-        if: env.production_build == 'true'
+        if: matrix.full && env.production_build == 'true'
         uses: azure/k8s-set-context@v1
         with:
           method: kubeconfig
@@ -202,7 +214,7 @@ jobs:
 
       # Push the base image to GHCR, with an inline cache manifest
       - name: Push base image
-        if: env.production_build == 'true'
+        if: matrix.full && env.production_build == 'true'
         uses: docker/build-push-action@v2
         with:
           context: .
@@ -216,7 +228,7 @@ jobs:
 
       # Push the venv image to GHCR, with an inline cache manifest
       - name: Push venv image
-        if: env.production_build == 'true'
+        if: matrix.full && env.production_build == 'true'
         uses: docker/build-push-action@v2
         with:
           context: .
