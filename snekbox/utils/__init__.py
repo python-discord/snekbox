@@ -1,3 +1,3 @@
-from . import cgroup
+from . import cgroup, swap
 
-__all__ = ("cgroup",)
+__all__ = ("cgroup", "swap")

@@ -40,6 +40,7 @@ class NsJail:
         self.nsjail_binary = nsjail_binary
         self.config = self._read_config()
         self.cgroup_version = utils.cgroup.init(self.config)
+        self.ignore_swap_limits = utils.swap.should_ignore_limit(self.config, self.cgroup_version)
 
         log.info(f"Assuming cgroup version {self.cgroup_version}.")
 
@@ -147,6 +148,11 @@ class NsJail:
         """
         if self.cgroup_version == 2:
             nsjail_args = ("--use_cgroupv2", *nsjail_args)
+
+        if self.ignore_swap_limits:
+            nsjail_args = (
+                "--cgroup_mem_memsw_max", "0", "--cgroup_mem_swap_max", "-1", *nsjail_args
+            )
 
         with NamedTemporaryFile() as nsj_log:
             args = (
