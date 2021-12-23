@@ -1,10 +1,10 @@
 [run]
 branch = True
 include = snekbox/*
-omit = 
+omit =
     snekbox/api/app.py
     snekbox/config_pb2.py
-
+    
 [report]
 exclude_lines =
     pragma: no cover
