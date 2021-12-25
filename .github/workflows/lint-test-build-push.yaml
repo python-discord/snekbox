@@ -148,7 +148,7 @@ jobs:
       # Note: This step runs even if the test step failed to make
       # sure we process the coverage reports.
       - name: Setup python
-        if: always() && steps.run_tests.outputs.started == 'true'
+        if: matrix.os != 'self-hosted' && always() && steps.run_tests.outputs.started == 'true'
         id: python
         uses: actions/setup-python@v2
         with:
