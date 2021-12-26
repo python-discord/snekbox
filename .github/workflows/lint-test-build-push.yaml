@@ -204,7 +204,7 @@ jobs:
           kubeconfig: ${{ secrets.KUBECONFIG }}
 
       - name: Deploy to Kubernetes
-        if: env.production_build == 'true'
+        if: matrix.full && env.production_build == 'true'
         uses: Azure/k8s-deploy@v1
         with:
           manifests: |
