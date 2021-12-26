@@ -1,4 +1,5 @@
 import argparse
+import sys
 
 from snekbox.nsjail import NsJail
 
@@ -38,6 +39,9 @@ def main() -> None:
     args = parse_args()
     result = NsJail().python3(args.code, nsjail_args=args.nsjail_args, py_args=args.py_args)
     print(result.stdout)
+
+    if result.returncode != 0:
+        sys.exit(result.returncode)
 
 
 if __name__ == "__main__":
