@@ -85,7 +85,7 @@ pipenv run devsh -c 'echo hello'
 NsJail can be invoked in a more direct manner that does not require using a web server or its API. See `python -m snekbox --help`. Example usage:
 
 ```bash
-python -m snekbox 'print("hello world!")' --time_limit 0
+python -m snekbox 'print("hello world!")' --time_limit 0 --- -m timeit
 ```
 
 With this command, NsJail uses the same configuration normally used through the web API. It also has an alias, `pipenv run eval`.
