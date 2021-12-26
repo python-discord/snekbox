@@ -20,7 +20,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     """Evaluate Python code through NsJail."""
     args = parse_args()
-    result = NsJail().python3(args.code, *args.nsjail_args)
+    result = NsJail().python3(args.code, nsjail_args=args.nsjail_args)
     print(result.stdout)
 
 
