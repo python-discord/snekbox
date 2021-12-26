@@ -44,5 +44,5 @@ def main() -> None:
         sys.exit(result.returncode)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main()
