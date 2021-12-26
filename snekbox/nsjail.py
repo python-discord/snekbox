@@ -4,15 +4,13 @@ import re
 import subprocess
 import sys
 import textwrap
-import uuid
-from pathlib import Path
 from subprocess import CompletedProcess
 from tempfile import NamedTemporaryFile
 from typing import Iterable
 
 from google.protobuf import text_format
 
-from snekbox import DEBUG
+from snekbox import DEBUG, utils
 from snekbox.config_pb2 import NsJailConfig
 
 log = logging.getLogger(__name__)
@@ -25,9 +23,6 @@ LOG_BLACKLIST = ("Process will be ",)
 
 NSJAIL_PATH = os.getenv("NSJAIL_PATH", "/usr/sbin/nsjail")
 NSJAIL_CFG = os.getenv("NSJAIL_CFG", "./config/snekbox.cfg")
-
-# If this file is present, cgroupv2 should be enabled
-CGROUPV2_PROBE_PATH = Path("/sys/fs/cgroup/cgroup.controllers")
 
 # Limit of stdout bytes we consume before terminating nsjail
 OUTPUT_MAX = 1_000_000  # 1 MB
@@ -44,19 +39,10 @@ class NsJail:
     def __init__(self, nsjail_binary: str = NSJAIL_PATH):
         self.nsjail_binary = nsjail_binary
         self.config = self._read_config()
+        self.cgroup_version = utils.cgroup.init(self.config)
+        self.ignore_swap_limits = utils.swap.should_ignore_limit(self.config, self.cgroup_version)
 
-        log.info(f"Cgroups version: {self._probe_cgroup_version()}")
-
-    @staticmethod
-    def _probe_cgroup_version() -> int:
-        """Poll the filesystem and return the guessed cgroup version."""
-        # Right now we check whenever the controller path exists
-        version = 2 if CGROUPV2_PROBE_PATH.exists() else 1
-
-        if DEBUG:
-            log.info(f"Guessed cgroups version: {version}")
-
-        return version
+        log.info(f"Assuming cgroup version {self.cgroup_version}.")
 
     @staticmethod
     def _read_config() -> NsJailConfig:
@@ -80,49 +66,6 @@ class NsJail:
             sys.exit(1)
 
         return config
-
-    def _create_dynamic_cgroups(self) -> str:
-        """
-        Create a PID and memory cgroup for NsJail to use as the parent cgroup.
-
-        Returns the name of the cgroup, located in the cgroup root.
-
-        NsJail doesn't do this automatically because it requires privileges NsJail usually doesn't
-        have.
-
-        Disables memory swapping.
-        """
-        # Pick a name for the cgroup
-        cgroup = "snekbox-" + str(uuid.uuid4())
-
-        pids = Path(self.config.cgroup_pids_mount, cgroup)
-        mem = Path(self.config.cgroup_mem_mount, cgroup)
-        mem_max = str(self.config.cgroup_mem_max)
-
-        pids.mkdir(parents=True, exist_ok=True)
-        mem.mkdir(parents=True, exist_ok=True)
-
-        # Swap limit cannot be set to a value lower than memory.limit_in_bytes.
-        # Therefore, this must be set before the swap limit.
-        #
-        # Since child cgroups are dynamically created, the swap limit has to be set on the parent
-        # instead so that children inherit it. Given the swap's dependency on the memory limit,
-        # the memory limit must also be set on the parent. NsJail only sets the memory limit for
-        # child cgroups, not the parent.
-        (mem / "memory.limit_in_bytes").write_text(mem_max, encoding="utf-8")
-
-        try:
-            # Swap limit is specified as the sum of the memory and swap limits.
-            # Therefore, setting it equal to the memory limit effectively disables swapping.
-            (mem / "memory.memsw.limit_in_bytes").write_text(mem_max, encoding="utf-8")
-        except PermissionError:
-            log.warning(
-                "Failed to set the memory swap limit for the cgroup. "
-                "This is probably because CONFIG_MEMCG_SWAP or CONFIG_MEMCG_SWAP_ENABLED is unset. "
-                "Please ensure swap memory is disabled on the system."
-            )
-
-        return cgroup
 
     @staticmethod
     def _parse_log(log_lines: Iterable[str]) -> None:
@@ -203,19 +146,19 @@ class NsJail:
         `py_args` are arguments to pass to the Python subprocess before the code,
         which is the last argument. By default, it's "-c", which executes the code given.
         """
-        cgroup = self._create_dynamic_cgroups()
+        if self.cgroup_version == 2:
+            nsjail_args = ("--use_cgroupv2", *nsjail_args)
+
+        if self.ignore_swap_limits:
+            nsjail_args = (
+                "--cgroup_mem_memsw_max", "0", "--cgroup_mem_swap_max", "-1", *nsjail_args
+            )
 
         with NamedTemporaryFile() as nsj_log:
-            if self._probe_cgroup_version() == 2:
-                nsjail_args = (["--use_cgroupv2"]).extend(nsjail_args)
-
             args = (
                 self.nsjail_binary,
                 "--config", NSJAIL_CFG,
                 "--log", nsj_log.name,
-                # Set our dynamically created parent cgroups
-                "--cgroup_mem_parent", cgroup,
-                "--cgroup_pids_parent", cgroup,
                 *nsjail_args,
                 "--",
                 self.config.exec_bin.path, *self.config.exec_bin.arg, *py_args, code
@@ -259,9 +202,5 @@ class NsJail:
             self._parse_log(log_lines)
 
         log.info(f"nsjail return code: {returncode}")
-
-        # Remove the dynamically created cgroups once we're done
-        Path(self.config.cgroup_mem_mount, cgroup).rmdir()
-        Path(self.config.cgroup_pids_mount, cgroup).rmdir()
 
         return CompletedProcess(args, returncode, output, None)

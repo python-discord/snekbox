@@ -40,9 +40,10 @@ precommit = "pre-commit install"
 # Testing
 report = "coverage report"
 # Fix ownership of the coverage file even if tests fail & preserve exit code
+# Install numpy because a test checks if it's importable
 test = """
     docker-compose run --entrypoint /bin/bash --rm snekbox -c \
-    'coverage run -m unittest; e=$?; chown --reference=. .coverage; exit $e'
+    'env PYTHONUSERBASE=/snekbox/user_base pip install numpy && coverage run -m unittest; e=$?; chown --reference=. .coverage; exit $e'
 """
 
 # Docker

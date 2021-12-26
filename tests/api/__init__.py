@@ -1,3 +1,4 @@
+import logging
 from subprocess import CompletedProcess
 from unittest import mock
 
@@ -19,5 +20,7 @@ class SnekAPITestCase(testing.TestCase):
             stderr="error"
         )
         self.addCleanup(self.patcher.stop)
+
+        logging.getLogger("snekbox.nsjail").setLevel(logging.WARNING)
 
         self.app = SnekAPI()
