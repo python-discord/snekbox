@@ -11,10 +11,6 @@ jobs:
     uses: ./.github/workflows/build.yaml
   lint:
     uses: ./.github/workflows/lint.yaml
-    needs: build
-    with:
-      artefact: ${{ needs.build.outputs.artefact }}
-      tag: ${{ needs.build.outputs.tag }}
   test:
     uses: ./.github/workflows/test.yaml
     needs: build
