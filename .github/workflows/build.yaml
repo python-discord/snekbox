@@ -64,9 +64,9 @@ jobs:
           context: .
           file: ./Dockerfile
           push: false
-          load: true
           target: venv
           build-args: DEV=1
+          outputs: type=docker,dest=image_artefact_snekbox-venv.tar
           cache-from: |
             type=local,src=/tmp/.buildx-cache
             ghcr.io/python-discord/snekbox-base:latest
@@ -76,9 +76,6 @@ jobs:
 
       # Make the image available as an artefact so other jobs will be able to
       # download it.
-      - name: Save image as a tar archive
-        run: docker save -o image_artefact_snekbox-venv.tar snekbox-venv
-
       - name: Upload image archive as an artefact
         uses: actions/upload-artifact@v2
         with:
