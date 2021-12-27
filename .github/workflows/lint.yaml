@@ -63,7 +63,7 @@ jobs:
 
       # Show the log to debug failures.
       - name: Show pre-commit log
-        if: always() && steps.run-pre-commit-hooks.outcome != 'success'
+        if: always() && steps.run-pre-commit-hooks.outcome == 'failure'
         run: cat "${PRE_COMMIT_HOME}/pre-commit.log"
 
       # Output linting errors in the format GitHub Actions recognises for
