@@ -1,5 +1,6 @@
 [run]
 branch = true
+data_file = ${COVERAGE_DATAFILE-.coverage}
 include = snekbox/*
 omit =
     snekbox/api/app.py
