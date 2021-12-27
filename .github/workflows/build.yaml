@@ -37,27 +37,33 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN  }}
 
-      # Create a local cache directory for PR builds, as the image built for
-      # PRs may start to deviate from the "latest" image currently in GHCR.
+      # The image built for PRs may start to deviate from the "latest" image
+      # currently in GHCR. Configure the subsequent build step to cache the
+      # layers in GitHub Actions for PRs.
+      # See https://github.com/moby/buildkit#github-actions-cache-experimental
       #
       # Because the cache is scoped to the branch, it will not be available
       # on the main branch when the PR is merged. Furthermore, using this cache
       # on main is redundant since the previous build's images are already
       # cached on GHCR. Thus, this step is only used for PRs.
-      - name: Cache image layers
-        if: github.event_name == 'pull_request'
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-v0-buildx-${{ github.ref }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-v0-buildx-${{ github.ref }}-
+      - name: Configure cache
+        id: cache_config
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_EVENT_NAME" = 'pull_request' ]; then
+            cache_from="type=gha,scope=buildkit-${GITHUB_REF}-${GITHUB_SHA}"
+            cache_to="${cache_from},mode=max"
+          fi
+          echo "::set-output name=cache_from::${cache_from:-}"
+          echo "::set-output name=cache_to::${cache_to:-}"
 
       # Build the "DEV" version of the image, which targets the `venv` stage
       # and includes development dependencies.
       #
       # Include an inline cache manifest in the image to support caching from
       # GHCR. This enables subsequent builds to pull reusable layers from GHCR.
+      # If configured by the cache_config step, also cache the layers in
+      # GitHub Actions.
       - name: Build image for linting and testing
         uses: docker/build-push-action@v2
         with:
@@ -68,10 +74,10 @@ jobs:
           build-args: DEV=1
           outputs: type=docker,dest=image_artefact_snekbox-venv.tar
           cache-from: |
-            type=local,src=/tmp/.buildx-cache
+            ${{ steps.cache_config.outputs.cache_from }}
             ghcr.io/python-discord/snekbox-base:latest
             ghcr.io/python-discord/snekbox-venv:latest
-          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
+          cache-to: ${{ steps.cache_config.outputs.cache_to }}
           tags: ghcr.io/python-discord/snekbox-venv:${{ steps.sha_tag.outputs.tag }}
 
       # Make the image available as an artefact so other jobs will be able to
