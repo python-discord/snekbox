@@ -1,0 +1,52 @@
+name: Lint
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        required: true
+        type: string
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      # region container setup
+      - name: Download image artefact
+        uses: actions/download-artifact@v2
+        with:
+          name: image_artefact_snekbox-venv_${{ inputs.tag }}
+
+      - name: Load image from archive
+        run: docker load -i image_artefact_snekbox-venv.tar
+
+      # Needed for the Docker Compose file.
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Start container
+        run: |
+          export IMAGE_SUFFIX='-venv:${{ inputs.tag }}'
+          docker-compose up --no-build -d
+      # endregion
+
+      # Required by pre-commit.
+      - name: Install git
+        run: >-
+          docker exec snekbox_dev /bin/bash -c
+          'apt-get -y update && apt-get install -y git'
+
+      # pre-commit's venv doesn't work with user installs.
+      # Skip the flake8 hook because the following step will run it.
+      - name: Run pre-commit hooks
+        id: run-pre-commit-hooks
+        run: >-
+          docker exec snekbox_dev /bin/bash -c
+          'PIP_USER=0 SKIP=flake8 pre-commit run --all-files'
+
+      - name: Show pre-commit logs
+        if: always() && steps.run-pre-commit-hooks.outcome != 'success'
+        run: >-
+          docker exec snekbox_dev /bin/bash -c
+          'cat /root/.cache/pre-commit/pre-commit.log'
