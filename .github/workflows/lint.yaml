@@ -65,3 +65,10 @@ jobs:
       - name: Show pre-commit log
         if: always() && steps.run-pre-commit-hooks.outcome != 'success'
         run: cat "${PRE_COMMIT_HOME}/pre-commit.log"
+
+      # Output linting errors in the format GitHub Actions recognises for
+      # annotations.
+      - name: Run flake8
+        run: >-
+          flake8 --format "::error
+          file=%(path)s,line=%(row)d,col=%(col)d::[flake8] %(code)s: %(text)s"
