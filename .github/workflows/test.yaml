@@ -3,6 +3,9 @@ name: Test
 on:
   workflow_call:
     inputs:
+      artefact:
+        required: true
+        type: string
       tag:
         required: true
         type: string
@@ -19,10 +22,10 @@ jobs:
       - name: Download image artefact
         uses: actions/download-artifact@v2
         with:
-          name: image_artefact_snekbox-venv_${{ inputs.tag }}
+          name: ${{ inputs.artefact }}
 
       - name: Load image from archive
-        run: docker load -i image_artefact_snekbox-venv.tar
+        run: docker load -i ${{ inputs.artefact }}.tar
 
       # Needed for the Docker Compose file.
       - name: Checkout code

@@ -13,15 +13,18 @@ jobs:
     uses: ./.github/workflows/lint.yaml
     needs: build
     with:
+      artefact: ${{ needs.build.outputs.artefact }}
       tag: ${{ needs.build.outputs.tag }}
   test:
     uses: ./.github/workflows/test.yaml
     needs: build
     with:
+      artefact: ${{ needs.build.outputs.artefact }}
       tag: ${{ needs.build.outputs.tag }}
   deploy:
     uses: ./.github/workflows/deploy.yaml
     if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
     needs: [build, lint, test]
     with:
+      artefact: ${{ needs.build.outputs.artefact }}
       tag: ${{ needs.build.outputs.tag }}

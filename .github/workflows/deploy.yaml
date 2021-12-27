@@ -3,6 +3,9 @@ name: Deploy & push images
 on:
   workflow_call:
     inputs:
+      artefact:
+        required: true
+        type: string
       tag:
         required: true
         type: string
@@ -16,11 +19,11 @@ jobs:
       - name: Download image artefact
         uses: actions/download-artifact@v2
         with:
-          name: image_artefact_snekbox-venv_${{ inputs.tag }}
+          name: ${{ inputs.artefact }}
 
       # Load the image to make use of common layers during the final build.
       - name: Load image from archive
-        run: docker load -i image_artefact_snekbox-venv.tar
+        run: docker load -i ${{ inputs.artefact }}.tar
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1

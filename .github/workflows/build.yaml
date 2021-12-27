@@ -3,15 +3,21 @@ name: Build image
 on:
   workflow_call:
     outputs:
+      artefact:
+        description: The name of the uploaded image aretfact.
+        value: ${{ jobs.build.outputs.artefact }}
       tag:
-        description: The tag used for the built image
+        description: The tag used for the built image.
         value: ${{ jobs.build.outputs.tag }}
 
 jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
+      artefact: ${{ env.artefact }}
       tag: ${{ steps.sha_tag.outputs.tag }}
+    env:
+      artefact: image_artefact_snekbox-venv
 
     steps:
       # Create a short SHA with which to tag built images.
@@ -72,7 +78,7 @@ jobs:
           push: false
           target: venv
           build-args: DEV=1
-          outputs: type=docker,dest=image_artefact_snekbox-venv.tar
+          outputs: type=docker,dest=${{ env.artefact }}.tar
           cache-from: |
             ${{ steps.cache_config.outputs.cache_from }}
             ghcr.io/python-discord/snekbox-base:latest
@@ -85,7 +91,7 @@ jobs:
       - name: Upload image archive as an artefact
         uses: actions/upload-artifact@v2
         with:
-          name: image_artefact_snekbox-venv_${{ steps.sha_tag.outputs.tag }}
-          path: image_artefact_snekbox-venv.tar
+          name: ${{ env.artefact }}
+          path: ${{ env.artefact }}.tar
           retention-days: 1  # It's only needed for the duration of the workflow.
           if-no-files-found: error
