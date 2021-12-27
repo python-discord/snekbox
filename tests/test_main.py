@@ -1,8 +1,9 @@
+import ast
 import contextlib
 import io
+import logging
 import unittest
 from argparse import Namespace
-from subprocess import CompletedProcess
 from unittest.mock import patch
 
 import snekbox.__main__ as snekbox_main
@@ -53,48 +54,37 @@ class ArgParseTests(unittest.TestCase):
 
 
 class EntrypointTests(unittest.TestCase):
-    @patch("sys.argv", ["", "code"])
-    @patch("snekbox.__main__.NsJail", autospec=True)
-    def test_main_prints_stdout(self, mock_nsjail):
-        mock_nsjail.return_value.python3.return_value = CompletedProcess(
-            args=[],
-            returncode=0,
-            stdout="output",
-            stderr=None
-        )
+    """Integration tests of the CLI entrypoint."""
 
+    def setUp(self):
+        logging.getLogger("snekbox.nsjail").setLevel(logging.WARNING)
+
+    @patch("sys.argv", ["", "print('hello'); import sys; print('error', file=sys.stderr)"])
+    def test_main_prints_stdout(self):
+        """Should print the stdout of the subprocess followed by its stderr."""
         with contextlib.redirect_stdout(io.StringIO()) as stdout:
             snekbox_main.main()
 
-        self.assertEqual(stdout.getvalue(), "output\n")
+        self.assertEqual(stdout.getvalue(), "hello\nerror\n\n")
 
-    @patch("sys.argv", ["", "code"])
-    @patch("snekbox.__main__.NsJail", autospec=True)
-    def test_main_exits_with_returncode(self, mock_nsjail):
-        mock_nsjail.return_value.python3.return_value = CompletedProcess(
-            args=[],
-            returncode=137,
-            stdout="output",
-            stderr=None
-        )
-
+    @patch("sys.argv", ["", "import sys; sys.exit(22)"])
+    def test_main_exits_with_returncode(self):
+        """Should exit with the subprocess's returncode if it's non-zero."""
         with self.assertRaises(SystemExit) as cm:
             snekbox_main.main()
 
-        self.assertEqual(cm.exception.code, 137)
+        self.assertEqual(cm.exception.code, 22)
 
-    @patch("sys.argv", ["", "code", "--time_limit", "0", "---", "-m", "timeit"])
-    @patch("snekbox.__main__.NsJail", autospec=True)
-    def test_main_forwards_args(self, mock_nsjail):
-        mock_nsjail.return_value.python3.return_value = CompletedProcess(
-            args=[],
-            returncode=0,
-            stdout="output",
-            stderr=None
-        )
+    def test_main_forwards_args(self):
+        """Should forward NsJail args to NsJail and Python args to the Python subprocess."""
+        code = "import sys, time; print(sys.orig_argv); time.sleep(2)"
+        py_args = ["-R", "-dc"]
+        args = ["", code, "--time_limit", "1", "---", *py_args]
 
-        snekbox_main.main()
+        with patch("sys.argv", args), self.assertRaises(SystemExit) as cm:
+            with contextlib.redirect_stdout(io.StringIO()) as stdout:
+                snekbox_main.main()
 
-        mock_nsjail.return_value.python3.assert_called_once_with(
-            "code", nsjail_args=["--time_limit", "0"], py_args=["-m", "timeit"]
-        )
+        orig_argv = ast.literal_eval(stdout.getvalue().strip())
+        self.assertListEqual([*py_args, code], orig_argv[-3:])
+        self.assertEqual(cm.exception.code, 137, "The time_limit NsJail arg was not respected.")
