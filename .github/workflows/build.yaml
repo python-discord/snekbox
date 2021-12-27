@@ -57,7 +57,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ "$GITHUB_EVENT_NAME" = 'pull_request' ]; then
-            cache_from="type=gha,scope=buildkit-${GITHUB_REF}-${GITHUB_SHA}"
+            cache_from="type=gha,scope=buildkit-${GITHUB_REF}"
             cache_to="${cache_from},mode=max"
           fi
           echo "::set-output name=cache_from::${cache_from:-}"
