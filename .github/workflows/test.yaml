@@ -1,0 +1,74 @@
+name: Test
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        required: true
+        type: string
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, self-hosted]
+
+    steps:
+      # region container setup
+      - name: Download image artefact
+        uses: actions/download-artifact@v2
+        with:
+          name: image_artefact_snekbox-venv_${{ inputs.tag }}
+
+      - name: Load image from archive
+        run: docker load -i image_artefact_snekbox-venv.tar
+
+      # Needed for the Docker Compose file.
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Start container
+        run: |
+          export IMAGE_SUFFIX='-venv:${{ inputs.tag }}'
+          docker-compose up --no-build -d
+      # endregion
+
+      # Memory limit tests would fail if this isn't disabled.
+      - name: Disable swap memory
+        run: sudo swapoff -a
+
+      # Run tests and generate coverage report in the container.
+      - name: Run tests
+        id: run_tests
+        run: |
+          echo '::set-output name=started::true'
+          docker exec snekbox_dev /bin/bash -c 'coverage run -m unittest'
+
+      - name: Generate coverage report
+        if: always() && steps.run_tests.outputs.started == 'true'
+        run: docker exec snekbox_dev /bin/bash -c 'coverage report -m'
+
+      # Set up a Python version to process the coverage reports.
+      # This action doesn't work on the self-hosted runner, but it already has
+      # 3.9, which is sufficient. This step runs even if the test step failed
+      # to ensure coverage reports are processed.
+      - name: Set up Python
+        if: matrix.os != 'self-hosted' && always() && steps.run_tests.outputs.started == 'true'
+        id: python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+
+      # Comment on the PR with the coverage results and register a GitHub check
+      # which links to the coveralls.io job.
+      #
+      # coveralls is only needed in CI, so install it directly instead of
+      # including it in the Pipfile.
+      - name: Publish coverage report to coveralls.io
+        if: always() && steps.run_tests.outputs.started == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pip install coveralls~=2.1
+          coveralls
