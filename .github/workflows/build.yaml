@@ -1,5 +1,3 @@
-name: Build image
-
 on:
   workflow_call:
     outputs:
@@ -12,6 +10,7 @@ on:
 
 jobs:
   build:
+    name: Build snekbox-venv image
     runs-on: ubuntu-latest
     outputs:
       artefact: ${{ env.artefact }}

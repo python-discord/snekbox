@@ -1,5 +1,3 @@
-name: Test
-
 on:
   workflow_call:
     inputs:
@@ -12,6 +10,7 @@ on:
 
 jobs:
   test:
+    name: Test with coverage
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -64,7 +63,7 @@ jobs:
           docker-compose down --rmi all --remove-orphans -v -t 0
 
   report:
-    name: Combine and report coverage data
+    name: Report coverage
     runs-on: ubuntu-20.04
     needs: test
 

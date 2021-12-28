@@ -1,5 +1,3 @@
-name: Deploy & push images
-
 on:
   workflow_call:
     inputs:
@@ -12,6 +10,7 @@ on:
 
 jobs:
   deploy:
+    name: Build, push, & deploy
     runs-on: ubuntu-latest
 
     steps:

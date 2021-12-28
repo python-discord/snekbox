@@ -1,10 +1,9 @@
-name: Lint
-
 on:
   workflow_call:
 
 jobs:
   lint:
+    name: Lint
     runs-on: ubuntu-latest
     env:
       PIP_DISABLE_PIP_VERSION_CHECK: 1
