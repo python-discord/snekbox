@@ -30,8 +30,6 @@ docker-compose up
 
 The container has all development dependencies. The repository on the host is mounted within the container; changes made to local files will also affect the container.
 
-Note that the compose file depends on the environment variable `PWD` being set to the current working directory. It needs it to create the aforementioned bind mount. Unix shells normally have this set already. If for some reason it is not set, it needs to be manually set. A convenient way to set it is to define it in a `.env` file which Docker Compose will automatically read.
-
 To build a normal container that can be used in production, run
 
 ```
@@ -62,7 +60,9 @@ Alternatively, a report can be generated as HTML with
 pipenv run coverage html
 ```
 
-The HTML will output to `./htmlcov/` by default
+The HTML will output to `./htmlcov/` by default.
+
+The report cannot be generated on Windows directly due to the difference in file separators in the paths. Instead, launch a shell in the container (see below) and use `coverage report` or `coverage html` (do not invoke through Pipenv).
 
 ## Launching a Shell in the Container
 
