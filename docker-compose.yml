@@ -11,10 +11,8 @@ services:
     init: true
     ipc: none
     tty: true
-    working_dir: $PWD
     environment:
       DEBUG: 1
-      PIPENV_PIPFILE: /snekbox/Pipfile
       PYTHONDONTWRITEBYTECODE: 1
     build:
       context: .
@@ -24,7 +22,7 @@ services:
       cache_from:
         - ghcr.io/python-discord/snekbox:latest
     volumes:
-      - $PWD:$PWD
+      - .:/snekbox
       - user-base:/snekbox/user_base
 
 volumes:
