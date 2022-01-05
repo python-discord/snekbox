@@ -29,12 +29,8 @@ RUN apt-get -y update \
         zlib1g-dev
 
 # Build NsJail
-RUN git clone \
-    -b '2.9' \
-    --single-branch \
-    --depth 1 \
-    https://github.com/google/nsjail.git /nsjail
-WORKDIR /nsjail
+RUN git clone -b master --single-branch https://github.com/google/nsjail.git . \
+    && git checkout dccf911fd2659e7b08ce9507c25b2b38ec2c5800
 RUN make
 
 # Build and install python
@@ -56,6 +52,7 @@ FROM debian:buster-slim as base
 # Everything will be a user install to allow snekbox's dependencies to be kept
 # separate from the packages exposed during eval.
 ENV PATH=/root/.local/bin:$PATH \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=false \
     PIP_USER=1 \
     PIPENV_DONT_USE_PYENV=1 \

@@ -196,7 +196,7 @@ jobs:
         uses: Azure/k8s-deploy@v1
         with:
           manifests: |
-            deployment.yml
+            deployment.yaml
           images: 'ghcr.io/${{ github.repository_owner }}/snekbox:${{ steps.sha_tag.outputs.tag }}'
           kubectl-version: 'latest'
           namespace: 'apps'
