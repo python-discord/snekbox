@@ -17,7 +17,7 @@ jobs:
         github.ref == 'refs/heads/main' }}
       # `github.repository_owner` can be uppercase, which will not work for GHCR replacement.
       # Taken from: https://github.community/t/additional-function-s-lowercase-uppercase/140632
-      owner: ${${{ github.repository_owner }},,}
+      owner: ${{ github.repository_owner,, }}
 
     steps:
       # Create a short SHA-tag to tag built images
