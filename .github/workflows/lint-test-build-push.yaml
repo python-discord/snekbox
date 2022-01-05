@@ -15,9 +15,9 @@ jobs:
       # final production image and push it to GHCR.
       production_build: ${{ github.event_name != 'pull_request' &&
         github.ref == 'refs/heads/main' }}
-      # `env.owner` can be uppercase, which will not work for GHCR replacement.
+      # `github.repository_owner` can be uppercase, which will not work for GHCR replacement.
       # Taken from: https://github.community/t/additional-function-s-lowercase-uppercase/140632
-      owner: ${${{ env.owner }},,}
+      owner: ${${{ github.repository_owner }},,}
 
     steps:
       # Create a short SHA-tag to tag built images
