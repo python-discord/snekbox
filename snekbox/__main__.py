@@ -20,7 +20,7 @@ def parse_args() -> argparse.Namespace:
     )
 
     # nsjail_args and py_args are just dummies for documentation purposes.
-    # Their actual values comes from all the unknown arguments.
+    # Their actual values come from all the unknown arguments.
     # There doesn't seem to be a better solution with argparse.
     args, unknown = parser.parse_known_args()
     try:
