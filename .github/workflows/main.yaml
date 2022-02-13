@@ -24,3 +24,5 @@ jobs:
     with:
       artifact: ${{ needs.build.outputs.artifact }}
       tag: ${{ needs.build.outputs.tag }}
+    secrets:
+      KUBECONFIG: ${{ secrets.KUBECONFIG }}
