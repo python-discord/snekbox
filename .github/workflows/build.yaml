@@ -1,9 +1,9 @@
 on:
   workflow_call:
     outputs:
-      artefact:
+      artifact:
         description: The name of the uploaded image aretfact.
-        value: ${{ jobs.build.outputs.artefact }}
+        value: ${{ jobs.build.outputs.artifact }}
       tag:
         description: The tag used for the built image.
         value: ${{ jobs.build.outputs.tag }}
@@ -13,10 +13,10 @@ jobs:
     name: Build snekbox-venv image
     runs-on: ubuntu-latest
     outputs:
-      artefact: ${{ env.artefact }}
+      artifact: ${{ env.artifact }}
       tag: ${{ steps.sha_tag.outputs.tag }}
     env:
-      artefact: image_artefact_snekbox-venv
+      artifact: image_artifact_snekbox-venv
 
     steps:
       # Create a short SHA with which to tag built images.
@@ -77,7 +77,7 @@ jobs:
           push: false
           target: venv
           build-args: DEV=1
-          outputs: type=docker,dest=${{ env.artefact }}.tar
+          outputs: type=docker,dest=${{ env.artifact }}.tar
           cache-from: |
             ${{ steps.cache_config.outputs.cache_from }}
             ghcr.io/python-discord/snekbox-base:latest
@@ -85,12 +85,12 @@ jobs:
           cache-to: ${{ steps.cache_config.outputs.cache_to }}
           tags: ghcr.io/python-discord/snekbox-venv:${{ steps.sha_tag.outputs.tag }}
 
-      # Make the image available as an artefact so other jobs will be able to
+      # Make the image available as an artifact so other jobs will be able to
       # download it.
-      - name: Upload image archive as an artefact
+      - name: Upload image archive as an artifact
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ env.artefact }}
-          path: ${{ env.artefact }}.tar
+          name: ${{ env.artifact }}
+          path: ${{ env.artifact }}.tar
           retention-days: 1  # It's only needed for the duration of the workflow.
           if-no-files-found: error

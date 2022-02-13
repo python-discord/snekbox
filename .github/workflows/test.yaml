@@ -1,7 +1,7 @@
 on:
   workflow_call:
     inputs:
-      artefact:
+      artifact:
         required: true
         type: string
       tag:
@@ -17,13 +17,13 @@ jobs:
         os: [ubuntu-20.04, self-hosted]
 
     steps:
-      - name: Download image artefact
+      - name: Download image artifact
         uses: actions/download-artifact@v2
         with:
-          name: ${{ inputs.artefact }}
+          name: ${{ inputs.artifact }}
 
       - name: Load image from archive
-        run: docker load -i ${{ inputs.artefact }}.tar
+        run: docker load -i ${{ inputs.artifact }}.tar
 
       # Needed for the Docker Compose file.
       - name: Checkout code

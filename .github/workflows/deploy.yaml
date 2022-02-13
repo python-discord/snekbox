@@ -1,7 +1,7 @@
 on:
   workflow_call:
     inputs:
-      artefact:
+      artifact:
         required: true
         type: string
       tag:
@@ -14,14 +14,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download image artefact
+      - name: Download image artifact
         uses: actions/download-artifact@v2
         with:
-          name: ${{ inputs.artefact }}
+          name: ${{ inputs.artifact }}
 
       # Load the image to make use of common layers during the final build.
       - name: Load image from archive
-        run: docker load -i ${{ inputs.artefact }}.tar
+        run: docker load -i ${{ inputs.artifact }}.tar
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
