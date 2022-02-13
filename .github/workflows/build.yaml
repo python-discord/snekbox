@@ -54,7 +54,7 @@ jobs:
       - name: Configure cache
         id: cache_config
         run: |
-          set -euo pipefail
+          set -eu
           if [ "$GITHUB_EVENT_NAME" = 'pull_request' ]; then
             cache_from="type=gha,scope=buildkit-${GITHUB_REF}"
             cache_to="${cache_from},mode=max"
