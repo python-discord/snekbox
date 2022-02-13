@@ -1,0 +1,26 @@
+name: main
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yaml
+  lint:
+    uses: ./.github/workflows/lint.yaml
+  test:
+    uses: ./.github/workflows/test.yaml
+    needs: build
+    with:
+      artifact: ${{ needs.build.outputs.artifact }}
+      tag: ${{ needs.build.outputs.tag }}
+  deploy:
+    uses: ./.github/workflows/deploy.yaml
+    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
+    needs: [build, lint, test]
+    with:
+      artifact: ${{ needs.build.outputs.artifact }}
+      tag: ${{ needs.build.outputs.tag }}

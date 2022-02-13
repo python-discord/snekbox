@@ -1,0 +1,96 @@
+on:
+  workflow_call:
+    inputs:
+      artifact:
+        required: true
+        type: string
+      tag:
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    name: Build, push, & deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download image artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ inputs.artifact }}
+
+      # Load the image to make use of common layers during the final build.
+      - name: Load image from archive
+        run: docker load -i ${{ inputs.artifact }}.tar
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN  }}
+
+      # The Dockerfile will be needed.
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Build the final production image and push it to GHCR.
+      # Tag it with both the short commit SHA and 'latest'.
+      - name: Build final image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          cache-from: |
+            ghcr.io/python-discord/snekbox-base:latest
+            ghcr.io/python-discord/snekbox-venv:latest
+            ghcr.io/python-discord/snekbox:latest
+          cache-to: type=inline
+          tags: |
+            ghcr.io/python-discord/snekbox:latest
+            ghcr.io/python-discord/snekbox:${{ inputs.tag }}
+          build-args: git_sha=${{ github.sha }}
+
+      # Deploy to Kubernetes.
+      - name: Authenticate with Kubernetes
+        uses: azure/k8s-set-context@v1
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+
+      - name: Deploy to Kubernetes
+        uses: Azure/k8s-deploy@v1
+        with:
+          manifests: deployment.yaml
+          images: 'ghcr.io/python-discord/snekbox:${{ inputs.tag }}'
+          kubectl-version: 'latest'
+
+      # Push the base image to GHCR, with an inline cache manifest.
+      - name: Push base image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          target: base
+          push: true
+          cache-from: ghcr.io/python-discord/snekbox-base:latest
+          cache-to: type=inline
+          tags: ghcr.io/python-discord/snekbox-base:latest
+
+      # Push the venv image to GHCR, with an inline cache manifest.
+      - name: Push venv image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          target: venv
+          push: true
+          cache-from: |
+            ghcr.io/python-discord/snekbox-base:latest
+            ghcr.io/python-discord/snekbox-venv:latest
+          cache-to: type=inline
+          tags: ghcr.io/python-discord/snekbox-venv:latest

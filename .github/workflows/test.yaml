@@ -1,0 +1,97 @@
+on:
+  workflow_call:
+    inputs:
+      artifact:
+        required: true
+        type: string
+      tag:
+        required: true
+        type: string
+
+jobs:
+  test:
+    name: Test with coverage
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, self-hosted]
+
+    steps:
+      - name: Download image artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ inputs.artifact }}
+
+      - name: Load image from archive
+        run: docker load -i ${{ inputs.artifact }}.tar
+
+      # Needed for the Docker Compose file.
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Memory limit tests would fail if this isn't disabled.
+      - name: Disable swap memory
+        run: sudo swapoff -a
+
+      # Run tests with coverage within the container.
+      # Suffix the generated coverage datafile with the name of the runner's OS.
+      - name: Run tests
+        id: run_tests
+        run: |
+          export IMAGE_SUFFIX='-venv:${{ inputs.tag }}'
+          docker-compose run \
+            --rm -T -e COVERAGE_DATAFILE=.coverage.${{ matrix.os }} \
+            snekbox \
+            coverage run -m unittest
+
+      # Upload it so the coverage from all matrix jobs can be combined later.
+      - name: Upload coverage data
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage
+          path: .coverage.*
+          retention-days: 1
+
+      # Self-hosted runner needs containers, images, networks, volumes, etc.
+      # removed because they persist across runs and may interfere.
+      - name: Docker cleanup
+        if: matrix.os == 'self-hosted' && always()
+        run: |
+          export IMAGE_SUFFIX='-venv:${{ inputs.tag }}'
+          docker-compose down --rmi all --remove-orphans -v -t 0
+
+  report:
+    name: Report coverage
+    runs-on: ubuntu-20.04
+    needs: test
+
+    steps:
+      # Needed for the .coveragerc file.
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: pip install coverage~=6.0 coveralls~=3.3
+
+      - name: Download coverage data
+        uses: actions/download-artifact@v2
+        with:
+          name: coverage
+
+      - name: Combine coverage data
+        run: coverage combine .coverage.*
+
+      - name: Display coverage report
+        run: coverage report -m
+
+      # Comment on the PR with the coverage results and register a GitHub check
+      # which links to the coveralls.io job.
+      - name: Publish coverage report to coveralls.io
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: coveralls --service=github
