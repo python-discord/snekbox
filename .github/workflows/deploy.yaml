@@ -14,7 +14,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # region Docker setup
       - name: Download image artefact
         uses: actions/download-artifact@v2
         with:
@@ -33,7 +32,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN  }}
-      # endregion
 
       # The Dockerfile will be needed.
       - name: Checkout code

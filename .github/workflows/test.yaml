@@ -17,7 +17,6 @@ jobs:
         os: [ubuntu-20.04, self-hosted]
 
     steps:
-      # region container setup
       - name: Download image artefact
         uses: actions/download-artifact@v2
         with:
@@ -29,7 +28,6 @@ jobs:
       # Needed for the Docker Compose file.
       - name: Checkout code
         uses: actions/checkout@v2
-      # endregion
 
       # Memory limit tests would fail if this isn't disabled.
       - name: Disable swap memory
