@@ -101,7 +101,7 @@ If `pip`, `setuptools`, or `wheel` are dependencies or need to be exposed, then 
 
 ## Development Environment
 
-See [DEVELOPING.md](DEVELOPING.md).
+See [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
 
 [1]: https://github.com/python-discord/snekbox/workflows/Lint,%20Test,%20Build,%20Push/badge.svg?branch=main
