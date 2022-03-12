@@ -9,20 +9,21 @@ Python sandbox runners for executing code in isolation aka snekbox.
 
 A client sends Python code to a snekbox, the snekbox executes the code, and finally the results of the execution are returned to the client.
 
-```
-          +-------------+           +-----------+
- input -> |             |---------->|           | >----------+
-          |  HTTP POST  |           |  SNEKBOX  |  execution |
-result <- |             |<----------|           | <----------+
-          +-------------+           +-----------+
-             ^                         ^
-             |                         |- Executes python code
-             |                         |- Returns result
-             |                         +-----------------------
-             |
-             |- HTTP POST Endpoint receives request and returns result
-             +---------------------------------------------------------
+```mermaid
+%%{init: { 'sequence': {'mirrorActors': false, 'messageFontWeight': 300, 'actorFontFamily': '-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif' } } }%%
+sequenceDiagram
 
+actor Client
+participant Snekbox
+participant NsJail
+participant Python as Python Subprocess
+
+Client ->>+ Snekbox: HTTP POST
+Snekbox ->>+ NsJail: Python code
+NsJail ->>+ Python: Python code
+Python -->>- NsJail: Execution result
+NsJail -->>- Snekbox: Execution result
+Snekbox -->>- Client: JSON response
 ```
 
 The code is executed in a Python process that is launched through [NsJail], which is responsible for sandboxing the Python process.
