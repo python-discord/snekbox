@@ -61,5 +61,5 @@ Updating NsJail mainly involves two steps:
 
 Other things to look out for are breaking changes to NsJail's config format, its command-line interface, or its logging format. Additionally, dependencies may have to be adjusted in the Dockerfile to get a new version to build or run.
 
-[readme]: README.md
-[Dockerfile]: Dockerfile
+[readme]: ../README.md
+[Dockerfile]: ../Dockerfile
