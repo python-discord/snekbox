@@ -4,7 +4,6 @@
 # Make exceptions for what's needed
 !snekbox
 !config/
+!requirements/
 !tests
-!Pipfile
-!Pipfile.lock
 !LICENSE

@@ -26,10 +26,7 @@ FROM python:3.10-slim-buster as base
 ENV PATH=/root/.local/bin:$PATH \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=false \
-    PIP_USER=1 \
-    PIPENV_DONT_USE_PYENV=1 \
-    PIPENV_HIDE_EMOJIS=1 \
-    PIPENV_NOSPIN=1
+    PIP_USER=1
 
 RUN apt-get -y update \
     && apt-get install -y \
@@ -37,7 +34,6 @@ RUN apt-get -y update \
         libnl-route-3-200=3.4.* \
         libprotobuf17=3.6.* \
     && rm -rf /var/lib/apt/lists/*
-RUN pip install pipenv==2020.11.15
 
 COPY --from=builder /nsjail/nsjail /usr/sbin/
 RUN chmod +x /usr/sbin/nsjail
@@ -45,13 +41,13 @@ RUN chmod +x /usr/sbin/nsjail
 # ------------------------------------------------------------------------------
 FROM base as venv
 
-COPY Pipfile Pipfile.lock /snekbox/
+COPY requirements/ /snekbox/requirements/
 WORKDIR /snekbox
 
-# Pipenv installs to the default user site since PIP_USER is set.
-RUN pipenv install --deploy --system
+# pip installs to the default user site since PIP_USER is set.
+RUN pip install -U -r requirements/requirements.pip
 
-# This must come after the first pipenv command! From the docs:
+# This must come after the first pip command! From the docs:
 # All RUN instructions following an ARG instruction use the ARG variable
 # implicitly (as an environment variable), thus can cause a cache miss.
 ARG DEV
@@ -59,13 +55,13 @@ ARG DEV
 # Install numpy when in dev mode; one of the unit tests needs it.
 RUN if [ -n "${DEV}" ]; \
     then \
-        pipenv install --deploy --system --dev \
+        pip install -U -r requirements/coverage.pip \
         && PYTHONUSERBASE=/snekbox/user_base pip install numpy~=1.19; \
     fi
 
 # At the end to avoid re-installing dependencies when only a config changes.
 # It's in the venv image because the final image is not used during development.
-COPY config/ /snekbox/config
+COPY config/ /snekbox/config/
 
 # ------------------------------------------------------------------------------
 FROM venv
