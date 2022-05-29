@@ -12,12 +12,31 @@ repos:
     rev: v1.6.0
     hooks:
       - id: python-check-blanket-noqa
-  - repo: local
+  - repo: https://github.com/PyCQA/flake8
+    rev: &flake8_version 3.8.4
     hooks:
-      - id: flake8
-        name: Flake8
-        description: This hook runs flake8 within our project's pipenv environment.
-        entry: pipenv run flake8
-        language: system
-        types: [python]
-        require_serial: true
+      - &flake8_hook
+        id: flake8
+        additional_dependencies:
+          - flake8-annotations~=2.5.0
+          - flake8-bugbear~=20.11
+          - flake8-docstrings~=1.5
+          - flake8-formatter-junit-xml~=0.0.6
+          - flake8-import-order~=0.18.1
+          - flake8-quotes~=3.2
+          - flake8-string-format~=0.3.0
+          - flake8-tidy-imports~=4.2
+          - flake8-todo~=0.7
+          - pep8-naming~=0.11.1
+          - pydocstyle~=5.1
+  - repo: https://github.com/PyCQA/flake8
+    rev: *flake8_version
+    hooks:
+      - <<: *flake8_hook
+        alias: flake8-annotate
+        name: flake8 (with annotations)
+        stages: [manual]
+        args: [
+          --format,
+          "::error file=%(path)s,line=%(row)d,col=%(col)d::[flake8] %(code)s: %(text)s",
+        ]
