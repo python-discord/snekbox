@@ -28,7 +28,7 @@ lint: setup
 .PHONY: test
 test:
 	docker-compose run --entrypoint /bin/bash --rm snekbox -c \
-    'env PYTHONUSERBASE=/snekbox/user_base pip install numpy && coverage run -m unittest; e=$?; chown --reference=. .coverage; exit $e'
+    'coverage run -m unittest; e=$?; chown --reference=. .coverage; exit $e'
 
 .PHONY: report
 report: setup
