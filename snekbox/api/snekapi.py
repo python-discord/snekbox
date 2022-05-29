@@ -15,7 +15,7 @@ class SnekAPI(falcon.App):
     Error response format:
 
     >>> {
-    ...     "title": "Unsupported media type",
+    ...     "title": "415 Unsupported Media Type",
     ...     "description": "application/xml is an unsupported media type."
     ... }
     """
