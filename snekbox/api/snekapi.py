@@ -3,7 +3,7 @@ import falcon
 from .resources import EvalResource
 
 
-class SnekAPI(falcon.API):
+class SnekAPI(falcon.App):
     """
     The main entry point to the snekbox JSON API.
 
