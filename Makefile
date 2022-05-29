@@ -27,6 +27,7 @@ lint: setup
 # Install numpy because a test checks if it's importable
 .PHONY: test
 test:
+	docker-compose build -q --force-rm
 	docker-compose run --entrypoint /bin/bash --rm snekbox -c \
     'coverage run -m unittest; e=$?; chown --reference=. .coverage; exit $e'
 
