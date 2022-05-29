@@ -40,4 +40,8 @@ jobs:
       # Show the log to debug failures.
       - name: Show pre-commit log
         if: always() && steps.run-pre-commit-hooks.outcome == 'failure'
-        run: cat "${PRE_COMMIT_HOME}/pre-commit.log"
+        run: |
+          set -eu
+          if [ -f "${PRE_COMMIT_HOME}/pre-commit.log" ]; then
+            cat "${PRE_COMMIT_HOME}/pre-commit.log"
+          fi
