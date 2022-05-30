@@ -42,3 +42,19 @@ snekbox = "snekbox.__main__:main"
 
 [tool.setuptools]
 packages = ["snekbox"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if DEBUG"
+]
+
+[tool.coverage.run]
+branch = true
+data_file = "${COVERAGE_DATAFILE-.coverage}"
+include = ["snekbox/*"]
+omit =  [
+    "snekbox/api/app.py",
+    "snekbox/config_pb2.py"
+]
+relative_files = true
