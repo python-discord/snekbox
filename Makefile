@@ -24,12 +24,11 @@ lint: setup
 	pre-commit run --all-files
 
 # Fix ownership of the coverage file even if tests fail & preserve exit code
-# Install numpy because a test checks if it's importable
 .PHONY: test
 test:
 	docker-compose build -q --force-rm
 	docker-compose run --entrypoint /bin/bash --rm snekbox -c \
-    'coverage run -m unittest; e=$?; chown --reference=. .coverage; exit $e'
+    	'coverage run -m unittest; e=$?; chown --reference=. .coverage; exit $e'
 
 .PHONY: report
 report: setup
