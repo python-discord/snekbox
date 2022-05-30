@@ -13,7 +13,7 @@ setup: install-piptools
 
 .PHONY: upgrade
 upgrade: install-piptools
-	$(PIP_COMPILE_CMD) -o requirements/requirements.pip requirements/requirements.in
+	$(PIP_COMPILE_CMD) -o requirements/requirements.pip pyproject.toml
 	$(PIP_COMPILE_CMD) -o requirements/coverage.pip requirements/coverage.in
 	$(PIP_COMPILE_CMD) -o requirements/coveralls.pip requirements/coveralls.in
 	$(PIP_COMPILE_CMD) -o requirements/lint.pip requirements/lint.in
