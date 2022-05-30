@@ -51,7 +51,7 @@ class TestEvalResource(SnekAPITestCase):
         self.assertEqual(result.status_code, 415)
 
         expected = {
-            "title": "Unsupported media type",
+            "title": "415 Unsupported Media Type",
             "description": "application/xml is an unsupported media type."
         }
 

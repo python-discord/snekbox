@@ -3,7 +3,7 @@ import falcon
 from .resources import EvalResource
 
 
-class SnekAPI(falcon.API):
+class SnekAPI(falcon.App):
     """
     The main entry point to the snekbox JSON API.
 
@@ -15,7 +15,7 @@ class SnekAPI(falcon.API):
     Error response format:
 
     >>> {
-    ...     "title": "Unsupported media type",
+    ...     "title": "415 Unsupported Media Type",
     ...     "description": "application/xml is an unsupported media type."
     ... }
     """
