@@ -1,10 +1,9 @@
 [build-system]
-requires = ["setuptools>=61"]
-build-backend = "setuptools.build_meta"
+requires = ["setuptools>=61", "setuptools-git-versioning>=1.8"]
+build-backend = "setuptools.build_meta:__legacy__"
 
 [project]
 name = "snekbox"
-version = "1.0.0"
 description = "HTTP REST API for sanboxed execution of arbitrary Python code."
 readme = "README.md"
 license = {text = "MIT"}
@@ -22,6 +21,7 @@ classifiers = [
     "Topic :: Security",
     "Topic :: Software Development :: Interpreters",
 ]
+dynamic = ["version"]
 
 requires-python = ">=3.10"
 dependencies = [
@@ -44,6 +44,10 @@ snekbox = "snekbox.__main__:main"
 
 [tool.setuptools]
 packages = ["snekbox"]
+
+[tool.setuptools-git-versioning]
+enabled = true
+version_callback = "scripts.version:get_version"
 
 [tool.coverage.report]
 exclude_lines = [
