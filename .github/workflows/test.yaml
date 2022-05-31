@@ -41,8 +41,9 @@ jobs:
           export IMAGE_SUFFIX='-venv:${{ inputs.version }}'
           docker-compose run \
             --rm -T -e COVERAGE_DATAFILE=.coverage.${{ matrix.os }} \
+            --entrypoint coverage \
             snekbox \
-            coverage run -m unittest
+            run -m unittest
 
       # Upload it so the coverage from all matrix jobs can be combined later.
       - name: Upload coverage data
