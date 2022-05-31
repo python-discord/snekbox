@@ -81,7 +81,9 @@ jobs:
           push: true
           cache-from: ghcr.io/python-discord/snekbox-base:latest
           cache-to: type=inline
-          tags: ghcr.io/python-discord/snekbox-base:latest
+          tags: |
+            ghcr.io/python-discord/snekbox-base:latest
+            ghcr.io/python-discord/snekbox-base:${{ inputs.version }}
 
       # Push the venv image to GHCR, with an inline cache manifest.
       - name: Push venv image
@@ -95,4 +97,6 @@ jobs:
             ghcr.io/python-discord/snekbox-base:latest
             ghcr.io/python-discord/snekbox-venv:latest
           cache-to: type=inline
-          tags: ghcr.io/python-discord/snekbox-venv:latest
+          tags: |
+            ghcr.io/python-discord/snekbox-venv:latest
+            ghcr.io/python-discord/snekbox-venv:${{ inputs.version }}
