@@ -2,9 +2,6 @@ import logging
 import os
 import sys
 
-import sentry_sdk
-from sentry_sdk.integrations.falcon import FalconIntegration
-
 __all__ = ("FORMAT", "init_logger", "init_sentry")
 
 FORMAT = "%(asctime)s | %(process)5s | %(name)30s | %(levelname)8s | %(message)s"
@@ -23,7 +20,13 @@ def init_logger(debug: bool) -> None:
 
 
 def init_sentry() -> None:
-    """Initialise the Sentry SDK."""
+    """Initialise the Sentry SDK if it's installed."""
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.falcon import FalconIntegration
+    except ImportError:
+        return
+
     git_sha = os.environ.get("GIT_SHA", "development")
     sentry_sdk.init(
         dsn=os.environ.get("SNEKBOX_SENTRY_DSN", ""),

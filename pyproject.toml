@@ -27,11 +27,13 @@ requires-python = ">=3.10"
 dependencies = [
     # Sentry's Falcon integration relies on api_helpers (falconry/falcon#1902).
     "falcon>=3.0.1",
-    "gunicorn>=20",
     "jsonschema>=4.0",
     "protobuf>=3.19",
-    "sentry-sdk[falcon]>=1.5.4"
 ]
+
+[project.optional-dependencies]
+gunicorn = ["gunicorn>=20"]
+sentry = ["sentry-sdk[falcon]>=1.5.4"]
 
 [project.urls]
 source = "https://github.com/python-discord/snekbox"
