@@ -42,8 +42,8 @@ tracker = "https://github.com/python-discord/snekbox/issues"
 [project.scripts]
 snekbox = "snekbox.__main__:main"
 
-[tool.setuptools]
-packages = ["snekbox"]
+[tool.setuptools.packages.find]
+include = ["snekbox*"]
 
 [tool.setuptools-git-versioning]
 enabled = true
