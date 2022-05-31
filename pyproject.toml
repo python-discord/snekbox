@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta:__legacy__"
 
 [project]
 name = "snekbox"
-description = "HTTP REST API for sanboxed execution of arbitrary Python code."
+description = "HTTP REST API for sandboxed execution of arbitrary Python code."
 readme = "README.md"
 license = {text = "MIT"}
 authors = [{name = "Python Discord", email = "info@pythondiscord.com"}]
