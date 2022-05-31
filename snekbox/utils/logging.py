@@ -19,7 +19,7 @@ def init_logger(debug: bool) -> None:
     log.addHandler(handler)
 
 
-def init_sentry() -> None:
+def init_sentry(version: str) -> None:
     """Initialise the Sentry SDK if it's installed."""
     try:
         import sentry_sdk
@@ -27,10 +27,9 @@ def init_sentry() -> None:
     except ImportError:
         return
 
-    git_sha = os.environ.get("GIT_SHA", "development")
     sentry_sdk.init(
         dsn=os.environ.get("SNEKBOX_SENTRY_DSN", ""),
         integrations=[FalconIntegration()],
         send_default_pii=True,
-        release=f"snekbox@{git_sha}"
+        release=f"snekbox@{version}"
     )

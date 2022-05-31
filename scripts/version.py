@@ -32,3 +32,7 @@ def count_commits_on_date(dt: datetime.datetime) -> int:
     stdout = subprocess.check_output(args, text=True)
 
     return stdout.strip().count("\n")
+
+
+if __name__ == "__main__":
+    print(get_version())

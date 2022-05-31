@@ -4,9 +4,9 @@ on:
       artifact:
         description: The name of the uploaded image aretfact.
         value: ${{ jobs.build.outputs.artifact }}
-      tag:
-        description: The tag used for the built image.
-        value: ${{ jobs.build.outputs.tag }}
+      version:
+        description: The package's version.
+        value: ${{ jobs.build.outputs.version }}
 
 jobs:
   build:
@@ -14,20 +14,20 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       artifact: ${{ env.artifact }}
-      tag: ${{ steps.sha_tag.outputs.tag }}
+      version: ${{ steps.version.outputs.version }}
     env:
       artifact: image_artifact_snekbox-venv
 
     steps:
-      # Create a short SHA with which to tag built images.
-      - name: Create SHA Container Tag
-        id: sha_tag
-        run: |
-          tag=$(cut -c 1-7 <<< $GITHUB_SHA)
-          echo "::set-output name=tag::$tag"
-
       - name: Checkout code
         uses: actions/checkout@v2
+
+      - name: Get version
+        id: version
+        run: |
+          set -eu
+          version=$(python scripts/version.py)
+          echo "::set-output name=version::version"
 
       # The current version (v2) of Docker's build-push action uses buildx,
       # which comes with BuildKit. It has cache features which can speed up
@@ -83,7 +83,7 @@ jobs:
             ghcr.io/python-discord/snekbox-base:latest
             ghcr.io/python-discord/snekbox-venv:latest
           cache-to: ${{ steps.cache_config.outputs.cache_to }}
-          tags: ghcr.io/python-discord/snekbox-venv:${{ steps.sha_tag.outputs.tag }}
+          tags: ghcr.io/python-discord/snekbox-venv:${{ steps.version.outputs.version }}
 
       # Make the image available as an artifact so other jobs will be able to
       # download it.

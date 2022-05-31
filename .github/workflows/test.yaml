@@ -4,7 +4,7 @@ on:
       artifact:
         required: true
         type: string
-      tag:
+      version:
         required: true
         type: string
 
@@ -38,7 +38,7 @@ jobs:
       - name: Run tests
         id: run_tests
         run: |
-          export IMAGE_SUFFIX='-venv:${{ inputs.tag }}'
+          export IMAGE_SUFFIX='-venv:${{ inputs.version }}'
           docker-compose run \
             --rm -T -e COVERAGE_DATAFILE=.coverage.${{ matrix.os }} \
             snekbox \
@@ -57,7 +57,7 @@ jobs:
       - name: Docker cleanup
         if: matrix.os == 'self-hosted' && always()
         run: |
-          export IMAGE_SUFFIX='-venv:${{ inputs.tag }}'
+          export IMAGE_SUFFIX='-venv:${{ inputs.version }}'
           docker-compose down --rmi all --remove-orphans -v -t 0
 
   report:
