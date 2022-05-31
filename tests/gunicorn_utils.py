@@ -17,8 +17,8 @@ class _StandaloneApplication(Application):
         pass
 
     def load(self):
-        from snekbox.api.app import application
-        return application
+        from snekbox.api import SnekAPI
+        return SnekAPI()
 
     def load_config(self):
         for key, value in self.options.items():

@@ -67,7 +67,7 @@ COPY config/ /snekbox/config/
 FROM venv
 
 ENTRYPOINT ["gunicorn"]
-CMD ["-c", "config/gunicorn.conf.py", "snekbox.api.app"]
+CMD ["-c", "config/gunicorn.conf.py", "snekbox.api:SnekAPI"]
 
 COPY . /snekbox
 WORKDIR /snekbox
