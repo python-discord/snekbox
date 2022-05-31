@@ -13,6 +13,8 @@ from google.protobuf import text_format
 from snekbox import DEBUG, utils
 from snekbox.config_pb2 import NsJailConfig
 
+__all__ = ("NsJail",)
+
 log = logging.getLogger(__name__)
 
 # [level][timestamp][PID]? function_signature:line_no? message

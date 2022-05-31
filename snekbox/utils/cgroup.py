@@ -5,6 +5,8 @@ from snekbox.config_pb2 import NsJailConfig
 
 log = logging.getLogger(__name__)
 
+__all__ = ("get_version", "init", "init_v1", "init_v2")
+
 
 def get_version(config: NsJailConfig) -> int:
     """
