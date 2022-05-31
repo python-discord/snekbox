@@ -32,7 +32,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-gunicorn = ["gunicorn>=20"]
+gunicorn = ["gunicorn>=20.1"]  # Lowest which supports wsgi_app in config.
 sentry = ["sentry-sdk[falcon]>=1.5.4"]
 
 [project.urls]
