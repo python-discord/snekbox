@@ -10,7 +10,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@main
+        uses: actions/checkout@v2
+        with:
+          # The version script relies on history. Fetch 100 commits to be safe.
+          fetch-depth: 100
+
+      - name: Get version
+        id: version
+        run: |
+          set -eu
+          version=$(python scripts/version.py)
+          echo "::set-output name=version::version"
+          printf "%s\n" "${version}"
 
       - name: Create a Sentry.io release
         uses: tclindner/sentry-releases-action@v1.2.0
@@ -19,6 +30,6 @@ jobs:
           SENTRY_ORG: python-discord
           SENTRY_PROJECT: snekbox
         with:
-          tagName: ${{ github.sha }}
+          tagName: ${{ steps.version.outputs.version }}
           environment: production
           releaseNamePrefix: snekbox@
