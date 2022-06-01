@@ -1,7 +1,7 @@
 import argparse
 import sys
 
-from snekbox.nsjail import NsJail
+from snekbox import NsJail
 
 
 def parse_args() -> argparse.Namespace:

@@ -1,0 +1,66 @@
+[build-system]
+requires = ["setuptools>=61", "setuptools-git-versioning>=1.8"]
+build-backend = "setuptools.build_meta:__legacy__"
+
+[project]
+name = "snekbox"
+description = "HTTP REST API for sandboxed execution of arbitrary Python code."
+readme = "README.md"
+license = {text = "MIT"}
+authors = [{name = "Python Discord", email = "info@pythondiscord.com"}]
+keywords = ["sandbox", "nsjail", "HTTP REST API"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
+    "Topic :: Security",
+    "Topic :: Software Development :: Interpreters",
+]
+dynamic = ["version"]
+
+requires-python = ">=3.10"
+dependencies = [
+    # Sentry's Falcon integration relies on api_helpers (falconry/falcon#1902).
+    "falcon>=3.0.1",
+    "jsonschema>=4.0",
+    "protobuf>=3.19",
+]
+
+[project.optional-dependencies]
+gunicorn = ["gunicorn>=20.1"]  # Lowest which supports wsgi_app in config.
+sentry = ["sentry-sdk[falcon]>=1.5.4"]
+
+[project.urls]
+source = "https://github.com/python-discord/snekbox"
+tracker = "https://github.com/python-discord/snekbox/issues"
+
+[project.scripts]
+snekbox = "snekbox.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["snekbox*"]
+
+[tool.setuptools-git-versioning]
+enabled = true
+version_callback = "scripts.version:get_version"
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if DEBUG"
+]
+
+[tool.coverage.run]
+branch = true
+data_file = "${COVERAGE_DATAFILE-.coverage}"
+include = ["snekbox/*"]
+omit =  [
+    "snekbox/api/app.py",
+    "snekbox/config_pb2.py"
+]
+relative_files = true

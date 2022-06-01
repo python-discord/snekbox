@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 FROM python:3.10-slim-buster as builder
 
 WORKDIR /nsjail
@@ -31,6 +32,7 @@ ENV PATH=/root/.local/bin:$PATH \
 RUN apt-get -y update \
     && apt-get install -y \
         gcc=4:8.3.* \
+        git=1:2.20.* \
         libnl-route-3-200=3.4.* \
         libprotobuf17=3.6.* \
     && rm -rf /var/lib/apt/lists/*
@@ -60,18 +62,17 @@ RUN if [ -n "${DEV}" ]; \
     fi
 
 # At the end to avoid re-installing dependencies when only a config changes.
-# It's in the venv image because the final image is not used during development.
 COPY config/ /snekbox/config/
+
+ENTRYPOINT ["gunicorn"]
+CMD ["-c", "config/gunicorn.conf.py"]
 
 # ------------------------------------------------------------------------------
 FROM venv
 
-ENTRYPOINT ["gunicorn"]
-CMD ["-c", "config/gunicorn.conf.py", "snekbox.api.app"]
-
-COPY . /snekbox
-WORKDIR /snekbox
-
-# At the end to prevent it from invalidating the layer cache.
-ARG git_sha="development"
-ENV GIT_SHA=$git_sha
+# Use a separate directory to avoid importing the source over the installed pkg.
+# The venv already installed dependencies, so nothing besides snekbox itself
+# will be installed. Note requirements.pip cannot be used as a constraint file
+# because it contains extras, which pip disallows.
+RUN --mount=source=.,target=/snekbox_src,rw \
+    pip install /snekbox_src[gunicorn,sentry] \

@@ -13,7 +13,8 @@ setup: install-piptools
 
 .PHONY: upgrade
 upgrade: install-piptools
-	$(PIP_COMPILE_CMD) -o requirements/requirements.pip requirements/requirements.in
+	$(PIP_COMPILE_CMD) -o requirements/requirements.pip \
+		--extra gunicorn --extra sentry pyproject.toml
 	$(PIP_COMPILE_CMD) -o requirements/coverage.pip requirements/coverage.in
 	$(PIP_COMPILE_CMD) -o requirements/coveralls.pip requirements/coveralls.in
 	$(PIP_COMPILE_CMD) -o requirements/lint.pip requirements/lint.in
@@ -24,12 +25,11 @@ lint: setup
 	pre-commit run --all-files
 
 # Fix ownership of the coverage file even if tests fail & preserve exit code
-# Install numpy because a test checks if it's importable
 .PHONY: test
 test:
 	docker-compose build -q --force-rm
 	docker-compose run --entrypoint /bin/bash --rm snekbox -c \
-    'coverage run -m unittest; e=$?; chown --reference=. .coverage; exit $e'
+    	'coverage run -m unittest; e=$?; chown --reference=. .coverage; exit $e'
 
 .PHONY: report
 report: setup

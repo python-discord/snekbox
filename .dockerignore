@@ -2,8 +2,13 @@
 *
 
 # Make exceptions for what's needed
-!snekbox
+!.git/
 !config/
 !requirements/
-!tests
+!scripts/
+!snekbox/
+!tests/
 !LICENSE
+!NOTICE
+!pyproject.toml
+!README.md

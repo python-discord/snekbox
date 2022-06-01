@@ -5,6 +5,8 @@ from falcon.media.validators.jsonschema import validate
 
 from snekbox.nsjail import NsJail
 
+__all__ = ("EvalResource",)
+
 log = logging.getLogger(__name__)
 
 

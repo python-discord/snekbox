@@ -4,7 +4,7 @@ on:
       artifact:
         required: true
         type: string
-      tag:
+      version:
         required: true
         type: string
     secrets:
@@ -55,8 +55,7 @@ jobs:
           cache-to: type=inline
           tags: |
             ghcr.io/python-discord/snekbox:latest
-            ghcr.io/python-discord/snekbox:${{ inputs.tag }}
-          build-args: git_sha=${{ github.sha }}
+            ghcr.io/python-discord/snekbox:${{ inputs.version }}
 
       # Deploy to Kubernetes.
       - name: Authenticate with Kubernetes
@@ -69,7 +68,7 @@ jobs:
         uses: Azure/k8s-deploy@v1
         with:
           manifests: deployment.yaml
-          images: 'ghcr.io/python-discord/snekbox:${{ inputs.tag }}'
+          images: 'ghcr.io/python-discord/snekbox:${{ inputs.version }}'
           kubectl-version: 'latest'
 
       # Push the base image to GHCR, with an inline cache manifest.
@@ -82,7 +81,9 @@ jobs:
           push: true
           cache-from: ghcr.io/python-discord/snekbox-base:latest
           cache-to: type=inline
-          tags: ghcr.io/python-discord/snekbox-base:latest
+          tags: |
+            ghcr.io/python-discord/snekbox-base:latest
+            ghcr.io/python-discord/snekbox-base:${{ inputs.version }}
 
       # Push the venv image to GHCR, with an inline cache manifest.
       - name: Push venv image
@@ -96,4 +97,6 @@ jobs:
             ghcr.io/python-discord/snekbox-base:latest
             ghcr.io/python-discord/snekbox-venv:latest
           cache-to: type=inline
-          tags: ghcr.io/python-discord/snekbox-venv:latest
+          tags: |
+            ghcr.io/python-discord/snekbox-venv:latest
+            ghcr.io/python-discord/snekbox-venv:${{ inputs.version }}

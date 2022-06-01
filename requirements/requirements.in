@@ -1,7 +1,0 @@
-# Sentry's Falcon integration relies on api_helpers. See falconry/falcon#1902
-falcon>=3.0.1
-
-gunicorn>=20
-jsonschema>=4.0
-protobuf>=3.19
-sentry-sdk[falcon]>=1.5.4

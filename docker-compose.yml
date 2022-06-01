@@ -5,7 +5,7 @@ services:
     container_name: snekbox_dev
     hostname: snekbox_dev
     privileged: true
-    image: ghcr.io/python-discord/snekbox${IMAGE_SUFFIX:-:dev}
+    image: ghcr.io/python-discord/snekbox${IMAGE_SUFFIX:--venv:dev}
     ports:
      - 8060:8060
     init: true
@@ -17,6 +17,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: venv
       args:
         DEV: 1
       cache_from:
