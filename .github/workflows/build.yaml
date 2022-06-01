@@ -31,6 +31,7 @@ jobs:
           set -eu
           version=$(python scripts/version.py)
           echo "::set-output name=version::version"
+          printf "%s\n" "${version}"
 
       # The current version (v2) of Docker's build-push action uses buildx,
       # which comes with BuildKit. It has cache features which can speed up
