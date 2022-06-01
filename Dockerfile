@@ -70,7 +70,7 @@ CMD ["-c", "config/gunicorn.conf.py"]
 # ------------------------------------------------------------------------------
 FROM venv
 
-# Use a separate directory to avoid importing the source over the instaled pkg.
+# Use a separate directory to avoid importing the source over the installed pkg.
 # The venv already installed dependencies, so nothing besides snekbox itself
 # will be installed. Note requirements.pip cannot be used as a constraint file
 # because it contains extras, which pip disallows.
