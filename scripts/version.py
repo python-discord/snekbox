@@ -31,7 +31,8 @@ def count_commits_on_date(dt: datetime.datetime) -> int:
     args = ["git", "log", "--oneline", "--after", str(dt.timestamp())]
     stdout = subprocess.check_output(args, text=True)
 
-    return stdout.strip().count("\n")
+    # The last newline is stripped, so it has to be manually counted with + 1.
+    return stdout.strip().count("\n") + 1
 
 
 if __name__ == "__main__":

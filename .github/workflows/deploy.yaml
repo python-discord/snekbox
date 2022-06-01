@@ -36,9 +36,11 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN  }}
 
-      # The Dockerfile will be needed.
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          # The version script relies on history. Fetch 100 commits to be safe.
+          fetch-depth: 100
 
       # Build the final production image and push it to GHCR.
       # Tag it with both the short commit SHA and 'latest'.
