@@ -3,10 +3,10 @@ import contextlib
 import multiprocessing
 from typing import Iterator
 
-from gunicorn.app.base import Application
+from gunicorn.app.wsgiapp import WSGIApplication
 
 
-class _StandaloneApplication(Application):
+class _StandaloneApplication(WSGIApplication):
     def __init__(self, config_path: str = None, **kwargs):
         self.config_path = config_path
         self.options = kwargs
@@ -14,19 +14,17 @@ class _StandaloneApplication(Application):
         super().__init__()
 
     def init(self, parser, opts, args):
-        pass
-
-    def load(self):
-        from snekbox.api import SnekAPI
-        return SnekAPI()
+        """Patch `opts` to simulate the config path being passed as a command-line argument."""
+        super().init(parser, opts, args)
+        opts.config = self.config_path
 
     def load_config(self):
+        """Set the option kwargs in the config, then load the config as usual."""
         for key, value in self.options.items():
             if key in self.cfg.settings and value is not None:
                 self.cfg.set(key.lower(), value)
 
-        if self.config_path:
-            self.load_config_from_file(self.config_path)
+        super().load_config()
 
 
 def _proc_target(config_path: str, event: multiprocessing.Event, **kwargs) -> None:
