@@ -1,15 +1,12 @@
 [flake8]
 allow-untyped-nested = true
-application_import_names = snekbox
 docstring-convention = all
-import-order-style = pycharm
-inline-quotes = "
 max-line-length = 100
 
 exclude = __pycache__,.cache,user_base,venv,.venv,snekbox/config_pb2.py
 
 ignore =
-    W503,
+    E203, W503,
     # Missing Docstrings
     D100,D104,D105,D107,
     # Docstring Whitespace

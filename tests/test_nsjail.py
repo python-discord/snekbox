@@ -5,7 +5,7 @@ import unittest
 import unittest.mock
 from textwrap import dedent
 
-from snekbox.nsjail import NsJail, OUTPUT_MAX, READ_CHUNK_SIZE
+from snekbox.nsjail import OUTPUT_MAX, READ_CHUNK_SIZE, NsJail
 
 
 class NsJailTests(unittest.TestCase):
@@ -23,10 +23,7 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.stderr, None)
 
     def test_timeout_returns_137(self):
-        code = dedent("""
-            while True:
-                pass
-        """).strip()
+        code = "while True: pass"
 
         with self.assertLogs(self.logger) as log:
             result = self.nsjail.python3(code)
@@ -38,9 +35,7 @@ class NsJailTests(unittest.TestCase):
 
     def test_memory_returns_137(self):
         # Add a kilobyte just to be safe.
-        code = dedent(f"""
-            x = ' ' * {self.nsjail.config.cgroup_mem_max + 1000}
-        """).strip()
+        code = f"x = ' ' * {self.nsjail.config.cgroup_mem_max + 1000}"
 
         result = self.nsjail.python3(code)
         self.assertEqual(result.returncode, 137)
@@ -48,7 +43,8 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.stderr, None)
 
     def test_subprocess_resource_unavailable(self):
-        code = dedent("""
+        code = dedent(
+            """
             import subprocess
 
             # Max PIDs is 5.
@@ -60,7 +56,8 @@ class NsJailTests(unittest.TestCase):
                         'import time; time.sleep(1)'
                     ],
                 ).pid)
-        """).strip()
+            """
+        ).strip()
 
         result = self.nsjail.python3(code)
         self.assertEqual(result.returncode, 1)
@@ -68,7 +65,8 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.stderr, None)
 
     def test_multiprocess_resource_limits(self):
-        code = dedent("""
+        code = dedent(
+            """
             import time
             from multiprocessing import Process
 
@@ -87,7 +85,8 @@ class NsJailTests(unittest.TestCase):
             proc_2.join()
 
             print(proc_1.exitcode, proc_2.exitcode)
-        """)
+            """
+        )
 
         result = self.nsjail.python3(code)
 
@@ -98,10 +97,12 @@ class NsJailTests(unittest.TestCase):
     def test_read_only_file_system(self):
         for path in ("/", "/etc", "/lib", "/lib64", "/snekbox", "/usr"):
             with self.subTest(path=path):
-                code = dedent(f"""
+                code = dedent(
+                    f"""
                     with open('{path}/hello', 'w') as f:
                         f.write('world')
-                """).strip()
+                    """
+                ).strip()
 
                 result = self.nsjail.python3(code)
                 self.assertEqual(result.returncode, 1)
@@ -109,11 +110,13 @@ class NsJailTests(unittest.TestCase):
                 self.assertEqual(result.stderr, None)
 
     def test_forkbomb_resource_unavailable(self):
-        code = dedent("""
+        code = dedent(
+            """
             import os
             while 1:
                 os.fork()
-        """).strip()
+            """
+        ).strip()
 
         result = self.nsjail.python3(code)
         self.assertEqual(result.returncode, 1)
@@ -121,10 +124,12 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.stderr, None)
 
     def test_sigsegv_returns_139(self):  # In honour of Juan.
-        code = dedent("""
+        code = dedent(
+            """
             import ctypes
             ctypes.string_at(0)
-        """).strip()
+            """
+        ).strip()
 
         result = self.nsjail.python3(code)
         self.assertEqual(result.returncode, 139)
@@ -144,12 +149,16 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.stderr, None)
 
     def test_unicode_env_erase_escape_fails(self):
-        result = self.nsjail.python3(dedent("""
-            import os
-            import sys
-            os.unsetenv('PYTHONIOENCODING')
-            os.execl(sys.executable, 'python', '-c', 'print(chr(56550))')
-        """).strip())
+        result = self.nsjail.python3(
+            dedent(
+                """
+                import os
+                import sys
+                os.unsetenv('PYTHONIOENCODING')
+                os.execl(sys.executable, 'python', '-c', 'print(chr(56550))')
+                """
+            ).strip()
+        )
         self.assertEqual(result.returncode, None)
         self.assertEqual(result.stdout, "UnicodeDecodeError: invalid Unicode in output pipe")
         self.assertEqual(result.stderr, None)
@@ -168,7 +177,7 @@ class NsJailTests(unittest.TestCase):
             "cmdline::setupArgv(nsjconf_t*, int, char**, int)():316 No command-line provided",
             "[F][2019-06-22T20:07:00+0000][16] int main(int, char**)():204 "
             "Couldn't parse cmdline options",
-            "Invalid Line"
+            "Invalid Line",
         )
 
         with self.assertLogs(self.logger, logging.DEBUG) as log:
@@ -181,16 +190,18 @@ class NsJailTests(unittest.TestCase):
         self.assertIn("WARNING:snekbox.nsjail:This is a warning!", log.output)
         self.assertIn(
             "INFO:snekbox.nsjail:pid=20 ([STANDALONE MODE]) exited with status: 2, (PIDs left: 0)",
-            log.output
+            log.output,
         )
 
     def test_shm_and_tmp_not_mounted(self):
         for path in ("/dev/shm", "/run/shm", "/tmp"):
             with self.subTest(path=path):
-                code = dedent(f"""
+                code = dedent(
+                    f"""
                     with open('{path}/test', 'wb') as file:
                         file.write(bytes([255]))
-                """).strip()
+                    """
+                ).strip()
 
                 result = self.nsjail.python3(code)
                 self.assertEqual(result.returncode, 1)
@@ -198,13 +209,15 @@ class NsJailTests(unittest.TestCase):
                 self.assertEqual(result.stderr, None)
 
     def test_multiprocessing_shared_memory_disabled(self):
-        code = dedent("""
+        code = dedent(
+            """
             from multiprocessing.shared_memory import SharedMemory
             try:
                 SharedMemory('test', create=True, size=16)
             except FileExistsError:
                 pass
-        """).strip()
+            """
+        ).strip()
 
         result = self.nsjail.python3(code)
         self.assertEqual(result.returncode, 1)
@@ -220,26 +233,25 @@ class NsJailTests(unittest.TestCase):
     def test_output_order(self):
         stdout_msg = "greetings from stdout!"
         stderr_msg = "hello from stderr!"
-        code = dedent(f"""
+        code = dedent(
+            f"""
             print({stdout_msg!r})
             raise ValueError({stderr_msg!r})
-        """).strip()
+            """
+        ).strip()
 
         result = self.nsjail.python3(code)
         self.assertLess(
             result.stdout.find(stdout_msg),
             result.stdout.find(stderr_msg),
-            msg="stdout does not come before stderr"
+            msg="stdout does not come before stderr",
         )
         self.assertEqual(result.stderr, None)
 
     def test_stdout_flood_results_in_graceful_sigterm(self):
-        stdout_flood = dedent("""
-            while True:
-                print('abcdefghij')
-        """).strip()
+        code = "while True: print('abcdefghij')"
 
-        result = self.nsjail.python3(stdout_flood)
+        result = self.nsjail.python3(code)
         self.assertEqual(result.returncode, 143)
 
     def test_large_output_is_truncated(self):
@@ -260,7 +272,7 @@ class NsJailTests(unittest.TestCase):
         result = self.nsjail.python3("", nsjail_args=args)
 
         end = result.args.index("--")
-        self.assertEqual(result.args[end - len(args):end], args)
+        self.assertEqual(result.args[end - len(args) : end], args)
 
     def test_py_args(self):
         args = ("-m", "timeit")

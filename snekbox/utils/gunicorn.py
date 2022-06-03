@@ -4,6 +4,7 @@ from gunicorn import glogging
 from gunicorn.config import Config
 
 from snekbox import DEBUG
+
 from .logging import FORMAT
 
 __all__ = ("GunicornLogger",)

@@ -29,12 +29,14 @@ class _StandaloneApplication(WSGIApplication):
 
 def _proc_target(config_path: str, event: multiprocessing.Event, **kwargs) -> None:
     """Run a Gunicorn app with the given config and set `event` when Gunicorn is ready."""
+
     def when_ready(_):
         event.set()
 
     app = _StandaloneApplication(config_path, when_ready=when_ready, **kwargs)
 
     import logging
+
     logging.disable(logging.INFO)
 
     app.run()
@@ -62,7 +64,7 @@ def run_gunicorn(config_path: str = "config/gunicorn.conf.py", **kwargs) -> Iter
         concurrent.futures.wait(
             [executor.submit(proc.join), executor.submit(event.wait)],
             timeout=60,
-            return_when=concurrent.futures.FIRST_COMPLETED
+            return_when=concurrent.futures.FIRST_COMPLETED,
         )
         # Can't use the context manager cause wait=False needs to be set.
         executor.shutdown(wait=False, cancel_futures=True)
