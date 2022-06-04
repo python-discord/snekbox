@@ -133,11 +133,7 @@ class NsJail:
         return "".join(output)
 
     def python3(
-        self,
-        code: str,
-        *,
-        nsjail_args: Iterable[str] = (),
-        py_args: Iterable[str] = ("-c",)
+        self, code: str, *, nsjail_args: Iterable[str] = (), py_args: Iterable[str] = ("-c",)
     ) -> CompletedProcess:
         """
         Execute Python 3 code in an isolated environment and return the completed process.
@@ -153,17 +149,26 @@ class NsJail:
 
         if self.ignore_swap_limits:
             nsjail_args = (
-                "--cgroup_mem_memsw_max", "0", "--cgroup_mem_swap_max", "-1", *nsjail_args
+                "--cgroup_mem_memsw_max",
+                "0",
+                "--cgroup_mem_swap_max",
+                "-1",
+                *nsjail_args,
             )
 
         with NamedTemporaryFile() as nsj_log:
             args = (
                 self.nsjail_binary,
-                "--config", NSJAIL_CFG,
-                "--log", nsj_log.name,
+                "--config",
+                NSJAIL_CFG,
+                "--log",
+                nsj_log.name,
                 *nsjail_args,
                 "--",
-                self.config.exec_bin.path, *self.config.exec_bin.arg, *py_args, code
+                self.config.exec_bin.path,
+                *self.config.exec_bin.arg,
+                *py_args,
+                code,
             )
 
             msg = "Executing code..."
@@ -173,10 +178,7 @@ class NsJail:
 
             try:
                 nsjail = subprocess.Popen(
-                    args,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
-                    text=True
+                    args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
                 )
             except ValueError:
                 return CompletedProcess(args, None, "ValueError: embedded null byte", None)

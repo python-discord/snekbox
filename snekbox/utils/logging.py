@@ -5,7 +5,6 @@ import warnings
 
 from falcon.util.deprecation import DeprecatedWarning
 
-
 __all__ = ("FORMAT", "init_logger", "init_sentry")
 
 FORMAT = "%(asctime)s | %(process)5s | %(name)30s | %(levelname)8s | %(message)s"
@@ -38,5 +37,5 @@ def init_sentry(version: str) -> None:
         dsn=os.environ.get("SNEKBOX_SENTRY_DSN", ""),
         integrations=[FalconIntegration()],
         send_default_pii=True,
-        release=f"snekbox@{version}"
+        release=f"snekbox@{version}",
     )

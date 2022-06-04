@@ -23,19 +23,10 @@ class EvalResource:
     REQ_SCHEMA = {
         "type": "object",
         "properties": {
-            "input": {
-                "type": "string"
-            },
-            "args": {
-                "type": "array",
-                "items": {
-                    "type": "string"
-                }
-            }
+            "input": {"type": "string"},
+            "args": {"type": "array", "items": {"type": "string"}},
         },
-        "required": [
-            "input"
-        ]
+        "required": ["input"],
     }
 
     def __init__(self):
@@ -91,7 +82,4 @@ class EvalResource:
             log.exception("An exception occurred while trying to process the request")
             raise falcon.HTTPInternalServerError
 
-        resp.media = {
-            "stdout": result.stdout,
-            "returncode": result.returncode
-        }
+        resp.media = {"stdout": result.stdout, "returncode": result.returncode}

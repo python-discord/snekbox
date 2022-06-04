@@ -21,7 +21,6 @@ def run_code_in_snekbox(code: str) -> tuple[str, int]:
 
 
 class IntegrationTests(unittest.TestCase):
-
     def test_memory_limit_separate_per_process(self):
         """
         Each NsJail process should have its own memory limit.

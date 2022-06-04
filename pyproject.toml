@@ -59,8 +59,17 @@ exclude_lines = [
 branch = true
 data_file = "${COVERAGE_DATAFILE-.coverage}"
 include = ["snekbox/*"]
-omit =  [
-    "snekbox/api/app.py",
-    "snekbox/config_pb2.py"
-]
+omit =  ["snekbox/config_pb2.py"]
 relative_files = true
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+force-exclude = ["snekbox/config_pb2.py"]
+
+[tool.isort]
+line_length = 100
+profile = "black"
+skip_gitignore = true
+src_paths = ["snekbox"]
+extend_skip = ["snekbox/config_pb2.py"]

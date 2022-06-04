@@ -12,30 +12,24 @@ import snekbox.__main__ as snekbox_main
 class ArgParseTests(unittest.TestCase):
     def test_parse_args(self):
         subtests = (
-            (
-                ["", "code"],
-                Namespace(code="code", nsjail_args=[], py_args=["-c"])
-            ),
+            (["", "code"], Namespace(code="code", nsjail_args=[], py_args=["-c"])),
             (
                 ["", "code", "--time_limit", "0"],
-                Namespace(code="code", nsjail_args=["--time_limit", "0"], py_args=["-c"])
+                Namespace(code="code", nsjail_args=["--time_limit", "0"], py_args=["-c"]),
             ),
             (
                 ["", "code", "---", "-m", "timeit"],
-                Namespace(code="code", nsjail_args=[], py_args=["-m", "timeit"])
+                Namespace(code="code", nsjail_args=[], py_args=["-m", "timeit"]),
             ),
             (
                 ["", "code", "--time_limit", "0", "---", "-m", "timeit"],
-                Namespace(code="code", nsjail_args=["--time_limit", "0"], py_args=["-m", "timeit"])
+                Namespace(code="code", nsjail_args=["--time_limit", "0"], py_args=["-m", "timeit"]),
             ),
             (
                 ["", "code", "--time_limit", "0", "---"],
-                Namespace(code="code", nsjail_args=["--time_limit", "0"], py_args=[])
+                Namespace(code="code", nsjail_args=["--time_limit", "0"], py_args=[]),
             ),
-            (
-                ["", "code", "---"],
-                Namespace(code="code", nsjail_args=[], py_args=[])
-            )
+            (["", "code", "---"], Namespace(code="code", nsjail_args=[], py_args=[])),
         )
 
         for argv, expected in subtests:

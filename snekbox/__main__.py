@@ -27,7 +27,7 @@ def parse_args() -> argparse.Namespace:
         # Can't use double dash because that has special semantics for argparse already.
         split = unknown.index("---")
         args.nsjail_args = unknown[:split]
-        args.py_args = unknown[split + 1:]
+        args.py_args = unknown[split + 1 :]
     except ValueError:
         args.nsjail_args = unknown
 

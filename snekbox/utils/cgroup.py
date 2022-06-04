@@ -19,7 +19,7 @@ def get_version(config: NsJailConfig) -> int:
         config.cgroup_mem_mount,
         config.cgroup_pids_mount,
         config.cgroup_net_cls_mount,
-        config.cgroup_cpu_mount
+        config.cgroup_cpu_mount,
     )
     v1_exists = any(Path(mount).exists() for mount in cgroup_mounts)
 

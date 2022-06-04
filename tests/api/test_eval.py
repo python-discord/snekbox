@@ -20,15 +20,13 @@ class TestEvalResource(SnekAPITestCase):
 
         expected = {
             "title": "Request data failed validation",
-            "description": "'input' is a required property"
+            "description": "'input' is a required property",
         }
 
         self.assertEqual(expected, result.json)
 
     def test_post_invalid_data_400(self):
-        bodies = (
-            {"input": 400}, {"input": "", "args": [400]}
-        )
+        bodies = ({"input": 400}, {"input": "", "args": [400]})
 
         for body in bodies:
             with self.subTest():
@@ -38,7 +36,7 @@ class TestEvalResource(SnekAPITestCase):
 
                 expected = {
                     "title": "Request data failed validation",
-                    "description": "400 is not of type 'string'"
+                    "description": "400 is not of type 'string'",
                 }
 
                 self.assertEqual(expected, result.json)
@@ -52,7 +50,7 @@ class TestEvalResource(SnekAPITestCase):
 
         expected = {
             "title": "415 Unsupported Media Type",
-            "description": "application/xml is an unsupported media type."
+            "description": "application/xml is an unsupported media type.",
         }
 
         self.assertEqual(expected, result.json)

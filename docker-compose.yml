@@ -6,6 +6,7 @@ services:
     hostname: snekbox_dev
     privileged: true
     image: ghcr.io/python-discord/snekbox${IMAGE_SUFFIX:--venv:dev}
+    pull_policy: never
     ports:
      - 8060:8060
     init: true
