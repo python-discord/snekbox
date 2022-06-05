@@ -5,7 +5,7 @@ import unittest
 import unittest.mock
 from textwrap import dedent
 
-from snekbox.nsjail import OUTPUT_MAX, READ_CHUNK_SIZE, NsJail
+from snekbox.nsjail import NsJail
 
 
 class NsJailTests(unittest.TestCase):
@@ -255,8 +255,8 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.returncode, 143)
 
     def test_large_output_is_truncated(self):
-        chunk = "a" * READ_CHUNK_SIZE
-        expected_chunks = OUTPUT_MAX // sys.getsizeof(chunk) + 1
+        chunk = "a" * self.nsjail.read_chunk_size
+        expected_chunks = self.nsjail.max_output_size // sys.getsizeof(chunk) + 1
 
         nsjail_subprocess = unittest.mock.MagicMock()
 
