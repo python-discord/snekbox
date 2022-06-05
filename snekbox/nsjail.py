@@ -21,7 +21,6 @@ log = logging.getLogger(__name__)
 LOG_PATTERN = re.compile(
     r"\[(?P<level>(I)|[DWEF])\]\[.+?\](?(2)|(?P<func>\[\d+\] .+?:\d+ )) ?(?P<msg>.+)"
 )
-LOG_BLACKLIST = ("Process will be ",)
 
 NSJAIL_PATH = os.getenv("NSJAIL_PATH", "/usr/sbin/nsjail")
 NSJAIL_CFG = os.getenv("NSJAIL_CFG", "./config/snekbox.cfg")
@@ -79,10 +78,6 @@ class NsJail:
                 continue
 
             msg = match["msg"]
-            if not DEBUG and any(msg.startswith(s) for s in LOG_BLACKLIST):
-                # Skip blacklisted messages if not debugging.
-                continue
-
             if DEBUG and match["func"]:
                 # Prepend PID, function signature, and line number if debugging.
                 msg = f"{match['func']}{msg}"
