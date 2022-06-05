@@ -29,8 +29,8 @@ class EvalResource:
         "required": ["input"],
     }
 
-    def __init__(self):
-        self.nsjail = NsJail()
+    def __init__(self, nsjail: NsJail):
+        self.nsjail = nsjail
 
     @validate(REQ_SCHEMA)
     def on_post(self, req: falcon.Request, resp: falcon.Response) -> None:

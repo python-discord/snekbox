@@ -1,11 +1,15 @@
 import falcon
 
+from snekbox.nsjail import NsJail
+
 from .resources import EvalResource
 
 
 class SnekAPI(falcon.App):
     """
     The main entry point to the snekbox JSON API.
+
+    Forward arguments to a new `NsJail` object.
 
     Routes:
 
@@ -21,6 +25,7 @@ class SnekAPI(falcon.App):
     """
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__()
 
-        self.add_route("/eval", EvalResource())
+        nsjail = NsJail(*args, **kwargs)
+        self.add_route("/eval", EvalResource(nsjail))

@@ -66,7 +66,9 @@ NsJail is configured through [`snekbox.cfg`]. It contains the exact values for t
 
 ### Gunicorn
 
-[Gunicorn settings] can be found in [`gunicorn.conf.py`]. In the default configuration, the worker count and the bind address are likely the only things of any interest. Since it uses the default synchronous workers, the [worker count] effectively determines how many concurrent code evaluations can be performed.
+[Gunicorn settings] can be found in [`gunicorn.conf.py`]. In the default configuration, the worker count, the bind address, and the WSGI app URI are likely the only things of any interest. Since it uses the default synchronous workers, the [worker count] effectively determines how many concurrent code evaluations can be performed.
+
+`wsgi_app` can be given arguments which are forwarded to the `NsJail` object. For example, `wsgi_app = "snekbox:SnekAPI(max_output_size=2_000_000, read_chunk_size=20_000)"`.
 
 ### Environment Variables
 
@@ -125,3 +127,4 @@ See [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 [sentry release]: https://docs.sentry.io/platforms/python/configuration/releases/
 [data source name]: https://docs.sentry.io/product/sentry-basics/dsn-explainer/
 [GitHub Container Registry]: https://github.com/orgs/python-discord/packages/container/package/snekbox
+[`NsJail`]: snekbox/nsjail.py
