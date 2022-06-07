@@ -13,7 +13,7 @@ services:
     ipc: none
     tty: true
     environment:
-      DEBUG: 1
+      SNEKBOX_DEBUG: 1
       PYTHONDONTWRITEBYTECODE: 1
     build:
       context: .

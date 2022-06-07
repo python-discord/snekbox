@@ -1,7 +1,7 @@
 import os
 from importlib import metadata
 
-DEBUG = os.environ.get("DEBUG", False)
+DEBUG = os.environ.get("SNEKBOX_DEBUG", False)
 
 try:
     __version__ = metadata.version("snekbox")
