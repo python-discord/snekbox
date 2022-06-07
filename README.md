@@ -28,7 +28,7 @@ Snekbox -->>- Client: JSON response
 
 The code is executed in a Python process that is launched through [NsJail], which is responsible for sandboxing the Python process.
 
-The output returned by snekbox is truncated at around 1 MB.
+The output returned by snekbox is truncated at around 1 MB by default, but this can be [configured](#gunicorn).
 
 ## HTTP REST API
 
@@ -68,7 +68,7 @@ NsJail is configured through [`snekbox.cfg`]. It contains the exact values for t
 
 [Gunicorn settings] can be found in [`gunicorn.conf.py`]. In the default configuration, the worker count, the bind address, and the WSGI app URI are likely the only things of any interest. Since it uses the default synchronous workers, the [worker count] effectively determines how many concurrent code evaluations can be performed.
 
-`wsgi_app` can be given arguments which are forwarded to the `NsJail` object. For example, `wsgi_app = "snekbox:SnekAPI(max_output_size=2_000_000, read_chunk_size=20_000)"`.
+`wsgi_app` can be given arguments which are forwarded to the [`NsJail`] object. For example, `wsgi_app = "snekbox:SnekAPI(max_output_size=2_000_000, read_chunk_size=20_000)"`.
 
 ### Environment Variables
 
