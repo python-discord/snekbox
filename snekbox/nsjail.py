@@ -1,5 +1,4 @@
 import logging
-import os
 import re
 import subprocess
 import sys
@@ -22,9 +21,6 @@ LOG_PATTERN = re.compile(
     r"\[(?P<level>(I)|[DWEF])\]\[.+?\](?(2)|(?P<func>\[\d+\] .+?:\d+ )) ?(?P<msg>.+)"
 )
 
-NSJAIL_PATH = os.getenv("NSJAIL_PATH", "/usr/sbin/nsjail")
-NSJAIL_CFG = os.getenv("NSJAIL_CFG", "./config/snekbox.cfg")
-
 
 class NsJail:
     """
@@ -35,8 +31,8 @@ class NsJail:
 
     def __init__(
         self,
-        nsjail_path: str = NSJAIL_PATH,
-        config_path: str = NSJAIL_CFG,
+        nsjail_path: str = "/usr/sbin/nsjail",
+        config_path: str = "./config/snekbox.cfg",
         max_output_size: int = 1_000_000,
         read_chunk_size: int = 10_000,
     ):

@@ -77,11 +77,7 @@ All environment variables have defaults and are therefore not required to be set
 Name | Description
 ---- | -----------
 `DEBUG` | Enable debug logging if set to a non-empty value.
-`NSJAIL_CFG` | Path to the NsJail configuration file.
-`NSJAIL_PATH` | Path to the NsJail binary.
 `SNEKBOX_SENTRY_DSN` | [Data Source Name] for Sentry. Sentry is disabled if left unset.
-
-Note: relative paths are relative to the root of the repository.
 
 ## Third-party Packages
 
