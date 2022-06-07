@@ -285,18 +285,17 @@ class NsJailTests(unittest.TestCase):
 
 
 class NsJailArgsTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls._temp_dir = tempfile.TemporaryDirectory()
-        cls.addClassCleanup(cls._temp_dir.cleanup)
+    def setUp(self):
+        self._temp_dir = tempfile.TemporaryDirectory()
+        self.addClassCleanup(self._temp_dir.cleanup)
 
-        cls.nsjail_path = shutil.copy2("/usr/sbin/nsjail", cls._temp_dir.name)
-        cls.config_path = shutil.copy2("./config/snekbox.cfg", cls._temp_dir.name)
-        cls.max_output_size = 1_234_567
-        cls.read_chunk_size = 12_345
+        self.nsjail_path = shutil.copy2("/usr/sbin/nsjail", self._temp_dir.name)
+        self.config_path = shutil.copy2("./config/snekbox.cfg", self._temp_dir.name)
+        self.max_output_size = 1_234_567
+        self.read_chunk_size = 12_345
 
-        cls.nsjail = NsJail(
-            cls.nsjail_path, cls.config_path, cls.max_output_size, cls.read_chunk_size
+        self.nsjail = NsJail(
+            self.nsjail_path, self.config_path, self.max_output_size, self.read_chunk_size
         )
 
         logging.getLogger("snekbox.nsjail").setLevel(logging.WARNING)
