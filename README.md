@@ -28,7 +28,7 @@ Snekbox -->>- Client: JSON response
 
 The code is executed in a Python process that is launched through [NsJail], which is responsible for sandboxing the Python process.
 
-The output returned by snekbox is truncated at around 1 MB.
+The output returned by snekbox is truncated at around 1 MB by default, but this can be [configured](#gunicorn).
 
 ## HTTP REST API
 
@@ -66,7 +66,9 @@ NsJail is configured through [`snekbox.cfg`]. It contains the exact values for t
 
 ### Gunicorn
 
-[Gunicorn settings] can be found in [`gunicorn.conf.py`]. In the default configuration, the worker count and the bind address are likely the only things of any interest. Since it uses the default synchronous workers, the [worker count] effectively determines how many concurrent code evaluations can be performed.
+[Gunicorn settings] can be found in [`gunicorn.conf.py`]. In the default configuration, the worker count, the bind address, and the WSGI app URI are likely the only things of any interest. Since it uses the default synchronous workers, the [worker count] effectively determines how many concurrent code evaluations can be performed.
+
+`wsgi_app` can be given arguments which are forwarded to the [`NsJail`] object. For example, `wsgi_app = "snekbox:SnekAPI(max_output_size=2_000_000, read_chunk_size=20_000)"`.
 
 ### Environment Variables
 
@@ -74,12 +76,8 @@ All environment variables have defaults and are therefore not required to be set
 
 Name | Description
 ---- | -----------
-`DEBUG` | Enable debug logging if set to a non-empty value.
-`NSJAIL_CFG` | Path to the NsJail configuration file.
-`NSJAIL_PATH` | Path to the NsJail binary.
+`SNEKBOX_DEBUG` | Enable debug logging if set to a non-empty value.
 `SNEKBOX_SENTRY_DSN` | [Data Source Name] for Sentry. Sentry is disabled if left unset.
-
-Note: relative paths are relative to the root of the repository.
 
 ## Third-party Packages
 
@@ -125,3 +123,4 @@ See [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 [sentry release]: https://docs.sentry.io/platforms/python/configuration/releases/
 [data source name]: https://docs.sentry.io/product/sentry-basics/dsn-explainer/
 [GitHub Container Registry]: https://github.com/orgs/python-discord/packages/container/package/snekbox
+[`NsJail`]: snekbox/nsjail.py

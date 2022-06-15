@@ -11,7 +11,7 @@ class SnekAPITestCase(testing.TestCase):
     def setUp(self):
         super().setUp()
 
-        self.patcher = mock.patch("snekbox.api.resources.eval.NsJail", autospec=True)
+        self.patcher = mock.patch("snekbox.api.snekapi.NsJail", autospec=True)
         self.mock_nsjail = self.patcher.start()
         self.mock_nsjail.return_value.python3.return_value = CompletedProcess(
             args=[], returncode=0, stdout="output", stderr="error"

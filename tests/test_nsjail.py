@@ -1,11 +1,13 @@
 import io
 import logging
+import shutil
 import sys
+import tempfile
 import unittest
 import unittest.mock
 from textwrap import dedent
 
-from snekbox.nsjail import OUTPUT_MAX, READ_CHUNK_SIZE, NsJail
+from snekbox.nsjail import NsJail
 
 
 class NsJailTests(unittest.TestCase):
@@ -255,8 +257,8 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.returncode, 143)
 
     def test_large_output_is_truncated(self):
-        chunk = "a" * READ_CHUNK_SIZE
-        expected_chunks = OUTPUT_MAX // sys.getsizeof(chunk) + 1
+        chunk = "a" * self.nsjail.read_chunk_size
+        expected_chunks = self.nsjail.max_output_size // sys.getsizeof(chunk) + 1
 
         nsjail_subprocess = unittest.mock.MagicMock()
 
@@ -280,3 +282,37 @@ class NsJailTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0)
         self.assertEqual(result.args[-3:-1], args)
+
+
+class NsJailArgsTests(unittest.TestCase):
+    def setUp(self):
+        self._temp_dir = tempfile.TemporaryDirectory()
+        self.addClassCleanup(self._temp_dir.cleanup)
+
+        self.nsjail_path = shutil.copy2("/usr/sbin/nsjail", self._temp_dir.name)
+        self.config_path = shutil.copy2("./config/snekbox.cfg", self._temp_dir.name)
+        self.max_output_size = 1_234_567
+        self.read_chunk_size = 12_345
+
+        self.nsjail = NsJail(
+            self.nsjail_path, self.config_path, self.max_output_size, self.read_chunk_size
+        )
+
+        logging.getLogger("snekbox.nsjail").setLevel(logging.WARNING)
+
+    def test_nsjail_path(self):
+        result = self.nsjail.python3("")
+
+        self.assertEqual(result.args[0], self.nsjail_path)
+
+    def test_config_path(self):
+        result = self.nsjail.python3("")
+
+        i = result.args.index("--config") + 1
+        self.assertEqual(result.args[i], self.config_path)
+
+    def test_init_args(self):
+        self.assertEqual(self.nsjail.nsjail_path, self.nsjail_path)
+        self.assertEqual(self.nsjail.config_path, self.config_path)
+        self.assertEqual(self.nsjail.max_output_size, self.max_output_size)
+        self.assertEqual(self.nsjail.read_chunk_size, self.read_chunk_size)
