@@ -65,16 +65,35 @@ def init(config: NsJailConfig) -> int:
 
 def init_v1(config: NsJailConfig) -> None:
     """
-    Create a PID and memory cgroup for NsJail to use as the parent cgroup for each controller.
+    Create cgroups for NsJail to use as the parent cgroup for each in-use controller.
+
+    A controller is in-use if any of its settings (except the mount and parent) have a non-default
+    value in the NsJail config.
 
     NsJail doesn't do this automatically because it requires privileges NsJail usually doesn't
     have.
     """
-    pids = Path(config.cgroup_pids_mount, config.cgroup_pids_parent)
-    mem = Path(config.cgroup_mem_mount, config.cgroup_mem_parent)
+    # If the config doesn't "have" a value, then it's set to the default value, which means the
+    # controller is not being used.
+    if config.HasField("cgroup_cpu_ms_per_sec"):
+        pids = Path(config.cgroup_cpu_mount, config.cgroup_cpu_parent)
+        pids.mkdir(parents=True, exist_ok=True)
 
-    pids.mkdir(parents=True, exist_ok=True)
-    mem.mkdir(parents=True, exist_ok=True)
+    if (
+        config.HasField("cgroup_mem_max")
+        or config.HasField("cgroup_mem_memsw_max")
+        or config.HasField("cgroup_mem_swap_max")
+    ):
+        mem = Path(config.cgroup_mem_mount, config.cgroup_mem_parent)
+        mem.mkdir(parents=True, exist_ok=True)
+
+    if config.HasField("cgroup_net_cls_classid"):
+        net_cls = Path(config.cgroup_net_cls_mount, config.cgroup_net_cls_parent)
+        net_cls.mkdir(parents=True, exist_ok=True)
+
+    if config.HasField("cgroup_pids_max"):
+        pids = Path(config.cgroup_pids_mount, config.cgroup_pids_parent)
+        pids.mkdir(parents=True, exist_ok=True)
 
 
 def init_v2(config: NsJailConfig) -> None:
