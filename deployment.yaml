@@ -49,6 +49,7 @@ spec:
                     pyyaml~=5.3
                     sympy~=1.6
                     toml~=0.10
+                    typing-extensions~=4.2
                     tzdata~=2021.1
                     yarl~=1.7
       volumes:
