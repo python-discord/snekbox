@@ -336,8 +336,8 @@ class NsJailCgroupTests(unittest.TestCase):
                 rw: false
             }
             exec_bin {
-                path: "/usr/local/bin/python"
-                arg: "-Squ"
+                path: "/bin/su"
+                arg: ""
             }
             """
         ).strip()
@@ -383,4 +383,4 @@ class NsJailCgroupTests(unittest.TestCase):
 
                         result = nsjail.python3("")
 
-                        self.assertEqual(result.returncode, 0)
+                        self.assertNotEqual(result.returncode, 255)
