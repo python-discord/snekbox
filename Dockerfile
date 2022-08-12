@@ -1,5 +1,7 @@
 # syntax=docker/dockerfile:1
-FROM python:3.10-slim-buster as builder
+ARG python_version=3.11.0rc2
+
+FROM python:$python_version-slim-buster as builder
 
 WORKDIR /nsjail
 
@@ -20,7 +22,7 @@ RUN git clone -b master --single-branch https://github.com/google/nsjail.git . \
 RUN make
 
 # ------------------------------------------------------------------------------
-FROM python:3.10-slim-buster as base
+FROM python:$python_version-slim-buster as base
 
 # Everything will be a user install to allow snekbox's dependencies to be kept
 # separate from the packages exposed during eval.
@@ -31,7 +33,7 @@ ENV PATH=/root/.local/bin:$PATH \
 
 RUN apt-get -y update \
     && apt-get install -y \
-        gcc=4:8.3.* \
+        g++=4:8.3.* \
         git=1:2.20.* \
         libnl-route-3-200=3.4.* \
         libprotobuf17=3.6.* \
@@ -76,3 +78,24 @@ FROM venv
 # because it contains extras, which pip disallows.
 RUN --mount=source=.,target=/snekbox_src,rw \
     pip install /snekbox_src[gunicorn,sentry]
+
+RUN  PYTHONUSERBASE=/snekbox/user_base pip install anyio[trio] \
+    arrow \
+    attrs \
+    beautifulsoup4 \
+    fishhook \
+    forbiddenfruit \
+    fuzzywuzzy \
+    lark \
+    more-itertools \
+    networkx \
+    numpy \
+    pandas \
+    pendulum \
+    python-dateutil \
+    pyyaml \
+    sympy \
+    toml \
+    typing-extensions \
+    tzdata \
+    yarl
