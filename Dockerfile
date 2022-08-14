@@ -75,4 +75,4 @@ FROM venv
 # will be installed. Note requirements.pip cannot be used as a constraint file
 # because it contains extras, which pip disallows.
 RUN --mount=source=.,target=/snekbox_src,rw \
-    pip install /snekbox_src[gunicorn,sentry] \
+    pip install /snekbox_src[gunicorn,sentry]
