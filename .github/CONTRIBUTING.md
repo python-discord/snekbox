@@ -13,7 +13,8 @@ Manual invocation is still possible with `make lint`.
 
 ## Running snekbox
 
-Use `docker-compose up` to start snekbox in development mode. The optional `--build` argument can be passed to force the image to be rebuilt.
+Use `docker compose up` to start snekbox in development mode. The optional `--build` argument can be passed to force the image to be rebuilt.
+You must use [compose v2][Compose v2], accessed via `docker compose` (no hyphen).
 
 The container has all development dependencies. The repository on the host is mounted within the container; changes made to local files will also affect the container.
 
@@ -63,3 +64,4 @@ Other things to look out for are breaking changes to NsJail's config format, its
 
 [readme]: ../README.md
 [Dockerfile]: ../Dockerfile
+[Compose v2]: https://docs.docker.com/compose/compose-v2/
