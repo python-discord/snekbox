@@ -29,8 +29,8 @@ jobs:
         with:
           path: ${{ env.PRE_COMMIT_HOME }}
           key: "precommit-0-${{ runner.os }}-${{ env.PRE_COMMIT_HOME }}-\
-          ${{ steps.python.outputs.python-version }}-\
-          ${{ hashFiles('./.pre-commit-config.yaml') }}"
+            ${{ steps.python.outputs.python-version }}-\
+            ${{ hashFiles('./.pre-commit-config.yaml') }}"
 
       # Skip the flake8 hook because the following command will run it.
       - name: Run pre-commit hooks
