@@ -1,3 +1,0 @@
--c coverage.pip
-
-coveralls>=3.3.1

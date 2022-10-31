@@ -16,7 +16,6 @@ upgrade: install-piptools
 	$(PIP_COMPILE_CMD) -o requirements/requirements.pip \
 		--extra gunicorn --extra sentry pyproject.toml
 	$(PIP_COMPILE_CMD) -o requirements/coverage.pip requirements/coverage.in
-	$(PIP_COMPILE_CMD) -o requirements/coveralls.pip requirements/coveralls.in
 	$(PIP_COMPILE_CMD) -o requirements/lint.pip requirements/lint.in
 	$(PIP_COMPILE_CMD) -o requirements/pip-tools.pip requirements/pip-tools.in
 
