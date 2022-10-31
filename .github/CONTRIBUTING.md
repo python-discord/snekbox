@@ -6,7 +6,7 @@ The Contributing Guidelines for Python Discord projects can be found [on our web
 
 ## Initial Setup
 
-A Python 3.10 interpreter and `make` are required. A virtual environment is also recommended. Once that is set up, install the project's dependencies with `make setup`.
+A Python 3.11 interpreter and `make` are required. A virtual environment is also recommended. Once that is set up, install the project's dependencies with `make setup`.
 
 This also installs a git pre-commit hook so that the linter runs upon a commit.
 Manual invocation is still possible with `make lint`.
