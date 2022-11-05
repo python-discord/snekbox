@@ -76,7 +76,6 @@ jobs:
         with:
           manifests: deployment.yaml
           images: 'ghcr.io/python-discord/snekbox:${{ inputs.version }}'
-          kubectl-version: 'latest'
 
       # Push the base image to GHCR, with an inline cache manifest.
       - name: Push base image
