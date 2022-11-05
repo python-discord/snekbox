@@ -30,7 +30,7 @@ jobs:
         run: |
           set -eu
           version=$(python scripts/version.py)
-          echo "::set-output name=version::$version"
+          echo "version=$version" >> $GITHUB_OUTPUT
           printf "%s\n" "${version}"
 
       # The current version (v2) of Docker's build-push action uses buildx,
@@ -63,8 +63,8 @@ jobs:
             cache_from="type=gha,scope=buildkit-${GITHUB_REF}"
             cache_to="${cache_from},mode=max"
           fi
-          echo "::set-output name=cache_from::${cache_from:-}"
-          echo "::set-output name=cache_to::${cache_to:-}"
+          echo "cache_from=${cache_from:-}" >> $GITHUB_OUTPUT
+          echo "cache_to=${cache_to:-}" >> $GITHUB_OUTPUT
 
       # Build the "DEV" version of the image, which targets the `venv` stage
       # and includes development dependencies.
