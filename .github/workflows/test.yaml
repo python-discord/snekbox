@@ -27,7 +27,7 @@ jobs:
 
       # Needed for the Docker Compose file.
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       # Memory limit tests would fail if this isn't disabled.
       - name: Disable swap memory
@@ -60,7 +60,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v2
