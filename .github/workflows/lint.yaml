@@ -15,7 +15,7 @@ jobs:
 
       - name: Set up Python
         id: python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: "3.11"
           cache: pip
@@ -25,7 +25,7 @@ jobs:
         run: pip install -U -r requirements/lint.pip
 
       - name: Pre-commit environment cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{ env.PRE_COMMIT_HOME }}
           key: "precommit-0-${{ runner.os }}-${{ env.PRE_COMMIT_HOME }}-\

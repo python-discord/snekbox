@@ -47,7 +47,7 @@ jobs:
 
       # Upload it so the coverage from all matrix jobs can be combined later.
       - name: Upload coverage data
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: coverage
           path: .coverage.*
@@ -63,7 +63,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: "3.11"
           cache: pip
@@ -73,7 +73,7 @@ jobs:
         run: pip install -U -r requirements/coverage.pip
 
       - name: Download coverage data
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: coverage
 
