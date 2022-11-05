@@ -16,14 +16,14 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
     "Topic :: Security",
     "Topic :: Software Development :: Interpreters",
 ]
 dynamic = ["version"]
 
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     # Sentry's Falcon integration relies on api_helpers (falconry/falcon#1902).
     "falcon>=3.0.1",
@@ -64,7 +64,7 @@ relative_files = true
 
 [tool.black]
 line-length = 100
-target-version = ["py310"]
+target-version = ["py311"]
 force-exclude = "snekbox/config_pb2.py"
 
 [tool.isort]

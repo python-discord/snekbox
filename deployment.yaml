@@ -40,17 +40,17 @@ spec:
                     forbiddenfruit~=0.1
                     fuzzywuzzy~=0.18
                     lark~=1.1
-                    more-itertools~=8.14
+                    more-itertools~=9.0
                     networkx~=2.8
                     numpy~=1.23
-                    pandas~=1.4
+                    pandas~=1.5
                     pendulum~=2.1
                     python-dateutil~=2.8
                     pyyaml~=6.0
-                    sympy~=1.10
+                    sympy~=1.11
                     toml~=0.10
-                    typing-extensions~=4.3
-                    tzdata~=2022.2
+                    typing-extensions~=4.4
+                    tzdata~=2022.6
                     yarl~=1.8
       volumes:
         - name: snekbox-user-base-volume

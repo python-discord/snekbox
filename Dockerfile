@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM python:3.10-slim-buster as builder
+FROM python:3.11-slim-buster as builder
 
 WORKDIR /nsjail
 
@@ -20,7 +20,7 @@ RUN git clone -b master --single-branch https://github.com/google/nsjail.git . \
 RUN make
 
 # ------------------------------------------------------------------------------
-FROM python:3.10-slim-buster as base
+FROM python:3.11-slim-buster as base
 
 # Everything will be a user install to allow snekbox's dependencies to be kept
 # separate from the packages exposed during eval.

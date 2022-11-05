@@ -16,7 +16,6 @@ upgrade: install-piptools
 	$(PIP_COMPILE_CMD) -o requirements/requirements.pip \
 		--extra gunicorn --extra sentry pyproject.toml
 	$(PIP_COMPILE_CMD) -o requirements/coverage.pip requirements/coverage.in
-	$(PIP_COMPILE_CMD) -o requirements/coveralls.pip requirements/coveralls.in
 	$(PIP_COMPILE_CMD) -o requirements/lint.pip requirements/lint.in
 	$(PIP_COMPILE_CMD) -o requirements/pip-tools.pip requirements/pip-tools.in
 
@@ -27,8 +26,8 @@ lint: setup
 # Fix ownership of the coverage file even if tests fail & preserve exit code
 .PHONY: test
 test:
-	docker-compose build -q --force-rm
-	docker-compose run --entrypoint /bin/bash --rm snekbox -c \
+	docker compose build -q --force-rm
+	docker compose run --entrypoint /bin/bash --rm snekbox -c \
     	'coverage run -m unittest; e=$?; chown --reference=. .coverage; exit $e'
 
 .PHONY: report
@@ -41,4 +40,4 @@ build:
 
 .PHONY: devsh
 devsh:
-	docker-compose run --entrypoint /bin/bash --rm snekbox
+	docker compose run --entrypoint /bin/bash --rm snekbox
