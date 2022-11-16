@@ -11,6 +11,7 @@ from google.protobuf import text_format
 
 from snekbox import DEBUG, utils
 from snekbox.config_pb2 import NsJailConfig
+from snekbox.memfs import MemoryTempDir
 
 __all__ = ("NsJail",)
 
@@ -129,7 +130,7 @@ class NsJail:
         return "".join(output)
 
     def python3(
-        self, code: str, *, nsjail_args: Iterable[str] = (), py_args: Iterable[str] = ("-c",)
+        self, code: str, *, nsjail_args: Iterable[str] = (), py_args: Iterable[str] = ("",)
     ) -> CompletedProcess:
         """
         Execute Python 3 code in an isolated environment and return the completed process.
@@ -152,7 +153,24 @@ class NsJail:
                 *nsjail_args,
             )
 
-        with NamedTemporaryFile() as nsj_log:
+        with NamedTemporaryFile() as nsj_log, MemoryTempDir() as temp_dir:
+            # Write the code to a python file in the temp directory.
+            log.info(f"Created Memory-Tempdir at [{temp_dir!r}].")
+            code_path = temp_dir.path / "main.py"
+            code_path.write_text(code)
+            log.info(f"Creating code file at [{code_path!r}].")
+
+            # Add the temp dir to be mounted as cwd
+            nsjail_args = (
+                "--bindmount",  # Mount temp dir in R/W mode
+                f"{temp_dir.home}:home",
+                "--cwd",  # Set cwd to temp dir
+                "home",
+                "--env",  # Set $HOME to temp dir
+                "HOME=home",
+                *nsjail_args,
+            )
+
             args = (
                 self.nsjail_path,
                 "--config",
@@ -163,8 +181,8 @@ class NsJail:
                 "--",
                 self.config.exec_bin.path,
                 *self.config.exec_bin.arg,
-                *py_args,
-                code,
+                *[arg for arg in py_args if arg != "-c"],
+                code_path,
             )
 
             msg = "Executing code..."
