@@ -11,6 +11,15 @@ SUPPORTED_MIME_TYPES = {
 }
 
 
+def sizeof_fmt(num: int, suffix: str = "B") -> str:
+    """Return a human-readable file size."""
+    for unit in ("", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"):
+        if abs(num) < 1024:
+            return f"{num:3.1f}{unit}{suffix}"
+        num /= 1024
+    return f"{num:.1f}Yi{suffix}"
+
+
 class AttachmentError(ValueError):
     """Raised when an attachment is invalid."""
 
@@ -23,13 +32,24 @@ class FileAttachment:
     content: bytes
 
     @classmethod
-    def from_path(cls, path: Path, max_size: int) -> FileAttachment:
+    def from_path(cls, file: Path, max_size: int) -> FileAttachment:
         """Create an attachment from a path."""
-        with path.open("rb") as f:
+        size = file.stat().st_size
+        if size > max_size:
+            raise AttachmentError(
+                f"File {file.name} too large: {sizeof_fmt(size)} "
+                f"exceeds the limit of {sizeof_fmt(max_size)}"
+            )
+
+        with file.open("rb") as f:
             content = f.read(max_size + 1)
+            size = len(content)
             if len(content) > max_size:
-                raise AttachmentError(f"File too large: {path}")
-        return cls(path.name, content)
+                raise AttachmentError(
+                    f"File {file.name} too large: {sizeof_fmt(len(content))} "
+                    f"exceeds the limit of {sizeof_fmt(max_size)}"
+                )
+        return cls(file.name, content)
 
     @property
     def mime(self) -> str:
