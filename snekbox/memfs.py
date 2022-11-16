@@ -5,7 +5,6 @@ import logging
 import subprocess
 from collections.abc import Generator
 from contextlib import contextmanager
-from functools import cache
 from pathlib import Path
 from shutil import rmtree
 from threading import BoundedSemaphore
@@ -15,31 +14,42 @@ from uuid import uuid4
 
 from snekbox.snekio import FileAttachment
 
-# Size of the memory filesystem
-MEMFS_SIZE = "2G"
-# Maximum number of files attachments will be scanned for
-MAX_FILES = 6
-# Maximum size of a file attachment (64 MB)
-MAX_FILE_SIZE = 64 * 1024 * 1024
-
 log = logging.getLogger(__name__)
 
 
-@cache
-def mem_tempdir() -> Path:
-    """Return the snekbox namespace temporary directory."""
-    tmp = Path("/snekbox/memfs")
+def mount_tmpfs(name: str) -> Path:
+    """Create and mount a tmpfs directory."""
+    tmp = Path("/snekbox/memfs", name)
     if not tmp.exists() or not tmp.is_dir():
-        # Create `memfs` and mount it as a tmpfs
+        # Create the directory
         tmp.mkdir(parents=True, exist_ok=True)
         tmp.chmod(0o777)
+        # Mount the tmpfs
         subprocess.check_call(
-            ["mount", "-t", "tmpfs", "-o", f"size={MEMFS_SIZE}", "tmpfs", str(tmp)]
+            ["mount", "-t", "tmpfs", "-o", f"size={MemFSOptions.MEMFS_SIZE}", "tmpfs", str(tmp)]
         )
         # Execute only access for other users
         tmp.chmod(0o711)
-
     return tmp
+
+
+def unmount_tmpfs(name: str) -> None:
+    """Unmount and remove a tmpfs directory."""
+    tmp = Path("/snekbox/memfs", name)
+    if tmp.exists() and tmp.is_dir():
+        subprocess.check_call(["umount", str(tmp)])
+        rmtree(tmp, ignore_errors=True)
+
+
+class MemFSOptions:
+    """Options for memory file system."""
+
+    # Size of the memory filesystem (per instance)
+    MEMFS_SIZE = "32M"
+    # Maximum number of files attachments will be scanned for
+    MAX_FILES = 2
+    # Maximum size of a file attachment (32 MB)
+    MAX_FILE_SIZE = 32 * 1024 * 1024
 
 
 class MemoryTempDir:
@@ -67,8 +77,7 @@ class MemoryTempDir:
             for _ in range(10):
                 name = str(uuid4())
                 if name not in self.assigned_names:
-                    self.path = Path(mem_tempdir(), name)
-                    self.path.mkdir()
+                    self.path = mount_tmpfs(name)
                     self.path.chmod(0o555)
                     # Create a home folder
                     home = self.path / "home"
@@ -97,16 +106,16 @@ class MemoryTempDir:
     def attachments(self) -> Generator[FileAttachment, None, None]:
         """Return a list of attachments in the tempdir."""
         # Look for any file starting with `output`
-        for file in self.path.glob("output*"):
+        for file in self.home.glob("output*"):
             if file.is_file():
-                yield FileAttachment.from_path(file, MAX_FILE_SIZE)
+                yield FileAttachment.from_path(file, MemFSOptions.MAX_FILE_SIZE)
 
     def cleanup(self) -> None:
         """Remove files in temp dir, releases name."""
         if self.path is None:
             return
         # Remove the path folder
-        rmtree(self.path, ignore_errors=True)
+        unmount_tmpfs(self.name)
 
         if not self.path.exists():
             with self.assignment_lock:
