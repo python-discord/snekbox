@@ -159,7 +159,7 @@ class NsJail:
         with NamedTemporaryFile() as nsj_log, MemoryTempDir() as temp_dir:
             # Write the code to a python file in the temp directory.
             with temp_dir.allow_write():
-                code_path = temp_dir.path / "main.py"
+                code_path = temp_dir.home / "main.py"
                 code_path.write_text(code)
             log.info(f"Created code file at [{code_path!r}].")
 
@@ -185,7 +185,7 @@ class NsJail:
                 self.config.exec_bin.path,
                 *self.config.exec_bin.arg,
                 *[arg for arg in py_args if arg != "-c"],
-                code_path,
+                "main.py",
             )
 
             msg = "Executing code..."

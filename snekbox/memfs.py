@@ -17,38 +17,36 @@ from snekbox.snekio import FileAttachment
 log = logging.getLogger(__name__)
 
 
+NAMESPACE_DIR = Path("/memfs")
+NAMESPACE_DIR.mkdir(parents=True, exist_ok=True)
+NAMESPACE_DIR.chmod(0o711)  # Execute only access for other users
+
+
 def mount_tmpfs(name: str) -> Path:
     """Create and mount a tmpfs directory."""
-    namespace = Path("/snekbox/memfs")
-    tmp = namespace / name
-    if not tmp.exists() or not tmp.is_dir():
-        # Create the directory
-        tmp.mkdir(parents=True, exist_ok=True)
-        tmp.chmod(0o777)
-        # Mount the tmpfs
-        subprocess.check_call(
-            [
-                "mount",
-                "-t",
-                "tmpfs",
-                "-o",
-                f"size={MemFSOptions.MEMFS_SIZE}",
-                "tmpfs",
-                str(tmp),
-            ]
-        )
-        # Execute only access for other users
-        tmp.chmod(0o711)
-        namespace.chmod(0o711)
+    tmp = NAMESPACE_DIR / name
+    tmp.mkdir()
+    tmp.chmod(0o711)
+    # Mount the tmpfs
+    subprocess.check_call(
+        [
+            "mount",
+            "-t",
+            "tmpfs",
+            "-o",
+            f"size={MemFSOptions.MEMFS_SIZE}",
+            "tmpfs",
+            str(tmp),
+        ]
+    )
     return tmp
 
 
 def unmount_tmpfs(name: str) -> None:
     """Unmount and remove a tmpfs directory."""
-    tmp = Path("/snekbox/memfs", name)
-    if tmp.exists() and tmp.is_dir():
-        subprocess.check_call(["umount", str(tmp)])
-        rmtree(tmp, ignore_errors=True)
+    tmp = NAMESPACE_DIR / name
+    subprocess.check_call(["umount", str(tmp)])
+    rmtree(tmp, ignore_errors=True)
 
 
 class MemFSOptions:
@@ -88,11 +86,10 @@ class MemoryTempDir:
                 name = str(uuid4())
                 if name not in self.assigned_names:
                     self.path = mount_tmpfs(name)
-                    self.path.chmod(0o555)
                     # Create a home folder
                     home = self.path / "home"
                     home.mkdir()
-                    home.chmod(0o777)
+                    home.chmod(0o777)  # Allow all access
                     self.assigned_names.add(name)
                     return self
             else:
@@ -111,7 +108,7 @@ class MemoryTempDir:
         """Temporarily allow writes to the root tempdir."""
         self.path.chmod(0o777)
         yield
-        self.path.chmod(0o555)
+        self.path.chmod(0o711)
 
     def attachments(self) -> Generator[FileAttachment, None, None]:
         """Return a list of attachments in the tempdir."""
