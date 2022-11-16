@@ -212,7 +212,8 @@ class NsJail:
 
             # Parse attachments
             try:
-                attachments = list(temp_dir.attachments())
+                # Sort attachments by name lexically
+                attachments = sorted(temp_dir.attachments(), key=lambda a: a.name)
                 log.info(f"Found {len(attachments)} attachments.")
             except AttachmentError as err:
                 log.error(f"Failed to parse attachments: {err}")
