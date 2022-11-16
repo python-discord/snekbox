@@ -77,9 +77,13 @@ class EvalResource:
         args = req.media.get("args", ("-c",))
 
         try:
-            result = self.nsjail.python3(code, py_args=args)
+            result, attachments = self.nsjail.python3(code, py_args=args)
         except Exception:
             log.exception("An exception occurred while trying to process the request")
             raise falcon.HTTPInternalServerError
 
-        resp.media = {"stdout": result.stdout, "returncode": result.returncode}
+        resp.media = {
+            "stdout": result.stdout,
+            "returncode": result.returncode,
+            "attachments": [atc.to_dict() for atc in attachments],
+        }
