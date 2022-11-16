@@ -19,17 +19,27 @@ log = logging.getLogger(__name__)
 
 def mount_tmpfs(name: str) -> Path:
     """Create and mount a tmpfs directory."""
-    tmp = Path("/snekbox/memfs", name)
+    namespace = Path("/snekbox/memfs")
+    tmp = namespace / name
     if not tmp.exists() or not tmp.is_dir():
         # Create the directory
         tmp.mkdir(parents=True, exist_ok=True)
         tmp.chmod(0o777)
         # Mount the tmpfs
         subprocess.check_call(
-            ["mount", "-t", "tmpfs", "-o", f"size={MemFSOptions.MEMFS_SIZE}", "tmpfs", str(tmp)]
+            [
+                "mount",
+                "-t",
+                "tmpfs",
+                "-o",
+                f"size={MemFSOptions.MEMFS_SIZE}",
+                "tmpfs",
+                str(tmp),
+            ]
         )
         # Execute only access for other users
         tmp.chmod(0o711)
+        namespace.chmod(0o711)
     return tmp
 
 
