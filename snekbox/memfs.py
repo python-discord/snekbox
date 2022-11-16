@@ -12,7 +12,14 @@ from types import TracebackType
 from typing import Type
 from uuid import uuid4
 
+from snekbox.snekio import FileAttachment
+
+# Size of the memory filesystem
 MEMFS_SIZE = "2G"
+# Maximum number of files attachments will be scanned for
+MAX_FILES = 6
+# Maximum size of a file attachment (64 MB)
+MAX_FILE_SIZE = 64 * 1024 * 1024
 
 log = logging.getLogger(__name__)
 
@@ -85,6 +92,14 @@ class MemoryTempDir:
         self.path.chmod(0o777)
         yield
         self.path.chmod(0o555)
+
+    def attachments(self) -> list[FileAttachment] | None:
+        """Return a list of attachments in the tempdir."""
+        # First look for any file named `output` (any extension)
+        output = next((f for f in self.home.glob("output*") if f.is_file()), None)
+        if output:
+            return [FileAttachment.from_path(output, MAX_FILE_SIZE)]
+        return None
 
     def cleanup(self) -> None:
         """Remove files in temp dir, releases name."""

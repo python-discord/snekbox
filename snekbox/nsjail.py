@@ -15,6 +15,8 @@ from snekbox.memfs import MemoryTempDir
 
 __all__ = ("NsJail",)
 
+from snekbox.snekio import FileAttachment
+
 log = logging.getLogger(__name__)
 
 # [level][timestamp][PID]? function_signature:line_no? message
@@ -131,7 +133,7 @@ class NsJail:
 
     def python3(
         self, code: str, *, nsjail_args: Iterable[str] = (), py_args: Iterable[str] = ("",)
-    ) -> CompletedProcess:
+    ) -> tuple[CompletedProcess, list[FileAttachment]]:
         """
         Execute Python 3 code in an isolated environment and return the completed process.
 
@@ -195,22 +197,29 @@ class NsJail:
                     args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
                 )
             except ValueError:
-                return CompletedProcess(args, None, "ValueError: embedded null byte", None)
+                return CompletedProcess(args, None, "ValueError: embedded null byte", None), []
 
             try:
                 output = self._consume_stdout(nsjail)
             except UnicodeDecodeError:
-                return CompletedProcess(
-                    args,
-                    None,
-                    "UnicodeDecodeError: invalid Unicode in output pipe",
-                    None,
+                return (
+                    CompletedProcess(
+                        args,
+                        None,
+                        "UnicodeDecodeError: invalid Unicode in output pipe",
+                        None,
+                    ),
+                    [],
                 )
 
             # When you send signal `N` to a subprocess to terminate it using Popen, it
             # will return `-N` as its exit code. As we normally get `N + 128` back, we
             # convert negative exit codes to the `N + 128` form.
             returncode = -nsjail.returncode + 128 if nsjail.returncode < 0 else nsjail.returncode
+
+            # Parse attachments
+            attachments = temp_dir.attachments() or []
+            log.info(f"Found {len(attachments)} attachments.")
 
             log_lines = nsj_log.read().decode("utf-8").splitlines()
             if not log_lines and returncode == 255:
@@ -221,4 +230,4 @@ class NsJail:
 
         log.info(f"nsjail return code: {returncode}")
 
-        return CompletedProcess(args, returncode, output, None)
+        return CompletedProcess(args, returncode, output, None), attachments
