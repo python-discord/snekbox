@@ -155,10 +155,10 @@ class NsJail:
 
         with NamedTemporaryFile() as nsj_log, MemoryTempDir() as temp_dir:
             # Write the code to a python file in the temp directory.
-            log.info(f"Created Memory-Tempdir at [{temp_dir!r}].")
-            code_path = temp_dir.path / "main.py"
-            code_path.write_text(code)
-            log.info(f"Creating code file at [{code_path!r}].")
+            with temp_dir.allow_write():
+                code_path = temp_dir.path / "main.py"
+                code_path.write_text(code)
+            log.info(f"Created code file at [{code_path!r}].")
 
             # Add the temp dir to be mounted as cwd
             nsjail_args = (

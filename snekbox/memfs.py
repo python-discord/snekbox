@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 import subprocess
+from contextlib import contextmanager
 from functools import cache
 from pathlib import Path
 from shutil import rmtree
@@ -27,6 +28,8 @@ def mem_tempdir() -> Path:
         subprocess.check_call(
             ["mount", "-t", "tmpfs", "-o", f"size={MEMFS_SIZE}", "tmpfs", str(tmp)]
         )
+        # Execute only access for other users
+        tmp.chmod(0o711)
 
     return tmp
 
@@ -58,7 +61,7 @@ class MemoryTempDir:
                 if name not in self.assigned_names:
                     self.path = Path(mem_tempdir(), name)
                     self.path.mkdir()
-                    self.path.chmod(0o777)
+                    self.path.chmod(0o555)
                     # Create a home folder
                     home = self.path / "home"
                     home.mkdir()
@@ -75,6 +78,13 @@ class MemoryTempDir:
         exc_tb: TracebackType | None,
     ) -> None:
         self.cleanup()
+
+    @contextmanager
+    def allow_write(self) -> None:
+        """Temporarily allow writes to the root tempdir."""
+        self.path.chmod(0o777)
+        yield
+        self.path.chmod(0o555)
 
     def cleanup(self) -> None:
         """Remove files in temp dir, releases name."""
