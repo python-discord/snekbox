@@ -3,19 +3,20 @@ import re
 import subprocess
 import sys
 import textwrap
-from subprocess import CompletedProcess
 from tempfile import NamedTemporaryFile
 from typing import Iterable
 
 from google.protobuf import text_format
 
+# noinspection PyProtectedMember
 from snekbox import DEBUG, utils
 from snekbox.config_pb2 import NsJailConfig
 from snekbox.memfs import MemoryTempDir
 
 __all__ = ("NsJail",)
 
-from snekbox.snekio import FileAttachment
+from snekbox.process import EvalResult
+from snekbox.snekio import AttachmentError
 
 log = logging.getLogger(__name__)
 
@@ -133,7 +134,7 @@ class NsJail:
 
     def python3(
         self, code: str, *, nsjail_args: Iterable[str] = (), py_args: Iterable[str] = ("",)
-    ) -> tuple[CompletedProcess, list[FileAttachment]]:
+    ) -> EvalResult:
         """
         Execute Python 3 code in an isolated environment and return the completed process.
 
@@ -197,20 +198,12 @@ class NsJail:
                     args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
                 )
             except ValueError:
-                return CompletedProcess(args, None, "ValueError: embedded null byte", None), []
+                return EvalResult(args, None, "ValueError: embedded null byte")
 
             try:
                 output = self._consume_stdout(nsjail)
             except UnicodeDecodeError:
-                return (
-                    CompletedProcess(
-                        args,
-                        None,
-                        "UnicodeDecodeError: invalid Unicode in output pipe",
-                        None,
-                    ),
-                    [],
-                )
+                return EvalResult(args, None, "UnicodeDecodeError: invalid Unicode in output pipe")
 
             # When you send signal `N` to a subprocess to terminate it using Popen, it
             # will return `-N` as its exit code. As we normally get `N + 128` back, we
@@ -218,8 +211,12 @@ class NsJail:
             returncode = -nsjail.returncode + 128 if nsjail.returncode < 0 else nsjail.returncode
 
             # Parse attachments
-            attachments = temp_dir.attachments() or []
-            log.info(f"Found {len(attachments)} attachments.")
+            try:
+                attachments = list(temp_dir.attachments())
+                log.info(f"Found {len(attachments)} attachments.")
+            except AttachmentError as err:
+                log.error(f"Failed to parse attachments: {err}")
+                return EvalResult(args, returncode, f"AttachmentError: {err}")
 
             log_lines = nsj_log.read().decode("utf-8").splitlines()
             if not log_lines and returncode == 255:
@@ -230,4 +227,4 @@ class NsJail:
 
         log.info(f"nsjail return code: {returncode}")
 
-        return CompletedProcess(args, returncode, output, None), attachments
+        return EvalResult(args, returncode, output, attachments=attachments)

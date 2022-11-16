@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 import subprocess
+from collections.abc import Generator
 from contextlib import contextmanager
 from functools import cache
 from pathlib import Path
@@ -93,13 +94,12 @@ class MemoryTempDir:
         yield
         self.path.chmod(0o555)
 
-    def attachments(self) -> list[FileAttachment] | None:
+    def attachments(self) -> Generator[FileAttachment, None, None]:
         """Return a list of attachments in the tempdir."""
-        # First look for any file named `output` (any extension)
-        output = next((f for f in self.home.glob("output*") if f.is_file()), None)
-        if output:
-            return [FileAttachment.from_path(output, MAX_FILE_SIZE)]
-        return None
+        # Look for any file starting with `output`
+        for file in self.path.glob("output*"):
+            if file.is_file():
+                yield FileAttachment.from_path(file, MAX_FILE_SIZE)
 
     def cleanup(self) -> None:
         """Remove files in temp dir, releases name."""
