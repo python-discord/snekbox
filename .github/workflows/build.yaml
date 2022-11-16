@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           # The version script relies on history. Fetch 100 commits to be safe.
           fetch-depth: 100
@@ -30,17 +30,17 @@ jobs:
         run: |
           set -eu
           version=$(python scripts/version.py)
-          echo "::set-output name=version::$version"
+          echo "version=$version" >> $GITHUB_OUTPUT
           printf "%s\n" "${version}"
 
-      # The current version (v2) of Docker's build-push action uses buildx,
+      # Both version 2 and 3 of Docker's build-push action uses buildx,
       # which comes with BuildKit. It has cache features which can speed up
       # the builds. See https://github.com/docker/build-push-action
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -63,8 +63,8 @@ jobs:
             cache_from="type=gha,scope=buildkit-${GITHUB_REF}"
             cache_to="${cache_from},mode=max"
           fi
-          echo "::set-output name=cache_from::${cache_from:-}"
-          echo "::set-output name=cache_to::${cache_to:-}"
+          echo "cache_from=${cache_from:-}" >> $GITHUB_OUTPUT
+          echo "cache_to=${cache_to:-}" >> $GITHUB_OUTPUT
 
       # Build the "DEV" version of the image, which targets the `venv` stage
       # and includes development dependencies.
@@ -74,7 +74,7 @@ jobs:
       # If configured by the cache_config step, also cache the layers in
       # GitHub Actions.
       - name: Build image for linting and testing
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           file: ./Dockerfile
@@ -92,7 +92,7 @@ jobs:
       # Make the image available as an artifact so other jobs will be able to
       # download it.
       - name: Upload image archive as an artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ env.artifact }}
           path: ${{ env.artifact }}.tar

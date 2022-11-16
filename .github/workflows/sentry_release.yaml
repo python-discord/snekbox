@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           # The version script relies on history. Fetch 100 commits to be safe.
           fetch-depth: 100
@@ -20,7 +20,7 @@ jobs:
         run: |
           set -eu
           version=$(python scripts/version.py)
-          echo "::set-output name=version::$version"
+          echo "version=$version" >> $GITHUB_OUTPUT
           printf "%s\n" "${version}"
 
       - name: Create a Sentry.io release
