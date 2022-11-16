@@ -34,19 +34,21 @@ def mem_tempdir() -> Path:
 class MemoryTempDir:
     """A temporary directory using tmpfs."""
 
-    assignment_lock = BoundedSemaphore(1)  # Only one process can assign a tempdir at a time
+    assignment_lock = BoundedSemaphore(1)
     assigned_names: set[str] = set()  # Pool of tempdir names in use
 
     def __init__(self) -> None:
         self.path: Path | None = None
-        pass
 
     @property
     def name(self) -> str | None:
         """Name of the temp dir."""
-        if self.path is None:
-            return None
-        return self.path.name
+        return self.path.name if self.path else None
+
+    @property
+    def home(self) -> Path | None:
+        """Path to home directory."""
+        return Path(self.path, "home") if self.path else None
 
     def __enter__(self) -> MemoryTempDir:
         # Generates a uuid tempdir
@@ -56,6 +58,11 @@ class MemoryTempDir:
                 if name not in self.assigned_names:
                     self.path = Path(mem_tempdir(), name)
                     self.path.mkdir()
+                    self.path.chmod(0o777)
+                    # Create a home folder
+                    home = self.path / "home"
+                    home.mkdir()
+                    home.chmod(0o777)
                     self.assigned_names.add(name)
                     return self
             else:
