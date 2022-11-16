@@ -16,7 +16,7 @@ def parse_args() -> argparse.Namespace:
         "nsjail_args", nargs="?", default=[], help="override configured NsJail options"
     )
     parser.add_argument(
-        "py_args", nargs="?", default=["-c"], help="arguments to pass to the Python process"
+        "py_args", nargs="?", default=[], help="arguments to pass to the Python process"
     )
 
     # nsjail_args and py_args are just dummies for documentation purposes.
