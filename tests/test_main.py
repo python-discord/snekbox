@@ -12,10 +12,10 @@ import snekbox.__main__ as snekbox_main
 class ArgParseTests(unittest.TestCase):
     def test_parse_args(self):
         subtests = (
-            (["", "code"], Namespace(code="code", nsjail_args=[], py_args=["-c"])),
+            (["", "code"], Namespace(code="code", nsjail_args=[], py_args=[])),
             (
                 ["", "code", "--time_limit", "0"],
-                Namespace(code="code", nsjail_args=["--time_limit", "0"], py_args=["-c"]),
+                Namespace(code="code", nsjail_args=["--time_limit", "0"], py_args=[]),
             ),
             (
                 ["", "code", "---", "-m", "timeit"],
