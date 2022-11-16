@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 
 
 NAMESPACE_DIR = Path("/memfs")
-NAMESPACE_DIR.mkdir(parents=True, exist_ok=True)
+NAMESPACE_DIR.mkdir(exist_ok=True)
 NAMESPACE_DIR.chmod(0o711)  # Execute only access for other users
 
 
@@ -55,7 +55,7 @@ class MemFSOptions:
     # Size of the memory filesystem (per instance)
     MEMFS_SIZE = "32M"
     # Maximum number of files attachments will be scanned for
-    MAX_FILES = 2
+    MAX_FILES = 6
     # Maximum size of a file attachment (32 MB)
     MAX_FILE_SIZE = 32 * 1024 * 1024
 
@@ -113,8 +113,13 @@ class MemoryTempDir:
     def attachments(self) -> Generator[FileAttachment, None, None]:
         """Return a list of attachments in the tempdir."""
         # Look for any file starting with `output`
+        count = 0
         for file in self.home.glob("output*"):
+            if count >= MemFSOptions.MAX_FILES:
+                log.warning("Maximum number of attachments reached, skipping remaining files")
+                break
             if file.is_file():
+                count += 1
                 yield FileAttachment.from_path(file, MemFSOptions.MAX_FILE_SIZE)
 
     def cleanup(self) -> None:
