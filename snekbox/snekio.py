@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import mimetypes
+import zlib
 from base64 import b64encode
 from dataclasses import dataclass
 from pathlib import Path
@@ -64,4 +65,6 @@ class FileAttachment:
 
     def to_dict(self) -> dict[str, str]:
         """Convert the attachment to a dict."""
-        return {"name": self.name, "mime": self.mime, "content": b64encode(self.content).decode()}
+        cmp = zlib.compress(self.content)
+        content = b64encode(cmp).decode("ascii")
+        return {"name": self.name, "mime": self.mime, "content": content}
