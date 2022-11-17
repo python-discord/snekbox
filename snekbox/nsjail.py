@@ -11,7 +11,7 @@ from google.protobuf import text_format
 # noinspection PyProtectedMember
 from snekbox import DEBUG, utils
 from snekbox.config_pb2 import NsJailConfig
-from snekbox.memfs import MemFSOptions, MemoryTempDir
+from snekbox.memfs import MemFS
 
 __all__ = ("NsJail",)
 
@@ -39,11 +39,17 @@ class NsJail:
         config_path: str = "./config/snekbox.cfg",
         max_output_size: int = 1_000_000,
         read_chunk_size: int = 10_000,
+        memfs_instance_size: int = 48 * 1024 * 1024,
+        max_attachments: int = 100,
+        max_attachment_size: int | None = None,
     ):
         self.nsjail_path = nsjail_path
         self.config_path = config_path
         self.max_output_size = max_output_size
         self.read_chunk_size = read_chunk_size
+        self.memfs_instance_size = memfs_instance_size
+        self.max_attachments = max_attachments
+        self.max_attachment_size = max_attachment_size
 
         self.config = self._read_config(config_path)
         self.cgroup_version = utils.cgroup.init(self.config)
@@ -133,7 +139,11 @@ class NsJail:
         return "".join(output)
 
     def python3(
-        self, code: str, *, nsjail_args: Iterable[str] = (), py_args: Iterable[str] = ("",)
+        self,
+        code: str,
+        *,
+        nsjail_args: Iterable[str] = (),
+        py_args: Iterable[str] = ("",),
     ) -> EvalResult:
         """
         Execute Python 3 code in an isolated environment and return the completed process.
@@ -156,16 +166,16 @@ class NsJail:
                 *nsjail_args,
             )
 
-        with NamedTemporaryFile() as nsj_log, MemoryTempDir() as temp_dir:
+        with NamedTemporaryFile() as nsj_log, MemFS(self.memfs_instance_size) as fs:
             # Add the temp dir to be mounted as cwd
             nsjail_args = (
                 # Mount a tmpfs at /dev/shm to support multiprocessing
                 "--mount",
                 # src:dst:fs_type:options
-                f"{temp_dir.shm}:/dev/shm:tmpfs:size={MemFSOptions.SHM_SIZE}",
+                f"{fs.shm}:/dev/shm:tmpfs:size={fs.instance_size}",
                 # Mount `home` in R/W mode
                 "--bindmount",
-                f"{temp_dir.home}:home",
+                f"{fs.home}:home",
                 # Set cwd to temp dir
                 "--cwd",
                 "home",
@@ -198,8 +208,8 @@ class NsJail:
                 log.info(f"args: {args}")
                 # Write the code to a file
                 if not c_mode:
-                    with temp_dir.allow_write():
-                        code_path = temp_dir.home / "main.py"
+                    with fs.allow_write():
+                        code_path = fs.home / "main.py"
                         code_path.write_text(code)
                     log.info(f"Created code file at [{code_path!r}].")
             else:
@@ -230,7 +240,10 @@ class NsJail:
             # Parse attachments
             try:
                 # Sort attachments by name lexically
-                attachments = sorted(temp_dir.attachments(), key=lambda a: a.name)
+                attachments = sorted(
+                    fs.attachments(self.max_attachments, self.max_attachment_size),
+                    key=lambda a: a.name,
+                )
                 log.info(f"Found {len(attachments)} attachments.")
             except AttachmentError as err:
                 log.warning(f"Failed to parse attachments: {err}")

@@ -16,13 +16,12 @@ from snekbox.snekio import FileAttachment
 
 log = logging.getLogger(__name__)
 
-
 NAMESPACE_DIR = Path("/memfs")
 NAMESPACE_DIR.mkdir(exist_ok=True)
 NAMESPACE_DIR.chmod(0o711)  # Execute only access for other users
 
 
-def mount_tmpfs(name: str) -> Path:
+def mount_tmpfs(name: str, size: int | str) -> Path:
     """Create and mount a tmpfs directory."""
     tmp = NAMESPACE_DIR / name
     tmp.mkdir()
@@ -34,7 +33,7 @@ def mount_tmpfs(name: str) -> Path:
             "-t",
             "tmpfs",
             "-o",
-            f"size={MemFSOptions.MEMFS_SIZE_STR}",
+            f"size={size}",
             "tmpfs",
             str(tmp),
         ]
@@ -49,29 +48,20 @@ def unmount_tmpfs(name: str) -> None:
     rmtree(tmp, ignore_errors=True)
 
 
-class MemFSOptions:
-    """Options for memory file system."""
-
-    # Size of the memory filesystem (per instance)
-    MEMFS_SIZE = 48 * 1024 * 1024
-    MEMFS_SIZE_STR = "48M"
-    # Maximum number of files attachments will be scanned for
-    MAX_FILES = 6
-    # Maximum size of a file attachment (8 MiB)
-    # 8 MB is also the discord bot upload limit
-    MAX_FILE_SIZE = 8 * 1024 * 1024
-    # Size of /dev/shm (16 MiB)
-    SHM_SIZE = 16 * 1024 * 1024
-
-
-class MemoryTempDir:
+class MemFS:
     """A temporary directory using tmpfs."""
 
     assignment_lock = BoundedSemaphore(1)
     assigned_names: set[str] = set()  # Pool of tempdir names in use
 
-    def __init__(self) -> None:
+    def __init__(self, instance_size: int) -> None:
+        """
+        Create a temporary directory using tmpfs.
+
+        size: Size limit of each tmpfs instance in bytes
+        """
         self.path: Path | None = None
+        self.instance_size = instance_size
 
     @property
     def name(self) -> str | None:
@@ -88,24 +78,20 @@ class MemoryTempDir:
         """Path to /dev/shm."""
         return Path(self.path, "dev", "shm") if self.path else None
 
-    def __enter__(self) -> MemoryTempDir:
+    def mkdir(self, path: str, chmod: int = 0o777) -> Path:
+        """Create a directory in the tempdir."""
+        f = Path(self.path, path)
+        f.mkdir(parents=True, exist_ok=True)
+        f.chmod(chmod)
+        return f
+
+    def __enter__(self) -> MemFS:
         # Generates a uuid tempdir
         with self.assignment_lock:
             for _ in range(10):
                 name = str(uuid4())
                 if name not in self.assigned_names:
-                    self.path = mount_tmpfs(name)
-
-                    # Create a home folder
-                    home = self.path / "home"
-                    home.mkdir()
-                    home.chmod(0o777)
-
-                    # Create a /dev/shm folder
-                    shm = self.path / "dev" / "shm"
-                    shm.mkdir(parents=True)
-                    shm.chmod(0o777)
-
+                    self.path = mount_tmpfs(name, self.instance_size)
                     self.assigned_names.add(name)
                     return self
             else:
@@ -122,24 +108,27 @@ class MemoryTempDir:
     @contextmanager
     def allow_write(self) -> None:
         """Temporarily allow writes to the root tempdir."""
+        backup = self.path.stat().st_mode
         self.path.chmod(0o777)
         yield
-        self.path.chmod(0o711)
+        self.path.chmod(backup)
 
-    def attachments(self) -> Generator[FileAttachment, None, None]:
+    def attachments(
+        self, max_count: int, max_size: int | None = None
+    ) -> Generator[FileAttachment, None, None]:
         """Return a list of attachments in the tempdir."""
-        # Look for any file starting with `output`
         count = 0
+        # Look for any file starting with `output`
         for file in self.home.glob("output*"):
-            if count >= MemFSOptions.MAX_FILES:
+            if count > max_count:
                 log.warning("Maximum number of attachments reached, skipping remaining files")
                 break
             if file.is_file():
                 count += 1
-                yield FileAttachment.from_path(file, MemFSOptions.MAX_FILE_SIZE)
+                yield FileAttachment.from_path(file, max_size)
 
     def cleanup(self) -> None:
-        """Remove files in temp dir, releases name."""
+        """Unmounts tmpfs, releases name."""
         if self.path is None:
             return
         # Remove the path folder
