@@ -57,9 +57,10 @@ class MemFSOptions:
     MEMFS_SIZE_STR = "48M"
     # Maximum number of files attachments will be scanned for
     MAX_FILES = 6
-    # Maximum size of a file attachment (32 MB)
-    MAX_FILE_SIZE = 32 * 1024 * 1024
-    # Size of /dev/shm (16 MB)
+    # Maximum size of a file attachment (8 MiB)
+    # 8 MB is also the discord bot upload limit
+    MAX_FILE_SIZE = 8 * 1024 * 1024
+    # Size of /dev/shm (16 MiB)
     SHM_SIZE = 16 * 1024 * 1024
 
 
