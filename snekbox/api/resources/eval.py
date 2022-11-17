@@ -74,7 +74,7 @@ class EvalResource:
             Unsupported content type; only application/JSON is supported
         """
         code = req.media["input"]
-        args = req.media.get("args", ("-c",))
+        args = req.media.get("args", ("",))
 
         try:
             result = self.nsjail.python3(code, py_args=args)
