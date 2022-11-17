@@ -38,8 +38,6 @@ class EvalResource:
         Evaluate Python code and return stdout, stderr, and the return code.
 
         A list of arguments for the Python subprocess can be specified as `args`.
-        Otherwise, the default argument "-c" is used to execute the input code.
-        The input code is always passed as the last argument to Python.
 
         The return codes mostly resemble those of a Unix shell. Some noteworthy cases:
 
@@ -61,7 +59,14 @@ class EvalResource:
 
         >>> {
         ...     "stdout": "10000 loops, best of 5: 23.8 usec per loop\n",
-        ...     "returncode": 0
+        ...     "returncode": 0,
+        ...     "attachments": [
+        ...         {
+        ...             "name": "output.png",
+        ...             "mime": "image/png",
+        ...             "content" "...=",  # Base64 encoded zlib compressed content
+        ...         }
+        ...     ]
         ... }
 
         Status codes:
