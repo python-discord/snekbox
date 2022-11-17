@@ -157,12 +157,6 @@ class NsJail:
             )
 
         with NamedTemporaryFile() as nsj_log, MemoryTempDir() as temp_dir:
-            # Write the code to a python file in the temp directory.
-            with temp_dir.allow_write():
-                code_path = temp_dir.home / "main.py"
-                code_path.write_text(code)
-            log.info(f"Created code file at [{code_path!r}].")
-
             # Add the temp dir to be mounted as cwd
             nsjail_args = (
                 "--bindmount",  # Mount temp dir in R/W mode
@@ -174,7 +168,9 @@ class NsJail:
                 *nsjail_args,
             )
 
-            args = (
+            c_mode = "c" in "".join(py_args)
+
+            args = [
                 self.nsjail_path,
                 "--config",
                 self.config_path,
@@ -184,9 +180,23 @@ class NsJail:
                 "--",
                 self.config.exec_bin.path,
                 *self.config.exec_bin.arg,
-                *[arg for arg in py_args if arg != "-c"],
-                "main.py",
-            )
+            ]
+
+            if any(py_args):
+                args.extend(py_args)
+
+            # For cases with no `code` and `-m` in args, such as "-m timeit", don't add `code`
+            if "-m" not in args:
+                args.append(code if c_mode else "main.py")
+                log.info(f"args: {args}")
+                # Write the code to a file
+                if not c_mode:
+                    with temp_dir.allow_write():
+                        code_path = temp_dir.home / "main.py"
+                        code_path.write_text(code)
+                    log.info(f"Created code file at [{code_path!r}].")
+            else:
+                args.append(code)
 
             msg = "Executing code..."
             if DEBUG:
