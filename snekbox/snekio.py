@@ -6,11 +6,6 @@ from base64 import b64encode
 from dataclasses import dataclass
 from pathlib import Path
 
-SUPPORTED_MIME_TYPES = {
-    "image/png",
-    "image/jpeg",
-}
-
 
 def sizeof_fmt(num: int, suffix: str = "B") -> str:
     """Return a human-readable file size."""
