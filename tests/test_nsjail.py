@@ -9,7 +9,6 @@ from itertools import product
 from pathlib import Path
 from textwrap import dedent
 
-from snekbox.memfs import MemFSOptions
 from snekbox.nsjail import NsJail
 
 
@@ -133,14 +132,13 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.stdout, "hello\n")
         self.assertEqual(result.stderr, None)
 
-    @unittest.mock.patch("snekbox.memfs.MemFSOptions.MEMFS_SIZE", 8 * 1024 * 1024)
-    @unittest.mock.patch("snekbox.memfs.MemFSOptions.MEMFS_SIZE_STR", "8M")
     def test_write_exceed_space(self):
-        # Error for too large files
-        max_size = MemFSOptions.MEMFS_SIZE
+        # Temporarily reduce the size of the memfs to 2M for testing
+        backup = self.nsjail.memfs_instance_size
+        self.nsjail.memfs_instance_size = 2 * 1024 * 1024
         code = dedent(
             f"""
-            size = {max_size} // 2048
+            size = {self.nsjail.memfs_instance_size} // 2048
             with open('f.bin', 'wb') as f:
                 for i in range(size):
                     f.write(b'1' * 2048)
@@ -151,17 +149,19 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("No space left on device", result.stdout)
         self.assertEqual(result.stderr, None)
+        # Restore the original size
+        self.nsjail.memfs_instance_size = backup
 
-    @unittest.mock.patch("snekbox.memfs.MemFSOptions.MAX_FILE_SIZE", 8 * 1024 * 1024)
     def test_write_exceed_single_file_limits(self):
-        # Error for too large files
-        max_size = MemFSOptions.MAX_FILE_SIZE
+        # Temporarily reduce the size of the max file size for testing
+        backup = self.nsjail.max_attachment_size
+        self.nsjail.max_attachment_size = 1 * 1024  # 1K
         code = dedent(
             f"""
-            size = {max_size} // 2048
+            size = {self.nsjail.max_attachment_size} + 512
             with open('output.txt', 'w') as f:
-                for i in range(size + 512):
-                    f.write('1' * 2048)
+                for i in range(size):
+                    f.write('1')
             """
         ).strip()
 
@@ -169,9 +169,11 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0)
         self.assertEqual(
             result.stdout,
-            "AttachmentError: File output.txt too large: 9.0MiB exceeds the limit of 8.0MiB",
+            "AttachmentError: File output.txt too large: 1.5KiB exceeds the limit of 1.0KiB",
         )
         self.assertEqual(result.stderr, None)
+        # Restore the original size
+        self.nsjail.max_attachment_size = backup
 
     def test_forkbomb_resource_unavailable(self):
         code = dedent(
