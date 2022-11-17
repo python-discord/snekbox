@@ -11,7 +11,7 @@ from google.protobuf import text_format
 # noinspection PyProtectedMember
 from snekbox import DEBUG, utils
 from snekbox.config_pb2 import NsJailConfig
-from snekbox.memfs import MemoryTempDir
+from snekbox.memfs import MemFSOptions, MemoryTempDir
 
 __all__ = ("NsJail",)
 
@@ -159,11 +159,18 @@ class NsJail:
         with NamedTemporaryFile() as nsj_log, MemoryTempDir() as temp_dir:
             # Add the temp dir to be mounted as cwd
             nsjail_args = (
-                "--bindmount",  # Mount temp dir in R/W mode
+                # Mount a tmpfs at /dev/shm to support multiprocessing
+                "--mount",
+                # src:dst:fs_type:options
+                f"{temp_dir.shm}:/dev/shm:tmpfs:size={MemFSOptions.SHM_SIZE}",
+                # Mount `home` in R/W mode
+                "--bindmount",
                 f"{temp_dir.home}:home",
-                "--cwd",  # Set cwd to temp dir
+                # Set cwd to temp dir
+                "--cwd",
                 "home",
-                "--env",  # Set $HOME to temp dir
+                # Set $HOME to temp dir
+                "--env",
                 "HOME=home",
                 *nsjail_args,
             )
@@ -185,7 +192,7 @@ class NsJail:
             if any(py_args):
                 args.extend(py_args)
 
-            # For cases with no `code` and `-m` in args, such as "-m timeit", don't add `code`
+            # For cases `-m` in args, such as "-m timeit", use `code` directly without file
             if "-m" not in args:
                 args.append(code if c_mode else "main.py")
                 log.info(f"args: {args}")
@@ -226,7 +233,7 @@ class NsJail:
                 attachments = sorted(temp_dir.attachments(), key=lambda a: a.name)
                 log.info(f"Found {len(attachments)} attachments.")
             except AttachmentError as err:
-                log.error(f"Failed to parse attachments: {err}")
+                log.warning(f"Failed to parse attachments: {err}")
                 return EvalResult(args, returncode, f"AttachmentError: {err}")
 
             log_lines = nsj_log.read().decode("utf-8").splitlines()

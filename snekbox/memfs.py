@@ -34,7 +34,7 @@ def mount_tmpfs(name: str) -> Path:
             "-t",
             "tmpfs",
             "-o",
-            f"size={MemFSOptions.MEMFS_SIZE}",
+            f"size={MemFSOptions.MEMFS_SIZE_STR}",
             "tmpfs",
             str(tmp),
         ]
@@ -53,11 +53,14 @@ class MemFSOptions:
     """Options for memory file system."""
 
     # Size of the memory filesystem (per instance)
-    MEMFS_SIZE = "32M"
+    MEMFS_SIZE = 48 * 1024 * 1024
+    MEMFS_SIZE_STR = "48M"
     # Maximum number of files attachments will be scanned for
     MAX_FILES = 6
     # Maximum size of a file attachment (32 MB)
     MAX_FILE_SIZE = 32 * 1024 * 1024
+    # Size of /dev/shm (16 MB)
+    SHM_SIZE = 16 * 1024 * 1024
 
 
 class MemoryTempDir:
@@ -79,6 +82,11 @@ class MemoryTempDir:
         """Path to home directory."""
         return Path(self.path, "home") if self.path else None
 
+    @property
+    def shm(self) -> Path | None:
+        """Path to /dev/shm."""
+        return Path(self.path, "dev", "shm") if self.path else None
+
     def __enter__(self) -> MemoryTempDir:
         # Generates a uuid tempdir
         with self.assignment_lock:
@@ -86,10 +94,17 @@ class MemoryTempDir:
                 name = str(uuid4())
                 if name not in self.assigned_names:
                     self.path = mount_tmpfs(name)
+
                     # Create a home folder
                     home = self.path / "home"
                     home.mkdir()
-                    home.chmod(0o777)  # Allow all access
+                    home.chmod(0o777)
+
+                    # Create a /dev/shm folder
+                    shm = self.path / "dev" / "shm"
+                    shm.mkdir(parents=True)
+                    shm.chmod(0o777)
+
                     self.assigned_names.add(name)
                     return self
             else:
