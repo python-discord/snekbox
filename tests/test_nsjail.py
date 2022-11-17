@@ -9,6 +9,7 @@ from itertools import product
 from pathlib import Path
 from textwrap import dedent
 
+from snekbox.memfs import MemFSOptions
 from snekbox.nsjail import NsJail
 
 
@@ -47,12 +48,13 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.stderr, None)
 
     def test_subprocess_resource_unavailable(self):
+        max_pids = self.nsjail.config.cgroup_pids_max
         code = dedent(
-            """
+            f"""
             import subprocess
 
-            # Max PIDs is 5.
-            for _ in range(6):
+            # Should fail at n (max PIDs) since the caller python process counts as well
+            for _ in range({max_pids}):
                 print(subprocess.Popen(
                     [
                         '/usr/local/bin/python3',
@@ -66,6 +68,9 @@ class NsJailTests(unittest.TestCase):
         result = self.nsjail.python3(code)
         self.assertEqual(result.returncode, 1)
         self.assertIn("Resource temporarily unavailable", result.stdout)
+        # Also expect n-1 processes to be opened
+        res = result.stdout.split("T")[0].strip().split("\n")  # ['2', '3', '4'] for n=4
+        self.assertEqual(res, [*map(str, range(2, max_pids + 1))])
         self.assertEqual(result.stderr, None)
 
     def test_multiprocess_resource_limits(self):
@@ -126,6 +131,46 @@ class NsJailTests(unittest.TestCase):
         result = self.nsjail.python3(code)
         self.assertEqual(result.returncode, 0)
         self.assertEqual(result.stdout, "hello\n")
+        self.assertEqual(result.stderr, None)
+
+    @unittest.mock.patch("snekbox.memfs.MemFSOptions.MEMFS_SIZE", 8 * 1024 * 1024)
+    @unittest.mock.patch("snekbox.memfs.MemFSOptions.MEMFS_SIZE_STR", "8M")
+    def test_write_exceed_space(self):
+        # Error for too large files
+        max_size = MemFSOptions.MEMFS_SIZE
+        code = dedent(
+            f"""
+            size = {max_size} // 2048
+            with open('f.bin', 'wb') as f:
+                for i in range(size):
+                    f.write(b'1' * 2048)
+            """
+        ).strip()
+
+        result = self.nsjail.python3(code)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("No space left on device", result.stdout)
+        self.assertEqual(result.stderr, None)
+
+    @unittest.mock.patch("snekbox.memfs.MemFSOptions.MAX_FILE_SIZE", 8 * 1024 * 1024)
+    def test_write_exceed_single_file_limits(self):
+        # Error for too large files
+        max_size = MemFSOptions.MAX_FILE_SIZE
+        code = dedent(
+            f"""
+            size = {max_size} // 2048
+            with open('output.txt', 'w') as f:
+                for i in range(size + 512):
+                    f.write('1' * 2048)
+            """
+        ).strip()
+
+        result = self.nsjail.python3(code)
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(
+            result.stdout,
+            "AttachmentError: File output.txt too large: 9.0MiB exceeds the limit of 8.0MiB",
+        )
         self.assertEqual(result.stderr, None)
 
     def test_forkbomb_resource_unavailable(self):
@@ -214,8 +259,21 @@ class NsJailTests(unittest.TestCase):
             log.output,
         )
 
+    def test_dev_shm_mounted(self):
+        code = dedent(
+            """
+            with open('/dev/shm/test.bin', 'wb') as file:
+                file.write(bytes([255]))
+            """
+        ).strip()
+
+        result = self.nsjail.python3(code)
+        self.assertEqual("", result.stdout)
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(result.stderr, None)
+
     def test_shm_and_tmp_not_mounted(self):
-        for path in ("/dev/shm", "/run/shm", "/tmp"):
+        for path in ("/run/shm", "/tmp"):
             with self.subTest(path=path):
                 code = dedent(
                     f"""
@@ -229,7 +287,7 @@ class NsJailTests(unittest.TestCase):
                 self.assertIn("No such file or directory", result.stdout)
                 self.assertEqual(result.stderr, None)
 
-    def test_multiprocessing_shared_memory_disabled(self):
+    def test_multiprocessing_shared_memory(self):
         code = dedent(
             """
             from multiprocessing.shared_memory import SharedMemory
@@ -241,8 +299,8 @@ class NsJailTests(unittest.TestCase):
         ).strip()
 
         result = self.nsjail.python3(code)
-        self.assertEqual(result.returncode, 1)
-        self.assertIn("Function not implemented", result.stdout)
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual("", result.stdout)
         self.assertEqual(result.stderr, None)
 
     def test_numpy_import(self):
