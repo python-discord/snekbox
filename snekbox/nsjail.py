@@ -246,7 +246,7 @@ class NsJail:
                 )
                 log.info(f"Found {len(attachments)} attachments.")
             except AttachmentError as err:
-                log.warning(f"Failed to parse attachments: {err}")
+                log.info(f"Failed to parse attachments: {err}")
                 return EvalResult(args, returncode, f"AttachmentError: {err}")
 
             log_lines = nsj_log.read().decode("utf-8").splitlines()

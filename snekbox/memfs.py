@@ -80,10 +80,10 @@ class MemFS:
 
     def mkdir(self, path: str, chmod: int = 0o777) -> Path:
         """Create a directory in the tempdir."""
-        f = Path(self.path, path)
-        f.mkdir(parents=True, exist_ok=True)
-        f.chmod(chmod)
-        return f
+        folder = Path(self.path, path)
+        folder.mkdir(parents=True, exist_ok=True)
+        folder.chmod(chmod)
+        return folder
 
     def __enter__(self) -> MemFS:
         # Generates a uuid tempdir
@@ -93,9 +93,13 @@ class MemFS:
                 if name not in self.assigned_names:
                     self.path = mount_tmpfs(name, self.instance_size)
                     self.assigned_names.add(name)
-                    return self
+                    break
             else:
                 raise RuntimeError("Failed to generate a unique tempdir name in 10 attempts")
+
+        self.mkdir("home")
+        self.mkdir("dev/shm")
+        return self
 
     def __exit__(
         self,
@@ -121,7 +125,7 @@ class MemFS:
         # Look for any file starting with `output`
         for file in self.home.glob("output*"):
             if count > max_count:
-                log.warning("Maximum number of attachments reached, skipping remaining files")
+                log.info(f"Max attachments {max_count} reached, skipping remaining files")
                 break
             if file.is_file():
                 count += 1
