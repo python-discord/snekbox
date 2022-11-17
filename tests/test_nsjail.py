@@ -41,9 +41,9 @@ class NsJailTests(unittest.TestCase):
         # Add a kilobyte just to be safe.
         code = f"x = ' ' * {self.nsjail.config.cgroup_mem_max + 1000}"
 
-        result = self.nsjail.python3(code)
-        self.assertEqual(result.returncode, 137)
+        result = self.nsjail.python3(code, py_args=("-c",))
         self.assertEqual(result.stdout, "")
+        self.assertEqual(result.returncode, 137)
         self.assertEqual(result.stderr, None)
 
     def test_subprocess_resource_unavailable(self):
@@ -99,7 +99,7 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.stderr, None)
 
     def test_read_only_file_system(self):
-        for path in ("/", "/etc", "/lib", "/lib64", "/snekbox", "/usr"):
+        for path in ("/etc", "/lib", "/lib64", "/snekbox", "/usr"):
             with self.subTest(path=path):
                 code = dedent(
                     f"""
@@ -112,6 +112,21 @@ class NsJailTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 1)
                 self.assertIn("Read-only file system", result.stdout)
                 self.assertEqual(result.stderr, None)
+
+    def test_write(self):
+        code = dedent(
+            """
+            from pathlib import Path
+            with open('test.txt', 'w') as f:
+                f.write('hello')
+            print(Path('test.txt').read_text())
+            """
+        ).strip()
+
+        result = self.nsjail.python3(code)
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(result.stdout, "hello\n")
+        self.assertEqual(result.stderr, None)
 
     def test_forkbomb_resource_unavailable(self):
         code = dedent(
@@ -141,7 +156,9 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.stderr, None)
 
     def test_null_byte_value_error(self):
-        result = self.nsjail.python3("\0")
+        # This error does not occur without -c, where it
+        # would be a normal SyntaxError.
+        result = self.nsjail.python3("\0", py_args=("-c",))
         self.assertEqual(result.returncode, None)
         self.assertEqual(result.stdout, "ValueError: embedded null byte")
         self.assertEqual(result.stderr, None)
@@ -272,14 +289,14 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(output, chunk * expected_chunks)
 
     def test_nsjail_args(self):
-        args = ("foo", "bar")
+        args = ["foo", "bar"]
         result = self.nsjail.python3("", nsjail_args=args)
 
         end = result.args.index("--")
         self.assertEqual(result.args[end - len(args) : end], args)
 
     def test_py_args(self):
-        args = ("-m", "timeit")
+        args = ["-m", "timeit"]
         result = self.nsjail.python3("", py_args=args)
 
         self.assertEqual(result.returncode, 0)
