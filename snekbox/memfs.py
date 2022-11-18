@@ -78,13 +78,6 @@ class MemFS:
         """Path to /dev/shm."""
         return Path(self.path, "dev", "shm") if self.path else None
 
-    def mkdir(self, path: str, chmod: int = 0o777) -> Path:
-        """Create a directory in the tempdir."""
-        folder = Path(self.path, path)
-        folder.mkdir(parents=True, exist_ok=True)
-        folder.chmod(chmod)
-        return folder
-
     def __enter__(self) -> MemFS:
         # Generates a uuid tempdir
         with self.assignment_lock:
@@ -108,6 +101,13 @@ class MemFS:
         exc_tb: TracebackType | None,
     ) -> None:
         self.cleanup()
+
+    def mkdir(self, path: Path | str, chmod: int = 0o777) -> Path:
+        """Create a directory in the tempdir."""
+        folder = Path(self.path, path)
+        folder.mkdir(parents=True, exist_ok=True)
+        folder.chmod(chmod)
+        return folder
 
     @contextmanager
     def allow_write(self) -> None:
