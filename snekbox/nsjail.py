@@ -207,6 +207,10 @@ class NsJail:
 
             c_arg = "c" in "".join(py_args)
 
+            # Override for `timeit`
+            if "timeit" in py_args:
+                use_file = False
+
             match (use_file, c_arg):
                 case (True, _) | (None, False):
                     args.append("main.py")
