@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import subprocess
 from collections.abc import Generator
 from contextlib import contextmanager
@@ -15,6 +16,8 @@ from uuid import uuid4
 from snekbox.snekio import FileAttachment
 
 log = logging.getLogger(__name__)
+
+PID = os.getpid()
 
 NAMESPACE_DIR = Path("/memfs")
 NAMESPACE_DIR.mkdir(exist_ok=True)
@@ -82,8 +85,8 @@ class MemFS:
         # Generates a uuid tempdir
         with self.assignment_lock:
             for _ in range(10):
-                name = str(uuid4())
-                if name not in self.assigned_names:
+                # Combine PID to avoid collisions with multiple snekbox processes
+                if name := f"{PID}-{uuid4()}" not in self.assigned_names:
                     self.path = mount_tmpfs(name, self.instance_size)
                     self.assigned_names.add(name)
                     break
