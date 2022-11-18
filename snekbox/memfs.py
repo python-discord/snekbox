@@ -86,7 +86,7 @@ class MemFS:
         with self.assignment_lock:
             for _ in range(10):
                 # Combine PID to avoid collisions with multiple snekbox processes
-                if name := f"{PID}-{uuid4()}" not in self.assigned_names:
+                if (name := f"{PID}-{uuid4()}") not in self.assigned_names:
                     self.path = mount_tmpfs(name, self.instance_size)
                     self.assigned_names.add(name)
                     break
