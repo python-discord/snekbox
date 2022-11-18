@@ -43,8 +43,19 @@ class FileAttachment:
         """MIME type of the attachment."""
         return mimetypes.guess_type(self.name)[0]
 
+    @property
+    def size(self) -> int:
+        """Size of the attachment."""
+        return len(self.content)
+
     def to_dict(self) -> dict[str, str]:
         """Convert the attachment to a dict."""
         cmp = zlib.compress(self.content)
         content = b64encode(cmp).decode("ascii")
-        return {"name": self.name, "mime": self.mime, "content": content}
+        return {
+            "name": self.name,
+            "mime": self.mime,
+            "size": self.size,
+            "compression": "zlib",
+            "content": content,
+        }

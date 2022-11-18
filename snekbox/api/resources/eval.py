@@ -64,7 +64,9 @@ class EvalResource:
         ...         {
         ...             "name": "output.png",
         ...             "mime": "image/png",
-        ...             "content" "...=",  # Base64 encoded zlib compressed content
+        ...             "size": 57344,
+        ...             "compression": "zlib",
+        ...             "content": "eJzzSM3...="  # Base64-encoded
         ...         }
         ...     ]
         ... }
