@@ -144,6 +144,7 @@ class NsJail:
         *,
         nsjail_args: Iterable[str] = (),
         py_args: Iterable[str] = (),
+        use_file: bool | None = None,
     ) -> EvalResult:
         """
         Execute Python 3 code in an isolated environment and return the completed process.
@@ -153,6 +154,10 @@ class NsJail:
 
         `py_args` are arguments to pass to the Python subprocess before the code,
         which is the last argument.
+
+        If `use_file` is True, `code` will be written to a file the last argument will be
+        the file name `main.py`. If False, `code` will be passed as the last argument.
+        The default of None will use a file unless `c` is in `py_args`.
         """
         if self.cgroup_version == 2:
             nsjail_args = ("--use_cgroupv2", *nsjail_args)
@@ -185,8 +190,6 @@ class NsJail:
                 *nsjail_args,
             )
 
-            c_mode = "c" in "".join(py_args)
-
             args = [
                 self.nsjail_path,
                 "--config",
@@ -199,21 +202,21 @@ class NsJail:
                 *self.config.exec_bin.arg,
             ]
 
-            if any(py_args):
-                args.extend(py_args)
+            # Filter out empty strings (causes issues with python cli)
+            args.extend(s for s in py_args if s)
 
-            # For cases `-m` in args, such as "-m timeit", use `code` directly without file
-            if "-m" not in args:
-                args.append(code if c_mode else "main.py")
-                log.info(f"args: {args}")
-                # Write the code to a file
-                if not c_mode:
+            c_arg = "c" in "".join(py_args)
+
+            match (use_file, c_arg):
+                case (True, _) | (None, False):
+                    args.append("main.py")
+                    # Write the code to a file
                     with fs.allow_write():
                         code_path = fs.home / "main.py"
                         code_path.write_text(code)
-                    log.info(f"Created code file at [{code_path!r}].")
-            else:
-                args.append(code)
+                        log.info(f"Created code file at [{code_path!r}].")
+                case _:
+                    args.append(code)
 
             msg = "Executing code..."
             if DEBUG:
