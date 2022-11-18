@@ -152,7 +152,7 @@ class NsJail:
         These arguments are only options for NsJail; they do not affect Python's arguments.
 
         `py_args` are arguments to pass to the Python subprocess before the code,
-        which is the last argument. By default, it's "-c", which executes the code given.
+        which is the last argument.
         """
         if self.cgroup_version == 2:
             nsjail_args = ("--use_cgroupv2", *nsjail_args)
