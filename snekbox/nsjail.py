@@ -143,7 +143,7 @@ class NsJail:
         code: str,
         *,
         nsjail_args: Iterable[str] = (),
-        py_args: Iterable[str] = ("",),
+        py_args: Iterable[str] = (),
     ) -> EvalResult:
         """
         Execute Python 3 code in an isolated environment and return the completed process.
