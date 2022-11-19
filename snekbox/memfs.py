@@ -73,13 +73,8 @@ class MemFS:
         """Path to home directory."""
         return Path(self.path, "home") if self.path else None
 
-    @property
-    def shm(self) -> Path | None:
-        """Path to /dev/shm."""
-        return Path(self.path, "dev", "shm") if self.path else None
-
     def __enter__(self) -> MemFS:
-        # Generates a uuid tempdir
+        """Mounts a new tempfs, returns self."""
         with self.assignment_lock:
             for _ in range(10):
                 # Combine PID to avoid collisions with multiple snekbox processes
@@ -91,7 +86,6 @@ class MemFS:
                 raise RuntimeError("Failed to generate a unique tempdir name in 10 attempts")
 
         self.mkdir("home")
-        self.mkdir("dev/shm")
         return self
 
     def __exit__(

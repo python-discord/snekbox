@@ -174,17 +174,13 @@ class NsJail:
         with NamedTemporaryFile() as nsj_log, MemFS(self.memfs_instance_size) as fs:
             # Add the temp dir to be mounted as cwd
             nsjail_args = (
-                # Mount a tmpfs at /dev/shm to support multiprocessing
-                "--mount",
-                # src:dst:fs_type:options
-                f"{fs.shm}:/dev/shm:tmpfs:size={fs.instance_size}",
-                # Mount `home` in R/W mode
+                # Mount `home` with Read/Write access
                 "--bindmount",
                 f"{fs.home}:home",
                 # Set cwd to temp dir
                 "--cwd",
                 "home",
-                # Set $HOME to temp dir
+                # Some packages rely on the HOME env variable
                 "--env",
                 "HOME=home",
                 *nsjail_args,
