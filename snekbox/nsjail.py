@@ -8,7 +8,6 @@ from typing import Iterable
 
 from google.protobuf import text_format
 
-# noinspection PyProtectedMember
 from snekbox import DEBUG, utils
 from snekbox.config_pb2 import NsJailConfig
 from snekbox.memfs import MemFS
