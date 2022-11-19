@@ -7,7 +7,6 @@ import subprocess
 from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
-from shutil import rmtree
 from threading import BoundedSemaphore
 from types import TracebackType
 from typing import Type
@@ -48,7 +47,8 @@ def unmount_tmpfs(name: str) -> None:
     """Unmount and remove a tmpfs directory."""
     tmp = NAMESPACE_DIR / name
     subprocess.check_call(["umount", str(tmp)])
-    rmtree(tmp, ignore_errors=True)
+    # Unmounting will not remove the original folder, so do that here
+    tmp.rmdir()
 
 
 class MemFS:
