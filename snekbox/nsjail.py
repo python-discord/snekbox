@@ -215,10 +215,9 @@ class NsJail:
                 case (True, _) | (None, False):
                     args.append("main.py")
                     # Write the code to a file
-                    with fs.allow_write():
-                        code_path = fs.home / "main.py"
-                        code_path.write_text(code)
-                        log.info(f"Created code file at [{code_path!r}].")
+                    code_path = fs.home / "main.py"
+                    code_path.write_text(code)
+                    log.info(f"Created code file at [{code_path!r}].")
                 case _:
                     args.append(code)
 

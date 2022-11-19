@@ -5,7 +5,6 @@ import logging
 import os
 import subprocess
 from collections.abc import Generator
-from contextlib import contextmanager
 from pathlib import Path
 from threading import BoundedSemaphore
 from types import TracebackType
@@ -20,14 +19,12 @@ PID = os.getpid()
 
 NAMESPACE_DIR = Path("/memfs")
 NAMESPACE_DIR.mkdir(exist_ok=True)
-NAMESPACE_DIR.chmod(0o711)  # Execute only access for other users
 
 
 def mount_tmpfs(name: str, size: int | str) -> Path:
     """Create and mount a tmpfs directory."""
     tmp = NAMESPACE_DIR / name
     tmp.mkdir()
-    tmp.chmod(0o711)
     # Mount the tmpfs
     subprocess.check_call(
         [
@@ -111,14 +108,6 @@ class MemFS:
         folder.mkdir(parents=True, exist_ok=True)
         folder.chmod(chmod)
         return folder
-
-    @contextmanager
-    def allow_write(self) -> None:
-        """Temporarily allow writes to the root tempdir."""
-        backup = self.path.stat().st_mode
-        self.path.chmod(0o777)
-        yield
-        self.path.chmod(backup)
 
     def attachments(
         self, max_count: int, max_size: int | None = None
