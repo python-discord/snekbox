@@ -56,6 +56,17 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.returncode, 137)
         self.assertEqual(result.stderr, None)
 
+    def test_multi_files(self):
+        files = [
+            EvalRequestFile("main.py", "import lib; print(lib.x)"),
+            EvalRequestFile("lib.py", "x = 'hello'"),
+        ]
+
+        result = self.nsjail.python3(["main.py"], files)
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(result.stdout, "hello\n")
+        self.assertEqual(result.stderr, None)
+
     def test_subprocess_resource_unavailable(self):
         max_pids = self.nsjail.config.cgroup_pids_max
         code = dedent(
