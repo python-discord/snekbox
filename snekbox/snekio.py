@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-import mimetypes
 import zlib
 from base64 import b64encode
 from dataclasses import dataclass
 from pathlib import Path
+
+RequestType = dict[str, str | bool | list[str | dict[str, str]]]
 
 
 def sizeof_fmt(num: int, suffix: str = "B") -> str:
@@ -18,6 +19,40 @@ def sizeof_fmt(num: int, suffix: str = "B") -> str:
 
 class AttachmentError(ValueError):
     """Raised when an attachment is invalid."""
+
+
+class FileParsingError(ValueError):
+    """Raised when a request file cannot be parsed."""
+
+
+@dataclass
+class EvalRequestFile:
+    """A file sent in an eval request."""
+
+    name: str
+    content: str
+
+    @classmethod
+    def from_dict(cls, data: dict[str, str]) -> EvalRequestFile:
+        """Convert a dict to a str attachment."""
+        name = data["name"]
+        path = Path(name)
+        parts = path.parts
+
+        if path.is_absolute() or set(parts[0]) & {"\\", "/"}:
+            raise FileParsingError(f"File path '{name}' must be relative")
+
+        if any(set(part) == {"."} for part in parts):
+            raise FileParsingError(f"File path '{name}' may not use traversal ('..')")
+
+        return cls(name, data.get("content", ""))
+
+    def save_to(self, directory: Path) -> None:
+        """Save the attachment to a path directory."""
+        file = Path(directory, self.name)
+        # Create directories if they don't exist
+        file.parent.mkdir(parents=True, exist_ok=True)
+        file.write_text(self.content)
 
 
 @dataclass
@@ -39,11 +74,6 @@ class FileAttachment:
         return cls(file.name, file.read_bytes())
 
     @property
-    def mime(self) -> str:
-        """MIME type of the attachment."""
-        return mimetypes.guess_type(self.name)[0]
-
-    @property
     def size(self) -> int:
         """Size of the attachment."""
         return len(self.content)
@@ -54,8 +84,6 @@ class FileAttachment:
         content = b64encode(cmp).decode("ascii")
         return {
             "name": self.name,
-            "mime": self.mime,
             "size": self.size,
-            "compression": "zlib",
             "content": content,
         }

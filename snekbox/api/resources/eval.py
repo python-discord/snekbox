@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 
 import falcon
@@ -6,6 +8,8 @@ from falcon.media.validators.jsonschema import validate
 from snekbox.nsjail import NsJail
 
 __all__ = ("EvalResource",)
+
+from snekbox.snekio import EvalRequestFile, FileParsingError
 
 log = logging.getLogger(__name__)
 
@@ -23,10 +27,17 @@ class EvalResource:
     REQ_SCHEMA = {
         "type": "object",
         "properties": {
-            "input": {"type": "string"},
             "args": {"type": "array", "items": {"type": "string"}},
+            "files": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {"name": {"type": "string"}, "content": {"type": "string"}},
+                    "required": ["name"],
+                },
+            },
         },
-        "required": ["input"],
+        "required": ["args"],
     }
 
     def __init__(self, nsjail: NsJail):
@@ -51,14 +62,23 @@ class EvalResource:
         Request body:
 
         >>> {
-        ...     "input": "[i for i in range(1000)]",
-        ...     "args": ["-m", "timeit"] # This is optional
+        ...    "args": ["-c", "print('Hello')"]
+        ... }
+
+        >>> {
+        ...    "args": ["main.py"],
+        ...    "files": [
+        ...        {
+        ...            "name": "main.py",
+        ...            "content": "print(1)"
+        ...        }
+        ...    ]
         ... }
 
         Response format:
 
         >>> {
-        ...     "stdout": "10000 loops, best of 5: 23.8 usec per loop\n",
+        ...     "stdout": "10000 loops, best of 5: 23.8 usec per loop",
         ...     "returncode": 0,
         ...     "attachments": [
         ...         {
@@ -76,15 +96,17 @@ class EvalResource:
         - 200
             Successful evaluation; not indicative that the input code itself works
         - 400
-           Input's JSON schema is invalid
+           Input JSON schema is invalid
         - 415
             Unsupported content type; only application/JSON is supported
         """
-        code = req.media["input"]
-        args = req.media.get("args", ("",))
-
         try:
-            result = self.nsjail.python3(code, py_args=args)
+            result = self.nsjail.python3(
+                py_args=req.media["args"],
+                files=[EvalRequestFile.from_dict(file) for file in req.media.get("files", [])],
+            )
+        except FileParsingError as e:
+            raise falcon.HTTPBadRequest("Invalid file in request", str(e))
         except Exception:
             log.exception("An exception occurred while trying to process the request")
             raise falcon.HTTPInternalServerError

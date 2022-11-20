@@ -2,7 +2,6 @@ import logging
 import re
 import subprocess
 import sys
-import textwrap
 from tempfile import NamedTemporaryFile
 from typing import Iterable
 
@@ -15,7 +14,7 @@ from snekbox.memfs import MemFS
 __all__ = ("NsJail",)
 
 from snekbox.process import EvalResult
-from snekbox.snekio import AttachmentError
+from snekbox.snekio import AttachmentError, EvalRequestFile
 
 log = logging.getLogger(__name__)
 
@@ -139,11 +138,10 @@ class NsJail:
 
     def python3(
         self,
-        code: str,
+        py_args: Iterable[str],
+        files: Iterable[EvalRequestFile] = (),
         *,
         nsjail_args: Iterable[str] = (),
-        py_args: Iterable[str] = (),
-        use_file: bool | None = None,
     ) -> EvalResult:
         """
         Execute Python 3 code in an isolated environment and return the completed process.
@@ -195,30 +193,18 @@ class NsJail:
                 "--",
                 self.config.exec_bin.path,
                 *self.config.exec_bin.arg,
+                # Filter out empty strings (causes issues with python cli)
+                *(arg for arg in py_args if arg),
             ]
 
-            # Filter out empty strings (causes issues with python cli)
-            args.extend(s for s in py_args if s)
-
-            c_arg = "c" in "".join(py_args)
-
-            # Override for `timeit`
-            if "timeit" in py_args:
-                use_file = False
-
-            match (use_file, c_arg):
-                case (True, _) | (None, False):
-                    args.append("main.py")
-                    # Write the code to a file
-                    code_path = fs.home / "main.py"
-                    code_path.write_text(code)
-                    log.info(f"Created code file at [{code_path!r}].")
-                case _:
-                    args.append(code)
+            # Write files if any
+            for file in files:
+                file.save_to(fs.home)
+                log.info(f"Created file at [{(fs.home / file.name)!r}].")
 
             msg = "Executing code..."
             if DEBUG:
-                msg = f"{msg[:-3]}:\n{textwrap.indent(code, '    ')}\nWith the arguments {args}."
+                msg = f"{msg[:-3]}: With the arguments {args}."
             log.info(msg)
 
             try:

@@ -5,7 +5,7 @@ class TestEvalResource(SnekAPITestCase):
     PATH = "/eval"
 
     def test_post_valid_200(self):
-        body = {"input": "foo"}
+        body = {"args": ["-c", "print('output')"]}
         result = self.simulate_post(self.PATH, json=body)
 
         self.assertEqual(result.status_code, 200)
@@ -20,26 +20,25 @@ class TestEvalResource(SnekAPITestCase):
 
         expected = {
             "title": "Request data failed validation",
-            "description": "'input' is a required property",
+            "description": "'args' is a required property",
         }
 
         self.assertEqual(expected, result.json)
 
     def test_post_invalid_data_400(self):
-        bodies = ({"input": 400}, {"input": "", "args": [400]})
-
-        for body in bodies:
+        bodies = ({"args": 400}, {"args": [], "files": [215]})
+        expects = ["400 is not of type 'array'", "215 is not of type 'object'"]
+        for body, expected in zip(bodies, expects):
             with self.subTest():
                 result = self.simulate_post(self.PATH, json=body)
 
                 self.assertEqual(result.status_code, 400)
 
-                expected = {
+                expected_json = {
                     "title": "Request data failed validation",
-                    "description": "400 is not of type 'string'",
+                    "description": expected,
                 }
-
-                self.assertEqual(expected, result.json)
+                self.assertEqual(expected_json, result.json)
 
     def test_post_invalid_content_type_415(self):
         body = "{'input': 'foo'}"

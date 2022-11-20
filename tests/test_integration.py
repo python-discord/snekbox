@@ -7,7 +7,7 @@ from tests.gunicorn_utils import run_gunicorn
 
 
 def run_code_in_snekbox(code: str) -> tuple[str, int]:
-    body = {"input": code}
+    body = {"args": ["-c", code]}
     json_data = json.dumps(body).encode("utf-8")
 
     req = urllib.request.Request("http://localhost:8060/eval")

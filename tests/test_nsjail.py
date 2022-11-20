@@ -10,6 +10,7 @@ from pathlib import Path
 from textwrap import dedent
 
 from snekbox.nsjail import NsJail
+from snekbox.snekio import EvalRequestFile
 
 
 class NsJailTests(unittest.TestCase):
@@ -20,17 +21,26 @@ class NsJailTests(unittest.TestCase):
         self.logger = logging.getLogger("snekbox.nsjail")
         self.logger.setLevel(logging.WARNING)
 
+    def eval_code(self, code: str):
+        return self.nsjail.python3(["-c", code])
+
+    def eval_file(self, code: str, name: str = "test.py"):
+        file = EvalRequestFile(name, code)
+        return self.nsjail.python3([name], [file])
+
     def test_print_returns_0(self):
-        result = self.nsjail.python3("print('test')")
-        self.assertEqual(result.returncode, 0)
-        self.assertEqual(result.stdout, "test\n")
-        self.assertEqual(result.stderr, None)
+        for fn in (self.eval_code, self.eval_file):
+            with self.subTest(fn.__name__):
+                result = fn("print('test')")
+                self.assertEqual(result.returncode, 0)
+                self.assertEqual(result.stdout, "test\n")
+                self.assertEqual(result.stderr, None)
 
     def test_timeout_returns_137(self):
         code = "while True: pass"
 
         with self.assertLogs(self.logger) as log:
-            result = self.nsjail.python3(code)
+            result = self.eval_file(code)
 
         self.assertEqual(result.returncode, 137)
         self.assertEqual(result.stdout, "")
@@ -41,7 +51,7 @@ class NsJailTests(unittest.TestCase):
         # Add a kilobyte just to be safe.
         code = f"x = ' ' * {self.nsjail.config.cgroup_mem_max + 1000}"
 
-        result = self.nsjail.python3(code, py_args=("-c",))
+        result = self.eval_file(code)
         self.assertEqual(result.stdout, "")
         self.assertEqual(result.returncode, 137)
         self.assertEqual(result.stderr, None)
@@ -64,7 +74,7 @@ class NsJailTests(unittest.TestCase):
             """
         ).strip()
 
-        result = self.nsjail.python3(code)
+        result = self.eval_file(code)
         self.assertEqual(result.returncode, 1)
         self.assertIn("Resource temporarily unavailable", result.stdout)
         # Also expect n-1 processes to be opened
@@ -96,7 +106,7 @@ class NsJailTests(unittest.TestCase):
             """
         )
 
-        result = self.nsjail.python3(code)
+        result = self.eval_file(code)
 
         exit_codes = result.stdout.strip().split()
         self.assertIn("-9", exit_codes)
@@ -112,7 +122,7 @@ class NsJailTests(unittest.TestCase):
                     """
                 ).strip()
 
-                result = self.nsjail.python3(code)
+                result = self.eval_file(code)
                 self.assertEqual(result.returncode, 1)
                 self.assertIn("Read-only file system", result.stdout)
                 self.assertEqual(result.stderr, None)
@@ -127,7 +137,7 @@ class NsJailTests(unittest.TestCase):
             """
         ).strip()
 
-        result = self.nsjail.python3(code)
+        result = self.eval_file(code)
         self.assertEqual(result.returncode, 0)
         self.assertEqual(result.stdout, "hello\n")
         self.assertEqual(result.stderr, None)
@@ -145,7 +155,7 @@ class NsJailTests(unittest.TestCase):
             """
         ).strip()
 
-        result = self.nsjail.python3(code)
+        result = self.eval_file(code)
         self.assertEqual(result.returncode, 1)
         self.assertIn("No space left on device", result.stdout)
         self.assertEqual(result.stderr, None)
@@ -165,7 +175,7 @@ class NsJailTests(unittest.TestCase):
             """
         ).strip()
 
-        result = self.nsjail.python3(code)
+        result = self.eval_file(code)
         self.assertEqual(result.returncode, 0)
         self.assertEqual(
             result.stdout,
@@ -184,7 +194,7 @@ class NsJailTests(unittest.TestCase):
             """
         ).strip()
 
-        result = self.nsjail.python3(code)
+        result = self.eval_file(code)
         self.assertEqual(result.returncode, 1)
         self.assertIn("Resource temporarily unavailable", result.stdout)
         self.assertEqual(result.stderr, None)
@@ -197,7 +207,7 @@ class NsJailTests(unittest.TestCase):
             """
         ).strip()
 
-        result = self.nsjail.python3(code)
+        result = self.eval_file(code)
         self.assertEqual(result.returncode, 139)
         self.assertEqual(result.stdout, "")
         self.assertEqual(result.stderr, None)
@@ -205,19 +215,19 @@ class NsJailTests(unittest.TestCase):
     def test_null_byte_value_error(self):
         # This error does not occur without -c, where it
         # would be a normal SyntaxError.
-        result = self.nsjail.python3("\0", py_args=("-c",))
+        result = self.nsjail.python3(["-c", "\0"])
         self.assertEqual(result.returncode, None)
         self.assertEqual(result.stdout, "ValueError: embedded null byte")
         self.assertEqual(result.stderr, None)
 
     def test_print_bad_unicode_encode_error(self):
-        result = self.nsjail.python3("print(chr(56550))")
+        result = self.eval_file("print(chr(56550))")
         self.assertEqual(result.returncode, 1)
         self.assertIn("UnicodeEncodeError", result.stdout)
         self.assertEqual(result.stderr, None)
 
     def test_unicode_env_erase_escape_fails(self):
-        result = self.nsjail.python3(
+        result = self.eval_file(
             dedent(
                 """
                 import os
@@ -271,7 +281,7 @@ class NsJailTests(unittest.TestCase):
                     """
                 ).strip()
 
-                result = self.nsjail.python3(code)
+                result = self.eval_file(code)
                 self.assertEqual(result.returncode, 1)
                 self.assertIn("No such file or directory", result.stdout)
                 self.assertEqual(result.stderr, None)
@@ -287,13 +297,13 @@ class NsJailTests(unittest.TestCase):
             """
         ).strip()
 
-        result = self.nsjail.python3(code)
+        result = self.eval_file(code)
         self.assertEqual(result.returncode, 1)
         self.assertIn("Function not implemented", result.stdout)
         self.assertEqual(result.stderr, None)
 
     def test_numpy_import(self):
-        result = self.nsjail.python3("import numpy")
+        result = self.eval_file("import numpy")
         self.assertEqual(result.returncode, 0)
         self.assertEqual(result.stdout, "")
         self.assertEqual(result.stderr, None)
@@ -308,7 +318,7 @@ class NsJailTests(unittest.TestCase):
             """
         ).strip()
 
-        result = self.nsjail.python3(code)
+        result = self.eval_file(code)
         self.assertLess(
             result.stdout.find(stdout_msg),
             result.stdout.find(stderr_msg),
@@ -319,7 +329,7 @@ class NsJailTests(unittest.TestCase):
     def test_stdout_flood_results_in_graceful_sigterm(self):
         code = "while True: print('abcdefghij')"
 
-        result = self.nsjail.python3(code)
+        result = self.eval_file(code)
         self.assertEqual(result.returncode, 143)
 
     def test_large_output_is_truncated(self):
@@ -337,17 +347,17 @@ class NsJailTests(unittest.TestCase):
 
     def test_nsjail_args(self):
         args = ["foo", "bar"]
-        result = self.nsjail.python3("", nsjail_args=args)
+        result = self.nsjail.python3((), nsjail_args=args)
 
         end = result.args.index("--")
         self.assertEqual(result.args[end - len(args) : end], args)
 
     def test_py_args(self):
         args = ["-m", "timeit"]
-        result = self.nsjail.python3("", py_args=args)
+        result = self.nsjail.python3(args)
 
         self.assertEqual(result.returncode, 0)
-        self.assertEqual(result.args[-3:-1], args)
+        self.assertEqual(result.args[-2:], args)
 
 
 class NsJailArgsTests(unittest.TestCase):
