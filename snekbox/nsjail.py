@@ -205,8 +205,9 @@ class NsJail:
                 "--",
                 self.config.exec_bin.path,
                 *self.config.exec_bin.arg,
-                # Filter out empty strings (causes issues with python cli)
-                *(arg for arg in py_args if arg),
+                # Filter out empty strings at start of iterable
+                # (causes issues with python cli)
+                *(arg for i, arg in enumerate(py_args) if (arg or i > 0)),
             ]
 
             # Write files if any
