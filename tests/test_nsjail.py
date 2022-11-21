@@ -124,7 +124,7 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.stderr, None)
 
     def test_read_only_file_system(self):
-        for path in ("/etc", "/lib", "/lib64", "/snekbox", "/usr"):
+        for path in ("/", "/etc", "/lib", "/lib64", "/snekbox", "/usr"):
             with self.subTest(path=path):
                 code = dedent(
                     f"""
