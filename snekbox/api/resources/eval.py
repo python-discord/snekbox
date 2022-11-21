@@ -9,7 +9,7 @@ from snekbox.nsjail import NsJail
 
 __all__ = ("EvalResource",)
 
-from snekbox.snekio import EvalRequestFile, FileParsingError
+from snekbox.snekio import FileAttachment, ParsingError
 
 log = logging.getLogger(__name__)
 
@@ -32,7 +32,11 @@ class EvalResource:
                 "type": "array",
                 "items": {
                     "type": "object",
-                    "properties": {"name": {"type": "string"}, "content": {"type": "string"}},
+                    "properties": {
+                        "name": {"type": "string"},
+                        "content-encoding": {"type": "string"},
+                        "content": {"type": "string"},
+                    },
                     "required": ["name"],
                 },
             },
@@ -103,10 +107,10 @@ class EvalResource:
         try:
             result = self.nsjail.python3(
                 py_args=req.media["args"],
-                files=[EvalRequestFile.from_dict(file) for file in req.media.get("files", [])],
+                files=[FileAttachment.from_dict(file) for file in req.media.get("files", [])],
             )
-        except FileParsingError as e:
-            raise falcon.HTTPBadRequest("Invalid file in request", str(e))
+        except ParsingError as e:
+            raise falcon.HTTPBadRequest(description=f"Invalid file in request: {e}")
         except Exception:
             log.exception("An exception occurred while trying to process the request")
             raise falcon.HTTPInternalServerError

@@ -14,7 +14,7 @@ from snekbox.memfs import MemFS
 __all__ = ("NsJail",)
 
 from snekbox.process import EvalResult
-from snekbox.snekio import AttachmentError, EvalRequestFile
+from snekbox.snekio import AttachmentError, FileAttachment
 
 log = logging.getLogger(__name__)
 
@@ -139,7 +139,7 @@ class NsJail:
     def python3(
         self,
         py_args: Iterable[str],
-        files: Iterable[EvalRequestFile] = (),
+        files: Iterable[FileAttachment] = (),
         *,
         nsjail_args: Iterable[str] = (),
     ) -> EvalResult:

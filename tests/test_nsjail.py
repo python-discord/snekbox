@@ -10,7 +10,7 @@ from pathlib import Path
 from textwrap import dedent
 
 from snekbox.nsjail import NsJail
-from snekbox.snekio import EvalRequestFile
+from snekbox.snekio import FileAttachment
 
 
 class NsJailTests(unittest.TestCase):
@@ -25,7 +25,7 @@ class NsJailTests(unittest.TestCase):
         return self.nsjail.python3(["-c", code])
 
     def eval_file(self, code: str, name: str = "test.py"):
-        file = EvalRequestFile(name, code)
+        file = FileAttachment(name, code)
         return self.nsjail.python3([name], [file])
 
     def test_print_returns_0(self):
@@ -58,8 +58,8 @@ class NsJailTests(unittest.TestCase):
 
     def test_multi_files(self):
         files = [
-            EvalRequestFile("main.py", "import lib; print(lib.x)"),
-            EvalRequestFile("lib.py", "x = 'hello'"),
+            FileAttachment("main.py", "import lib; print(lib.x)"),
+            FileAttachment("lib.py", "x = 'hello'"),
         ]
 
         result = self.nsjail.python3(["main.py"], files)
