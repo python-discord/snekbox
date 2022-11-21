@@ -91,9 +91,9 @@ class NsJailTests(unittest.TestCase):
         result = self.eval_file(code)
         self.assertEqual(result.returncode, 1)
         self.assertIn("Resource temporarily unavailable", result.stdout)
-        # Also expect n-1 processes to be opened
-        res = result.stdout.split("T")[0].strip().split("\n")  # ['2', '3', '4'] for n=4
-        self.assertEqual(res, [*map(str, range(2, max_pids + 1))])
+        # Expect n-1 processes to be opened by the presence of string like "2\n3\n4\n"
+        expected = "\n".join(map(str, range(2, max_pids + 1)))
+        self.assertIn(expected, result.stdout)
         self.assertEqual(result.stderr, None)
 
     def test_multiprocess_resource_limits(self):
