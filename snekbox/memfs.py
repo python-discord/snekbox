@@ -104,18 +104,17 @@ class MemFS:
         return folder
 
     def attachments(
-        self, max_count: int, max_size: int | None = None
+        self, max_count: int, pattern: str = "output*"
     ) -> Generator[FileAttachment, None, None]:
         """Return a list of attachments in the tempdir."""
         count = 0
-        # Look for any file starting with `output`
-        for file in self.home.glob("output*"):
+        for file in self.home.glob(pattern):
             if count > max_count:
                 log.info(f"Max attachments {max_count} reached, skipping remaining files")
                 break
             if file.is_file():
                 count += 1
-                yield FileAttachment.from_path(file, max_size)
+                yield FileAttachment.from_path(file)
 
     def cleanup(self) -> None:
         """Unmounts tmpfs, releases name."""

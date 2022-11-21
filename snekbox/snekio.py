@@ -7,18 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Generic, TypeVar
 
-RequestType = dict[str, str | bool | list[str | dict[str, str]]]
-
 T = TypeVar("T", str, bytes)
-
-
-def sizeof_fmt(num: int, suffix: str = "B") -> str:
-    """Return a human-readable file size."""
-    for unit in ("", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"):
-        if abs(num) < 1024:
-            return f"{num:3.1f}{unit}{suffix}"
-        num /= 1024
-    return f"{num:.1f}Yi{suffix}"
 
 
 class AttachmentError(ValueError):
@@ -64,14 +53,8 @@ class FileAttachment(Generic[T]):
         return cls(name, content)
 
     @classmethod
-    def from_path(cls, file: Path, max_size: int | None = None) -> FileAttachment[bytes]:
+    def from_path(cls, file: Path) -> FileAttachment[bytes]:
         """Create an attachment from a file path."""
-        size = file.stat().st_size
-        if max_size is not None and size > max_size:
-            raise AttachmentError(
-                f"File {file.name} too large: {sizeof_fmt(size)} "
-                f"exceeds the limit of {sizeof_fmt(max_size)}"
-            )
         return cls(file.name, file.read_bytes())
 
     @property

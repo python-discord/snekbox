@@ -14,7 +14,8 @@ from snekbox.memfs import MemFS
 __all__ = ("NsJail",)
 
 from snekbox.process import EvalResult
-from snekbox.snekio import AttachmentError, FileAttachment
+from snekbox.snekio import FileAttachment
+from snekbox.utils.timed import timed
 
 log = logging.getLogger(__name__)
 
@@ -22,6 +23,15 @@ log = logging.getLogger(__name__)
 LOG_PATTERN = re.compile(
     r"\[(?P<level>(I)|[DWEF])\]\[.+?\](?(2)|(?P<func>\[\d+\] .+?:\d+ )) ?(?P<msg>.+)"
 )
+
+
+def parse_files(
+    fs: MemFS,
+    files_limit: int,
+    files_pattern: str,
+) -> list[FileAttachment]:
+    """Parse files in a MemFS."""
+    return sorted(fs.attachments(files_limit, files_pattern), key=lambda file: file.name)
 
 
 class NsJail:
@@ -38,16 +48,18 @@ class NsJail:
         max_output_size: int = 1_000_000,
         read_chunk_size: int = 10_000,
         memfs_instance_size: int = 48 * 1024 * 1024,
-        max_attachments: int = 100,
-        max_attachment_size: int | None = None,
+        files_limit: int = 100,
+        files_timeout: float = 15,
+        files_pattern: str = "output*",
     ):
         self.nsjail_path = nsjail_path
         self.config_path = config_path
         self.max_output_size = max_output_size
         self.read_chunk_size = read_chunk_size
         self.memfs_instance_size = memfs_instance_size
-        self.max_attachments = max_attachments
-        self.max_attachment_size = max_attachment_size
+        self.files_limit = files_limit
+        self.files_timeout = files_timeout
+        self.files_pattern = files_pattern
 
         self.config = self._read_config(config_path)
         self.cgroup_version = utils.cgroup.init(self.config)
@@ -227,13 +239,14 @@ class NsJail:
             # Parse attachments
             try:
                 # Sort attachments by name lexically
-                attachments = sorted(
-                    fs.attachments(self.max_attachments, self.max_attachment_size),
-                    key=lambda a: a.name,
+                attachments = timed(
+                    parse_files,
+                    (fs, self.files_limit, self.files_pattern),
+                    timeout=self.files_timeout,
                 )
                 log.info(f"Found {len(attachments)} attachments.")
-            except AttachmentError as err:
-                log.info(f"Failed to parse attachments: {err}")
+            except TimeoutError as err:
+                log.info(f"Exceeded time limit in parsing attachments: {err}")
                 return EvalResult(args, returncode, f"AttachmentError: {err}")
 
             log_lines = nsj_log.read().decode("utf-8").splitlines()
