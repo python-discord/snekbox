@@ -1,7 +1,6 @@
 """I/O Operations for sending / receiving files from the sandbox."""
 from __future__ import annotations
 
-import zlib
 from base64 import b64decode, b64encode
 from dataclasses import dataclass
 from pathlib import Path
@@ -26,11 +25,11 @@ class IllegalPathError(AttachmentError):
 class FileAttachment(Generic[T]):
     """A file attachment."""
 
-    name: str
+    path: str
     content: T
 
     @classmethod
-    def from_dict(cls, data: dict[str, str]) -> FileAttachment:
+    def from_dict(cls, data: dict[str, str]) -> FileAttachment[bytes]:
         """Convert a dict to an attachment."""
         name = data["name"]
         path = Path(name)
@@ -42,14 +41,7 @@ class FileAttachment(Generic[T]):
         if any(set(part) == {"."} for part in parts):
             raise IllegalPathError(f"File path '{name}' may not use traversal ('..')")
 
-        match data.get("content-encoding"):
-            case "base64":
-                content = b64decode(data["content"])
-            case None | "utf-8" | "":
-                content = data["content"].encode("utf-8")
-            case _:
-                raise ParsingError(f"Unknown content encoding '{data['content-encoding']}'")
-
+        content = b64decode(data.get("content", ""))
         return cls(name, content)
 
     @classmethod
@@ -68,9 +60,9 @@ class FileAttachment(Generic[T]):
             return self.content
         return self.content.encode("utf-8")
 
-    def save_to(self, directory: Path) -> None:
+    def save_to(self, directory: Path | str) -> None:
         """Save the attachment to a path directory."""
-        file = Path(directory, self.name)
+        file = Path(directory, self.path)
         # Create directories if they don't exist
         file.parent.mkdir(parents=True, exist_ok=True)
         if isinstance(self.content, str):
@@ -80,12 +72,9 @@ class FileAttachment(Generic[T]):
 
     def to_dict(self) -> dict[str, str]:
         """Convert the attachment to a dict."""
-        comp = zlib.compress(self.as_bytes())
-        content = b64encode(comp).decode("ascii")
-
+        content = b64encode(self.as_bytes()).decode("ascii")
         return {
-            "name": self.name,
+            "path": self.path,
             "size": self.size,
-            "content-encoding": "base64+zlib",
             "content": content,
         }

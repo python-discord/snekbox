@@ -29,4 +29,4 @@ class EvalResult(CompletedProcess[_T]):
     ) -> None:
         """Create an evaluation result."""
         super().__init__(args, returncode, stdout, stderr)
-        self.attachments: list[FileAttachment] = attachments or []
+        self.files: list[FileAttachment] = attachments or []

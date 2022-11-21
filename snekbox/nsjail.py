@@ -31,7 +31,7 @@ def parse_files(
     files_pattern: str,
 ) -> list[FileAttachment]:
     """Parse files in a MemFS."""
-    return sorted(fs.attachments(files_limit, files_pattern), key=lambda file: file.name)
+    return sorted(fs.attachments(files_limit, files_pattern), key=lambda file: file.path)
 
 
 class NsJail:
@@ -152,7 +152,6 @@ class NsJail:
         self,
         py_args: Iterable[str],
         files: Iterable[FileAttachment] = (),
-        *,
         nsjail_args: Iterable[str] = (),
     ) -> EvalResult:
         """
@@ -213,7 +212,7 @@ class NsJail:
             # Write files if any
             for file in files:
                 file.save_to(fs.home)
-                log.info(f"Created file at {(fs.home / file.name)!r}.")
+                log.info(f"Created file at {(fs.home / file.path)!r}.")
 
             msg = "Executing code..."
             if DEBUG:

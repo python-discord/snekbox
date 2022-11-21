@@ -33,11 +33,10 @@ class EvalResource:
                 "items": {
                     "type": "object",
                     "properties": {
-                        "name": {"type": "string"},
-                        "content-encoding": {"type": "string"},
+                        "path": {"type": "string"},
                         "content": {"type": "string"},
                     },
-                    "required": ["name"],
+                    "required": ["path"],
                 },
             },
         },
@@ -73,8 +72,8 @@ class EvalResource:
         ...    "args": ["main.py"],
         ...    "files": [
         ...        {
-        ...            "name": "main.py",
-        ...            "content": "print(1)"
+        ...            "path": "main.py",
+        ...            "content": "SGVsbG8...="  # Base64
         ...        }
         ...    ]
         ... }
@@ -84,13 +83,11 @@ class EvalResource:
         >>> {
         ...     "stdout": "10000 loops, best of 5: 23.8 usec per loop",
         ...     "returncode": 0,
-        ...     "attachments": [
+        ...     "files": [
         ...         {
-        ...             "name": "output.png",
-        ...             "mime": "image/png",
+        ...             "path": "output.png",
         ...             "size": 57344,
-        ...             "compression": "zlib",
-        ...             "content": "eJzzSM3...="  # Base64-encoded
+        ...             "content": "eJzzSM3...="  # Base64
         ...         }
         ...     ]
         ... }
@@ -118,5 +115,5 @@ class EvalResource:
         resp.media = {
             "stdout": result.stdout,
             "returncode": result.returncode,
-            "attachments": [atc.to_dict() for atc in result.attachments],
+            "files": [f.to_dict() for f in result.files],
         }
