@@ -213,7 +213,7 @@ class NsJail:
             # Write files if any
             for file in files:
                 file.save_to(fs.home)
-                log.info(f"Created file at [{(fs.home / file.name)!r}].")
+                log.info(f"Created file at {(fs.home / file.name)!r}.")
 
             msg = "Executing code..."
             if DEBUG:
