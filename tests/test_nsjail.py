@@ -18,6 +18,9 @@ class NsJailTests(unittest.TestCase):
         super().setUp()
 
         self.nsjail = NsJail()
+        # Set a lower memfs size limit so tests don't exceed time limit
+        self.nsjail.memfs_instance_size = 2 * 1024 * 1024  # 2MiB
+
         self.logger = logging.getLogger("snekbox.nsjail")
         self.logger.setLevel(logging.WARNING)
 
@@ -154,9 +157,6 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.stderr, None)
 
     def test_write_exceed_space(self):
-        # Temporarily reduce the size of the memfs to 2M for testing
-        backup = self.nsjail.memfs_instance_size
-        self.nsjail.memfs_instance_size = 2 * 1024 * 1024
         code = dedent(
             f"""
             size = {self.nsjail.memfs_instance_size} // 2048
@@ -170,31 +170,6 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("No space left on device", result.stdout)
         self.assertEqual(result.stderr, None)
-        # Restore the original size
-        self.nsjail.memfs_instance_size = backup
-
-    def test_write_exceed_single_file_limits(self):
-        # Temporarily reduce the size of the max file size for testing
-        backup = self.nsjail.max_attachment_size
-        self.nsjail.max_attachment_size = 1 * 1024  # 1K
-        code = dedent(
-            f"""
-            size = {self.nsjail.max_attachment_size} + 512
-            with open('output.txt', 'w') as f:
-                for i in range(size):
-                    f.write('1')
-            """
-        ).strip()
-
-        result = self.eval_file(code)
-        self.assertEqual(result.returncode, 0)
-        self.assertEqual(
-            result.stdout,
-            "AttachmentError: File output.txt too large: 1.5KiB exceeds the limit of 1.0KiB",
-        )
-        self.assertEqual(result.stderr, None)
-        # Restore the original size
-        self.nsjail.max_attachment_size = backup
 
     def test_forkbomb_resource_unavailable(self):
         code = dedent(
