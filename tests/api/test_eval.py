@@ -40,6 +40,58 @@ class TestEvalResource(SnekAPITestCase):
                 }
                 self.assertEqual(expected_json, result.json)
 
+    def test_files_path(self):
+        """Normal paths, should work with 200."""
+        test_paths = [
+            "file.txt",
+            "./file.jpg",
+            "path/to/file",
+            "folder/./to/./somewhere",
+        ]
+        for path in test_paths:
+            with self.subTest(path=path):
+                body = {"args": ["test.py"], "files": [{"path": path}]}
+                result = self.simulate_post(self.PATH, json=body)
+                self.assertEqual(result.status_code, 200)
+                self.assertEqual("output", result.json["stdout"])
+                self.assertEqual(0, result.json["returncode"])
+
+    def test_files_illegal_path_traversal(self):
+        """Traversal beyond root, should be denied with 400 error."""
+        test_paths = [
+            "../secrets",
+            "dir/../../secrets",
+            "folder/./hm",
+        ]
+        for path in test_paths:
+            with self.subTest(path=path):
+                body = {"args": ["test.py"], "files": [{"path": path}]}
+                result = self.simulate_post(self.PATH, json=body)
+                self.assertEqual(result.status_code, 400)
+                expected = {
+                    "title": "Request file path failed validation",
+                    "description": f"File path '{path}' may not traverse beyond root",
+                }
+                self.assertEqual(expected, result.json)
+
+    def test_files_illegal_path_absolute(self):
+        """Absolute file paths, should be denied with 400 error."""
+        test_paths = [
+            "/etc/vars/secrets",
+            "/absolute",
+            "/file.bin",
+        ]
+        for path in test_paths:
+            with self.subTest(path=path):
+                body = {"args": ["test.py"], "files": [{"path": path}]}
+                result = self.simulate_post(self.PATH, json=body)
+                self.assertEqual(result.status_code, 400)
+                expected = {
+                    "title": "Request file path failed validation",
+                    "description": f"File path '{path}' must be relative",
+                }
+                self.assertEqual(expected, result.json)
+
     def test_post_invalid_content_type_415(self):
         body = "{'input': 'foo'}"
         headers = {"Content-Type": "application/xml"}
