@@ -17,19 +17,17 @@ class NsJailTests(unittest.TestCase):
     def setUp(self):
         super().setUp()
 
-        self.nsjail = NsJail()
-        # Set a lower memfs size limit so tests don't exceed time limit
-        self.nsjail.memfs_instance_size = 2 * 1024 * 1024  # 2MiB
-
+        # Specify lower limits for unit tests to complete within time limits
+        self.nsjail = NsJail(memfs_instance_size=2 * 1024 * 1024)
         self.logger = logging.getLogger("snekbox.nsjail")
         self.logger.setLevel(logging.WARNING)
 
     def eval_code(self, code: str):
         return self.nsjail.python3(["-c", code])
 
-    def eval_file(self, code: str, name: str = "test.py"):
+    def eval_file(self, code: str, name: str = "test.py", **kwargs):
         file = FileAttachment(name, code)
-        return self.nsjail.python3([name], [file])
+        return self.nsjail.python3([name], [file], **kwargs)
 
     def test_print_returns_0(self):
         for fn in (self.eval_code, self.eval_file):
@@ -183,6 +181,30 @@ class NsJailTests(unittest.TestCase):
         result = self.eval_file(code)
         self.assertEqual(result.returncode, 1)
         self.assertIn("Resource temporarily unavailable", result.stdout)
+        self.assertEqual(result.stderr, None)
+
+    def test_file_parsing_timeout(self):
+        code = dedent(
+            """
+            import os
+            data = "a" * 1024
+            size = 32 * 1024 * 1024
+
+            with open("src", "w") as f:
+                for _ in range((size // 1024) - 5):
+                    f.write(data)
+
+            for i in range(100):
+                os.symlink("src", f"output{i}")
+            """
+        ).strip()
+
+        nsjail = NsJail(memfs_instance_size=48 * 1024 * 1024, files_timeout=1)
+        result = nsjail.python3(["-c", code])
+        self.assertEqual(result.returncode, None)
+        self.assertEqual(
+            result.stdout, "TimeoutError: Exceeded time limit while parsing attachments"
+        )
         self.assertEqual(result.stderr, None)
 
     def test_sigsegv_returns_139(self):  # In honour of Juan.

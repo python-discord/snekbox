@@ -1,6 +1,6 @@
 """Calling functions with time limits."""
+import multiprocessing
 from collections.abc import Callable, Iterable, Mapping
-from multiprocessing import Pool
 from typing import Any, TypeVar
 
 _T = TypeVar("_T")
@@ -23,6 +23,9 @@ def timed(
     """
     if kwds is None:
         kwds = {}
-    with Pool(1) as pool:
+    with multiprocessing.Pool(1) as pool:
         result = pool.apply_async(func, args, kwds)
-        return result.get(timeout)
+        try:
+            return result.get(timeout)
+        except multiprocessing.TimeoutError as e:
+            raise TimeoutError(f"Call to {func.__name__} timed out after {timeout} seconds.") from e

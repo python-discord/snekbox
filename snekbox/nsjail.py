@@ -241,10 +241,12 @@ class NsJail:
                     (fs, self.files_limit, self.files_pattern),
                     timeout=self.files_timeout,
                 )
-                log.info(f"Found {len(attachments)} attachments.")
-            except TimeoutError as err:
-                log.info(f"Exceeded time limit in parsing attachments: {err}")
-                return EvalResult(args, returncode, f"AttachmentError: {err}")
+                log.info(f"Found {len(attachments)} files.")
+            except TimeoutError as e:
+                log.warning(f"Exceeded time limit while parsing attachments: {e}")
+                return EvalResult(
+                    args, None, "TimeoutError: Exceeded time limit while parsing attachments"
+                )
 
             log_lines = nsj_log.read().decode("utf-8").splitlines()
             if not log_lines and returncode == 255:
