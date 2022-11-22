@@ -10,17 +10,16 @@ from google.protobuf import text_format
 
 from snekbox import DEBUG, utils
 from snekbox.config_pb2 import NsJailConfig
-from snekbox.memfs import MemFS
-
-__all__ = ("NsJail",)
-
+from snekbox.memfs import MemFS, parse_files
 from snekbox.process import EvalResult
 from snekbox.snekio import FileAttachment
 from snekbox.utils.timed import timed
 
+__all__ = ("NsJail",)
+
 log = logging.getLogger(__name__)
 
-T = TypeVar("T")
+_T = TypeVar("_T")
 
 # [level][timestamp][PID]? function_signature:line_no? message
 LOG_PATTERN = re.compile(
@@ -28,7 +27,7 @@ LOG_PATTERN = re.compile(
 )
 
 
-def iter_lstrip(iterable: Iterable[T]) -> Generator[T, None, None]:
+def iter_lstrip(iterable: Iterable[_T]) -> Generator[_T, None, None]:
     """Removes leading falsy objects from an iterable."""
     it = iter(iterable)
     for item in it:
@@ -36,20 +35,6 @@ def iter_lstrip(iterable: Iterable[T]) -> Generator[T, None, None]:
             yield item
             break
     yield from it
-
-
-def parse_files(
-    fs: MemFS,
-    files_limit: int,
-    files_pattern: str,
-) -> list[FileAttachment]:
-    """
-    Parse files in a MemFS.
-
-    Returns:
-        List of FileAttachments sorted lexically by path name.
-    """
-    return sorted(fs.attachments(files_limit, files_pattern), key=lambda file: file.path)
 
 
 class NsJail:

@@ -48,6 +48,20 @@ def unmount_tmpfs(name: str) -> None:
     tmp.rmdir()
 
 
+def parse_files(
+    fs: MemFS,
+    files_limit: int,
+    files_pattern: str,
+) -> list[FileAttachment]:
+    """
+    Parse files in a MemFS.
+
+    Returns:
+        List of FileAttachments sorted lexically by path name.
+    """
+    return sorted(fs.attachments(files_limit, files_pattern), key=lambda file: file.path)
+
+
 class MemFS:
     """A temporary directory using tmpfs."""
 
