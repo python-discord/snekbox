@@ -2,8 +2,9 @@ import logging
 import re
 import subprocess
 import sys
+from collections.abc import Generator
 from tempfile import NamedTemporaryFile
-from typing import Iterable
+from typing import Iterable, TypeVar
 
 from google.protobuf import text_format
 
@@ -19,10 +20,22 @@ from snekbox.utils.timed import timed
 
 log = logging.getLogger(__name__)
 
+T = TypeVar("T")
+
 # [level][timestamp][PID]? function_signature:line_no? message
 LOG_PATTERN = re.compile(
     r"\[(?P<level>(I)|[DWEF])\]\[.+?\](?(2)|(?P<func>\[\d+\] .+?:\d+ )) ?(?P<msg>.+)"
 )
+
+
+def iter_lstrip(iterable: Iterable[T]) -> Generator[T, None, None]:
+    """Removes leading falsy objects from an iterable."""
+    it = iter(iterable)
+    for item in it:
+        if item:
+            yield item
+            break
+    yield from it
 
 
 def parse_files(
@@ -30,7 +43,12 @@ def parse_files(
     files_limit: int,
     files_pattern: str,
 ) -> list[FileAttachment]:
-    """Parse files in a MemFS."""
+    """
+    Parse files in a MemFS.
+
+    Returns:
+        List of FileAttachments sorted lexically by path name.
+    """
     return sorted(fs.attachments(files_limit, files_pattern), key=lambda file: file.path)
 
 
@@ -201,9 +219,9 @@ class NsJail:
                 "--",
                 self.config.exec_bin.path,
                 *self.config.exec_bin.arg,
-                # Filter out empty strings at start of iterable
+                # Filter out empty strings at start of py_args
                 # (causes issues with python cli)
-                *(arg for i, arg in enumerate(py_args) if (arg or i > 0)),
+                *iter_lstrip(py_args),
             ]
 
             # Write files if any

@@ -361,11 +361,18 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.args[end - len(args) : end], args)
 
     def test_py_args(self):
-        args = ["-m", "timeit"]
-        result = self.nsjail.python3(args)
-
-        self.assertEqual(result.returncode, 0)
-        self.assertEqual(result.args[-2:], args)
+        expected = ["-m", "timeit"]
+        args = [
+            ["", "-m", "timeit"],
+            ["", "", "-m", "timeit"],
+            ["", "", "", "-m", "timeit"],
+        ]
+        # Leading empty strings should be removed
+        for case in args:
+            with self.subTest(args=args):
+                result = self.nsjail.python3(case)
+                self.assertEqual(result.returncode, 0)
+                self.assertEqual(result.args[-2:], expected)
 
 
 class NsJailArgsTests(unittest.TestCase):
