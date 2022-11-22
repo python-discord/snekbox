@@ -9,6 +9,27 @@ from typing import Generic, TypeVar
 T = TypeVar("T", str, bytes)
 
 
+def safe_path(path: str) -> str:
+    """
+    Returns the `path` str if there are no security issues.
+
+    Raises:
+        IllegalPathError: Raised on any path rule violation.
+    """
+    # Disallow absolute paths
+    if Path(path).is_absolute():
+        raise IllegalPathError(f"File path '{path}' must be relative")
+
+    # Disallow traversal beyond root
+    try:
+        test_root = Path("/home")
+        Path(test_root).joinpath(path).resolve().relative_to(test_root.resolve())
+    except ValueError:
+        raise IllegalPathError(f"File path '{path}' may not traverse beyond root")
+
+    return path
+
+
 class AttachmentError(ValueError):
     """Raised when an attachment is invalid."""
 
@@ -17,7 +38,7 @@ class ParsingError(AttachmentError):
     """Raised when an incoming file cannot be parsed."""
 
 
-class IllegalPathError(AttachmentError):
+class IllegalPathError(ParsingError):
     """Raised when an attachment has an illegal path."""
 
 
@@ -31,18 +52,9 @@ class FileAttachment(Generic[T]):
     @classmethod
     def from_dict(cls, data: dict[str, str]) -> FileAttachment[bytes]:
         """Convert a dict to an attachment."""
-        name = data["name"]
-        path = Path(name)
-        parts = path.parts
-
-        if path.is_absolute() or set(parts[0]) & {"\\", "/"}:
-            raise IllegalPathError(f"File path '{name}' must be relative")
-
-        if any(set(part) == {"."} for part in parts):
-            raise IllegalPathError(f"File path '{name}' may not use traversal ('..')")
-
+        path = safe_path(data["path"])
         content = b64decode(data.get("content", ""))
-        return cls(name, content)
+        return cls(path, content)
 
     @classmethod
     def from_path(cls, file: Path) -> FileAttachment[bytes]:

@@ -260,4 +260,4 @@ class NsJail:
 
         log.info(f"nsjail return code: {returncode}")
 
-        return EvalResult(args, returncode, output, attachments=attachments)
+        return EvalResult(args, returncode, output, files=attachments)

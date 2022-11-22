@@ -25,8 +25,8 @@ class EvalResult(CompletedProcess[_T]):
         returncode: int | None,
         stdout: _T | None = None,
         stderr: _T | None = None,
-        attachments: list[FileAttachment] | None = None,
+        files: list[FileAttachment] | None = None,
     ) -> None:
         """Create an evaluation result."""
         super().__init__(args, returncode, stdout, stderr)
-        self.files: list[FileAttachment] = attachments or []
+        self.files: list[FileAttachment] = files or []
