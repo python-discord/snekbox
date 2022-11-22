@@ -18,6 +18,12 @@ def timed(
     """
     Call a function with a time limit.
 
+    Args:
+        func: Function to call.
+        args: Arguments for function.
+        kwds: Keyword arguments for function.
+        timeout: Timeout limit in seconds.
+
     Raises:
         TimeoutError: If the function call takes longer than `timeout` seconds.
     """
