@@ -46,7 +46,9 @@ class TestEvalResource(SnekAPITestCase):
             "file.txt",
             "./file.jpg",
             "path/to/file",
+            "folder/../hm",
             "folder/./to/./somewhere",
+            "traversal/but/../not/beyond/../root",
         ]
         for path in test_paths:
             with self.subTest(path=path):
@@ -60,8 +62,9 @@ class TestEvalResource(SnekAPITestCase):
         """Traversal beyond root, should be denied with 400 error."""
         test_paths = [
             "../secrets",
+            "../../dir",
             "dir/../../secrets",
-            "folder/./hm",
+            "dir/var/../../../file",
         ]
         for path in test_paths:
             with self.subTest(path=path):
