@@ -216,7 +216,7 @@ class NsJail:
 
             msg = "Executing code..."
             if DEBUG:
-                msg = f"{msg[:-3]}: With the arguments {args}."
+                msg = f"{msg[:-3]} with the arguments {args}."
             log.info(msg)
 
             try:
