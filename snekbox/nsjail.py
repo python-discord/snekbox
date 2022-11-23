@@ -160,15 +160,10 @@ class NsJail:
         """
         Execute Python 3 code in an isolated environment and return the completed process.
 
-        The `nsjail_args` passed will be used to override the values in the NsJail config.
-        These arguments are only options for NsJail; they do not affect Python's arguments.
-
-        `py_args` are arguments to pass to the Python subprocess before the code,
-        which is the last argument.
-
-        If `use_file` is True, `code` will be written to a file the last argument will be
-        the file name `main.py`. If False, `code` will be passed as the last argument.
-        The default of None will use a file unless `c` is in `py_args`.
+        Args:
+            py_args: Arguments passed to python3.
+            files: FileAttachments to be written to the sandbox prior to run.
+            nsjail_args: Overrides options in the NsJail config, added to NsJail call.
         """
         if self.cgroup_version == 2:
             nsjail_args = ("--use_cgroupv2", *nsjail_args)
