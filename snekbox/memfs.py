@@ -80,12 +80,12 @@ class MemFS:
         return self._path
 
     @property
-    def name(self) -> str | None:
+    def name(self) -> str:
         """Name of the temp dir."""
         return self.path.name
 
     @property
-    def home(self) -> Path | None:
+    def home(self) -> Path:
         """Path to home directory."""
         return Path(self.path, "home")
 
