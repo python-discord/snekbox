@@ -218,8 +218,14 @@ class NsJail:
 
             # Write provided files if any
             for file in files:
-                file.save_to(fs.home)
-                log.info(f"Created file at {(fs.home / file.path)!r}.")
+                try:
+                    file.save_to(fs.home)
+                    log.info(f"Created file at {(fs.home / file.path)!r}.")
+                except OSError as e:
+                    log.info(f"Failed to create file at {(fs.home / file.path)!r}.", exc_info=e)
+                    return EvalResult(
+                        args, None, f"{e.__class__.__name__}: Failed to create file '{file.path}'."
+                    )
 
             msg = "Executing code..."
             if DEBUG:
