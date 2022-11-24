@@ -49,6 +49,9 @@ def mount(source: Path | str, target: Path | str, fs: str, **options: str | int)
         fs: Filesystem type.
         **options: Mount options.
     """
+    if Path(target).is_mount():
+        raise OSError(f"{target} is already a mount point")
+
     kwargs = " ".join(f"{key}={value}" for key, value in options.items())
 
     result: int = libc.mount(
@@ -69,6 +72,9 @@ def unmount(target: Path | str, flags: UnmountFlags | int = UnmountFlags.MNT_DET
         target: Target directory.
         flags: Unmount flags.
     """
+    if not Path(target).is_mount():
+        raise OSError(f"{target} is not a mount point")
+
     result: int = libc.umount2(str(target).encode(), int(flags))
     if result < 0:
         errno = ctypes.get_errno()
