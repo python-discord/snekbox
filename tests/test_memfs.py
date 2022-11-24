@@ -13,7 +13,7 @@ def get_memfs_with_context():
     return MemFS(10).__enter__()
 
 
-class NsJailTests(TestCase):
+class MemFSTests(TestCase):
     def setUp(self):
         super().setUp()
         self.logger = logging.getLogger("snekbox.memfs")
