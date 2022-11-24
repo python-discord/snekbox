@@ -22,7 +22,8 @@ class LibMountTests(TestCase):
             libmount.mount(source="", target=path, fs="tmpfs")
             yield path
         finally:
-            libmount.unmount(target=path)
+            with suppress(OSError):
+                libmount.unmount(path)
 
     def test_mount(self):
         """Test normal mounting."""
@@ -61,6 +62,23 @@ class LibMountTests(TestCase):
             self.assertIn("already a mount point", str(cm.exception))
         finally:
             libmount.unmount(target=path)
+
+    def test_unmount_flags(self):
+        """Test unmount flags."""
+        flags = [
+            libmount.UnmountFlags.MNT_FORCE,
+            libmount.UnmountFlags.MNT_DETACH,
+            libmount.UnmountFlags.UMOUNT_NOFOLLOW,
+        ]
+        for flag in flags:
+            with self.subTest(flag=flag), self.get_mount() as path:
+                libmount.unmount(path, flag)
+
+    def test_unmount_flags_expire(self):
+        """Test unmount MNT_EXPIRE behavior."""
+        with self.get_mount() as path:
+            with self.assertRaises(BlockingIOError):
+                libmount.unmount(path, libmount.UnmountFlags.MNT_EXPIRE)
 
     def test_unmount_errors(self):
         """Test invalid unmount errors."""
