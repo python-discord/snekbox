@@ -62,11 +62,15 @@ class IntegrationTests(unittest.TestCase):
                         "path": "main.py",
                         "content": b64encode_code(
                             """
+                            from pathlib import Path
                             from mod import lib
                             print(lib.var)
 
-                            with open('output.txt', 'w') as f:
-                                f.write('file write test')
+                            with open('output/test.txt', 'w') as f:
+                                f.write('test 1')
+
+                            Path('output/dir').mkdir()
+                            Path('output/dir/test2.txt').write_text('test 2')
                             """
                         ),
                     },
@@ -80,10 +84,15 @@ class IntegrationTests(unittest.TestCase):
                 "returncode": 0,
                 "files": [
                     {
-                        "path": "output.txt",
-                        "size": len("file write test"),
-                        "content": b64encode_code("file write test"),
-                    }
+                        "path": "dir/test2.txt",
+                        "size": len("test 2"),
+                        "content": b64encode_code("test 2"),
+                    },
+                    {
+                        "path": "test.txt",
+                        "size": len("test 1"),
+                        "content": b64encode_code("test 1"),
+                    },
                 ],
             }
 

@@ -53,8 +53,21 @@ class NsJail:
         memfs_instance_size: int = 48 * 1024 * 1024,
         files_limit: int = 100,
         files_timeout: float = 15,
-        files_pattern: str = "output*",
+        files_pattern: str = "**/*",
     ):
+        """
+        Initialize NsJail.
+
+        Args:
+            nsjail_path: Path to the NsJail binary.
+            config_path: Path to the NsJail configuration file.
+            max_output_size: Maximum size of the output in bytes.
+            read_chunk_size: Size of the read buffer in bytes.
+            memfs_instance_size: Size of the tmpfs instance in bytes.
+            files_limit: Maximum number of files to parse for attach.
+            files_timeout: Maximum time in seconds to wait for files to be written / read.
+            files_pattern: Pattern to match files to attach.
+        """
         self.nsjail_path = nsjail_path
         self.config_path = config_path
         self.max_output_size = max_output_size
@@ -178,7 +191,6 @@ class NsJail:
             )
 
         with NamedTemporaryFile() as nsj_log, MemFS(self.memfs_instance_size) as fs:
-            # Add the temp dir to be mounted as cwd
             nsjail_args = (
                 # Set fslimit to unlimited, cannot be set in cfg
                 # due to upstream protobuf parsing issue
@@ -204,7 +216,7 @@ class NsJail:
                 *iter_lstrip(py_args),
             ]
 
-            # Write files if any
+            # Write provided files if any
             for file in files:
                 file.save_to(fs.home)
                 log.info(f"Created file at {(fs.home / file.path)!r}.")

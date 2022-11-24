@@ -62,7 +62,12 @@ class MemFS:
     @property
     def home(self) -> Path:
         """Path to home directory."""
-        return Path(self.path, "home")
+        return self.path / "home"
+
+    @property
+    def output(self) -> Path:
+        """Path to output directory."""
+        return self.home / "output"
 
     def __enter__(self) -> MemFS:
         """Mounts a new tempfs, returns self."""
@@ -79,7 +84,8 @@ class MemFS:
         else:
             raise RuntimeError("Failed to generate a unique tempdir name in 10 attempts")
 
-        self.mkdir("home")
+        self.mkdir(self.home)
+        self.mkdir(self.output)
         return self
 
     def __exit__(
@@ -98,17 +104,17 @@ class MemFS:
         return folder
 
     def attachments(
-        self, max_count: int, pattern: str = "output*"
+        self, max_count: int, pattern: str = "**/*"
     ) -> Generator[FileAttachment, None, None]:
         """Return a list of attachments in the tempdir."""
         count = 0
-        for file in self.home.glob(pattern):
+        for file in self.output.rglob(pattern):
             if count > max_count:
                 log.info(f"Max attachments {max_count} reached, skipping remaining files")
                 break
             if file.is_file():
                 count += 1
-                yield FileAttachment.from_path(file)
+                yield FileAttachment.from_path(file, relative_to=self.output)
 
     def cleanup(self) -> None:
         """Unmounts tmpfs."""

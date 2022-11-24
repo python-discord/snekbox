@@ -190,16 +190,16 @@ class NsJailTests(unittest.TestCase):
             data = "a" * 1024
             size = 32 * 1024 * 1024
 
-            with open("src", "w") as f:
+            with open("output/file", "w") as f:
                 for _ in range((size // 1024) - 5):
                     f.write(data)
 
             for i in range(100):
-                os.symlink("src", f"output{i}")
+                os.symlink("file", f"output/file{i}")
             """
         ).strip()
 
-        nsjail = NsJail(memfs_instance_size=48 * 1024 * 1024, files_timeout=1)
+        nsjail = NsJail(memfs_instance_size=32 * 1024 * 1024, files_timeout=1)
         result = nsjail.python3(["-c", code])
         self.assertEqual(result.returncode, None)
         self.assertEqual(

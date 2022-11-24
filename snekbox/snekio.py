@@ -57,9 +57,16 @@ class FileAttachment(Generic[T]):
         return cls(path, content)
 
     @classmethod
-    def from_path(cls, file: Path) -> FileAttachment[bytes]:
-        """Create an attachment from a file path."""
-        return cls(file.name, file.read_bytes())
+    def from_path(cls, file: Path, relative_to: Path | None = None) -> FileAttachment[bytes]:
+        """
+        Create an attachment from a file path.
+
+        Args:
+            file: The file to attach.
+            relative_to: The root for the path name.
+        """
+        path = file.relative_to(relative_to) if relative_to else file
+        return cls(str(path), file.read_bytes())
 
     @property
     def size(self) -> int:
