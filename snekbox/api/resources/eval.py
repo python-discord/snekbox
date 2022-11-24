@@ -117,5 +117,5 @@ class EvalResource:
         resp.media = {
             "stdout": result.stdout,
             "returncode": result.returncode,
-            "files": [f.to_dict() for f in result.files],
+            "files": [f.json for f in result.files],
         }

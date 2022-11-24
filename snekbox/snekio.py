@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from base64 import b64decode, b64encode
 from dataclasses import dataclass
+from functools import cached_property
 from pathlib import Path
 from typing import Generic, TypeVar
 
@@ -89,7 +90,8 @@ class FileAttachment(Generic[T]):
         else:
             file.write_bytes(self.content)
 
-    def to_dict(self) -> dict[str, str]:
+    @cached_property
+    def json(self) -> dict[str, str]:
         """Convert the attachment to a dict."""
         content = b64encode(self.as_bytes()).decode("ascii")
         return {

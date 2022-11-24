@@ -253,7 +253,7 @@ class NsJail:
             try:
                 attachments = timed(
                     parse_files,
-                    (fs, self.files_limit, self.files_pattern),
+                    (fs, self.files_limit, self.files_pattern, True),
                     timeout=self.files_timeout,
                 )
                 log.info(f"Found {len(attachments)} files.")

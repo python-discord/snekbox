@@ -21,6 +21,7 @@ def parse_files(
     fs: MemFS,
     files_limit: int,
     files_pattern: str,
+    preload_json: bool = False,
 ) -> list[FileAttachment]:
     """
     Parse files in a MemFS.
@@ -29,11 +30,16 @@ def parse_files(
         fs: The MemFS to parse.
         files_limit: The maximum number of files to parse.
         files_pattern: The glob pattern to match files against.
+        preload_json: Whether to preload and cache JSON data.
 
     Returns:
         List of FileAttachments sorted lexically by path name.
     """
-    return sorted(fs.attachments(files_limit, files_pattern), key=lambda file: file.path)
+    res = sorted(fs.attachments(files_limit, files_pattern), key=lambda file: file.path)
+    if preload_json:
+        for file in res:
+            _ = file.json
+    return res
 
 
 class MemFS:
