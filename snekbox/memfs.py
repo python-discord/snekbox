@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import logging
-import subprocess
 from collections.abc import Generator
 from functools import cached_property
 from pathlib import Path
@@ -10,36 +9,12 @@ from types import TracebackType
 from typing import Type
 from uuid import uuid4
 
+from snekbox.libmount import mount, unmount
 from snekbox.snekio import FileAttachment
 
 log = logging.getLogger(__name__)
 
-
-def mount_tmpfs(path: str | Path, size: int | str) -> Path:
-    """Create and mount a tmpfs directory."""
-    path = Path(path)
-    path.mkdir()
-    # Mount the tmpfs
-    subprocess.check_call(
-        [
-            "mount",
-            "-t",
-            "tmpfs",
-            "-o",
-            f"size={size}",
-            "tmpfs",
-            str(path),
-        ]
-    )
-    return path
-
-
-def unmount_tmpfs(path: str | Path) -> None:
-    """Unmount and remove a tmpfs directory."""
-    path = Path(path)
-    subprocess.check_call(["umount", str(path)])
-    # Unmounting will not remove the original folder, so do that here
-    path.rmdir()
+__all__ = ("MemFS", "parse_files")
 
 
 def parse_files(
@@ -95,7 +70,9 @@ class MemFS:
             name = str(uuid4())
             try:
                 path = self.root_dir / name
-                self._path = mount_tmpfs(path, self.instance_size)
+                path.mkdir()
+                mount("", path, "tmpfs", size=self.instance_size)
+                self._path = path
                 break
             except FileExistsError:
                 continue
@@ -137,7 +114,8 @@ class MemFS:
         """Unmounts tmpfs."""
         if self._path is None:
             return
-        unmount_tmpfs(self.path)
+        unmount(self.path)
+        self.path.rmdir()
         self._path = None
 
     def __repr__(self):
