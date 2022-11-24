@@ -1,5 +1,6 @@
 import logging
 from concurrent.futures import ThreadPoolExecutor
+from operator import attrgetter
 from unittest import TestCase, mock
 from uuid import uuid4
 
@@ -37,3 +38,19 @@ class NsJailTests(TestCase):
             # Original memfs should still exist afterwards
             self.assertIsInstance(memfs, MemFS)
             self.assertTrue(memfs.path.exists())
+
+    def test_no_context_error(self):
+        """Accessing MemFS attributes before __enter__ raises RuntimeError."""
+        cases = [
+            attrgetter("path"),
+            attrgetter("name"),
+            attrgetter("home"),
+            attrgetter("output"),
+            lambda fs: fs.mkdir(""),
+            lambda fs: list(fs.attachments(1)),
+        ]
+
+        memfs = MemFS(10)
+        for case in cases:
+            with self.subTest(case=case), self.assertRaises(RuntimeError):
+                case(memfs)
