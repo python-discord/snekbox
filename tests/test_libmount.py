@@ -1,4 +1,5 @@
-from contextlib import contextmanager
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager, suppress
 from pathlib import Path
 from unittest import TestCase
 from uuid import uuid4
@@ -79,3 +80,38 @@ class LibMountTests(TestCase):
             with self.assertRaises(OSError) as cm:
                 libmount.unmount(path, 251)
             self.assertIn("Invalid argument", str(cm.exception))
+
+    def test_threading(self):
+        """Test concurrent mounting works in multi-thread environments."""
+        paths = [self.temp_dir / str(uuid4()) for _ in range(16)]
+
+        for path in paths:
+            path.mkdir()
+            self.assertFalse(path.is_mount())
+
+        try:
+            with ThreadPoolExecutor() as pool:
+                res = list(
+                    pool.map(
+                        libmount.mount,
+                        [""] * len(paths),
+                        paths,
+                        ["tmpfs"] * len(paths),
+                    )
+                )
+                self.assertEqual(len(res), len(paths))
+
+                for path in paths:
+                    with self.subTest(path=path):
+                        self.assertTrue(path.is_mount())
+
+                unmounts = list(pool.map(libmount.unmount, paths))
+                self.assertEqual(len(unmounts), len(paths))
+
+                for path in paths:
+                    with self.subTest(path=path):
+                        self.assertFalse(path.is_mount())
+        finally:
+            with suppress(OSError):
+                for path in paths:
+                    libmount.unmount(path)
