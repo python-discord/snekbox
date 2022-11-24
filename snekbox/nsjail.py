@@ -51,8 +51,8 @@ class NsJail:
         max_output_size: int = 1_000_000,
         read_chunk_size: int = 10_000,
         memfs_instance_size: int = 48 * 1024 * 1024,
-        files_limit: int = 100,
-        files_timeout: float = 15,
+        files_limit: int | None = 100,
+        files_timeout: float | None = 8,
         files_pattern: str = "**/*",
     ):
         """
