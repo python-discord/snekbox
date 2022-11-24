@@ -243,9 +243,8 @@ class NsJail:
             # convert negative exit codes to the `N + 128` form.
             returncode = -nsjail.returncode + 128 if nsjail.returncode < 0 else nsjail.returncode
 
-            # Parse attachments
+            # Parse attachments with time limit
             try:
-                # Sort attachments by name lexically
                 attachments = timed(
                     parse_files,
                     (fs, self.files_limit, self.files_pattern),
@@ -253,7 +252,7 @@ class NsJail:
                 )
                 log.info(f"Found {len(attachments)} files.")
             except TimeoutError as e:
-                log.warning(f"Exceeded time limit while parsing attachments: {e}")
+                log.info(f"Exceeded time limit while parsing attachments: {e}")
                 return EvalResult(
                     args, None, "TimeoutError: Exceeded time limit while parsing attachments"
                 )

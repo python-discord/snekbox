@@ -25,6 +25,11 @@ def parse_files(
     """
     Parse files in a MemFS.
 
+    Args:
+        fs: The MemFS to parse.
+        files_limit: The maximum number of files to parse.
+        files_pattern: The glob pattern to match files against.
+
     Returns:
         List of FileAttachments sorted lexically by path name.
     """
@@ -106,7 +111,16 @@ class MemFS:
     def attachments(
         self, max_count: int, pattern: str = "**/*"
     ) -> Generator[FileAttachment, None, None]:
-        """Return a list of attachments in the tempdir."""
+        """
+        Generate FileAttachments for files in the MemFS.
+
+        Args:
+            max_count: The maximum number of files to parse.
+            pattern: The glob pattern to match files against.
+
+        Yields:
+            FileAttachments for files in the MemFS.
+        """
         count = 0
         for file in self.output.rglob(pattern):
             if count > max_count:
