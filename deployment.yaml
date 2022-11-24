@@ -40,6 +40,7 @@ spec:
                     forbiddenfruit~=0.1
                     fuzzywuzzy~=0.18
                     lark~=1.1
+                    matplotlib~=3.6
                     more-itertools~=9.0
                     networkx~=2.8
                     numpy~=1.23
