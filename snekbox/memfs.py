@@ -81,7 +81,7 @@ class MemFS:
         return self.home / "output"
 
     def __enter__(self) -> MemFS:
-        """Mounts a new tempfs, returns self."""
+        """Mount a new tempfs and return self."""
         for _ in range(10):
             name = str(uuid4())
             try:
