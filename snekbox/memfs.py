@@ -137,7 +137,7 @@ class MemFS:
                 yield FileAttachment.from_path(file, relative_to=self.output)
 
     def cleanup(self) -> None:
-        """Unmounts tmpfs."""
+        """Unmount the tmpfs."""
         if self._path is None:
             return
         unmount(self.path)
