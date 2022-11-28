@@ -15,7 +15,7 @@ class LibMountTests(TestCase):
 
     @contextmanager
     def get_mount(self):
-        """Yields a valid mount point, unmounts after context."""
+        """Yield a valid mount point and unmount after context."""
         path = self.temp_dir / str(uuid4())
         path.mkdir()
         try:

@@ -41,7 +41,7 @@ class TestEvalResource(SnekAPITestCase):
                 self.assertEqual(expected_json, result.json)
 
     def test_files_path(self):
-        """Normal paths, should work with 200."""
+        """Normal paths should work with 200."""
         test_paths = [
             "file.txt",
             "./file.jpg",
@@ -59,7 +59,7 @@ class TestEvalResource(SnekAPITestCase):
                 self.assertEqual(0, result.json["returncode"])
 
     def test_files_illegal_path_traversal(self):
-        """Traversal beyond root, should be denied with 400 error."""
+        """Traversal beyond root should be denied with 400 error."""
         test_paths = [
             "../secrets",
             "../../dir",
@@ -78,7 +78,7 @@ class TestEvalResource(SnekAPITestCase):
                 self.assertEqual(expected, result.json)
 
     def test_files_illegal_path_absolute(self):
-        """Absolute file paths, should be denied with 400 error."""
+        """Absolute file paths should be denied with 400 error."""
         test_paths = [
             "/etc/vars/secrets",
             "/absolute",

@@ -12,7 +12,7 @@ T = TypeVar("T", str, bytes)
 
 def safe_path(path: str) -> str:
     """
-    Returns the `path` str if there are no security issues.
+    Return `path` if there are no security issues.
 
     Raises:
         IllegalPathError: Raised on any path rule violation.
@@ -81,7 +81,7 @@ class FileAttachment(Generic[T]):
         return self.content.encode("utf-8")
 
     def save_to(self, directory: Path | str) -> None:
-        """Save the attachment to a path directory."""
+        """Write the attachment to a file in `directory`."""
         file = Path(directory, self.path)
         # Create directories if they don't exist
         file.parent.mkdir(parents=True, exist_ok=True)

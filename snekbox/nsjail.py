@@ -28,7 +28,7 @@ LOG_PATTERN = re.compile(
 
 
 def iter_lstrip(iterable: Iterable[_T]) -> Generator[_T, None, None]:
-    """Removes leading falsy objects from an iterable."""
+    """Remove leading falsy objects from an iterable."""
     it = iter(iterable)
     for item in it:
         if item:
@@ -64,7 +64,7 @@ class NsJail:
             max_output_size: Maximum size of the output in bytes.
             read_chunk_size: Size of the read buffer in bytes.
             memfs_instance_size: Size of the tmpfs instance in bytes.
-            files_limit: Maximum number of files to parse for attach.
+            files_limit: Maximum number of files to parse for attachments.
             files_timeout: Maximum time in seconds to wait for files to be written / read.
             files_pattern: Pattern to match files to attach.
         """
