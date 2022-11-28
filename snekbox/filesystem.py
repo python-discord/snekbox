@@ -1,3 +1,4 @@
+"""Mounts and unmounts filesystems."""
 from __future__ import annotations
 
 import ctypes
@@ -48,6 +49,9 @@ def mount(source: Path | str, target: Path | str, fs: str, **options: str | int)
         target: Target directory.
         fs: Filesystem type.
         **options: Mount options.
+
+    Raises:
+        OSError: On any mount error.
     """
     if Path(target).is_mount():
         raise OSError(f"{target} is already a mount point")
@@ -71,6 +75,9 @@ def unmount(target: Path | str, flags: UnmountFlags | int = UnmountFlags.MNT_DET
     Args:
         target: Target directory.
         flags: Unmount flags.
+
+    Raises:
+        OSError: On any unmount error.
     """
     if not Path(target).is_mount():
         raise OSError(f"{target} is not a mount point")

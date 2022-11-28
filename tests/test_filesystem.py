@@ -5,7 +5,7 @@ from shutil import rmtree
 from unittest import TestCase
 from uuid import uuid4
 
-from snekbox import libmount
+from snekbox.filesystem import UnmountFlags, mount, unmount
 
 
 class LibMountTests(TestCase):
@@ -25,11 +25,11 @@ class LibMountTests(TestCase):
         path = self.temp_dir / str(uuid4())
         path.mkdir()
         try:
-            libmount.mount(source="", target=path, fs="tmpfs")
+            mount(source="", target=path, fs="tmpfs")
             yield path
         finally:
             with suppress(OSError):
-                libmount.unmount(path)
+                unmount(path)
 
     def test_mount(self):
         """Test normal mounting."""
@@ -54,7 +54,7 @@ class LibMountTests(TestCase):
         for case, err, msg in cases:
             with self.subTest(case=case):
                 with self.assertRaises(err) as cm:
-                    libmount.mount(**case)
+                    mount(**case)
                 self.assertIn(msg, str(cm.exception))
 
     def test_mount_duplicate(self):
@@ -62,31 +62,31 @@ class LibMountTests(TestCase):
         path = self.temp_dir / str(uuid4())
         path.mkdir()
         try:
-            libmount.mount(source="", target=path, fs="tmpfs")
+            mount(source="", target=path, fs="tmpfs")
             with self.assertRaises(OSError) as cm:
-                libmount.mount(source="", target=path, fs="tmpfs")
+                mount(source="", target=path, fs="tmpfs")
             self.assertIn("already a mount point", str(cm.exception))
         finally:
-            libmount.unmount(target=path)
+            unmount(target=path)
 
     def test_unmount_flags(self):
         """Test unmount flags."""
         flags = [
-            libmount.UnmountFlags.MNT_FORCE,
-            libmount.UnmountFlags.MNT_DETACH,
-            libmount.UnmountFlags.UMOUNT_NOFOLLOW,
+            UnmountFlags.MNT_FORCE,
+            UnmountFlags.MNT_DETACH,
+            UnmountFlags.UMOUNT_NOFOLLOW,
         ]
         for flag in flags:
             with self.subTest(flag=flag), self.get_mount() as path:
                 self.assertTrue(path.is_mount())
-                libmount.unmount(path, flag)
+                unmount(path, flag)
                 self.assertFalse(path.is_mount())
 
     def test_unmount_flags_expire(self):
         """Test unmount MNT_EXPIRE behavior."""
         with self.get_mount() as path:
             with self.assertRaises(BlockingIOError):
-                libmount.unmount(path, libmount.UnmountFlags.MNT_EXPIRE)
+                unmount(path, UnmountFlags.MNT_EXPIRE)
 
     def test_unmount_errors(self):
         """Test invalid unmount errors."""
@@ -97,14 +97,14 @@ class LibMountTests(TestCase):
         for case, err, msg in cases:
             with self.subTest(case=case):
                 with self.assertRaises(err) as cm:
-                    libmount.unmount(**case)
+                    unmount(**case)
                 self.assertIn(msg, str(cm.exception))
 
     def test_unmount_invalid_args(self):
         """Test invalid unmount invalid flag."""
         with self.get_mount() as path:
             with self.assertRaises(OSError) as cm:
-                libmount.unmount(path, 251)
+                unmount(path, 251)
             self.assertIn("Invalid argument", str(cm.exception))
 
     def test_threading(self):
@@ -119,7 +119,7 @@ class LibMountTests(TestCase):
             with ThreadPoolExecutor() as pool:
                 res = list(
                     pool.map(
-                        libmount.mount,
+                        mount,
                         [""] * len(paths),
                         paths,
                         ["tmpfs"] * len(paths),
@@ -131,7 +131,7 @@ class LibMountTests(TestCase):
                     with self.subTest(path=path):
                         self.assertTrue(path.is_mount())
 
-                unmounts = list(pool.map(libmount.unmount, paths))
+                unmounts = list(pool.map(unmount, paths))
                 self.assertEqual(len(unmounts), len(paths))
 
                 for path in paths:
@@ -140,4 +140,4 @@ class LibMountTests(TestCase):
         finally:
             with suppress(OSError):
                 for path in paths:
-                    libmount.unmount(path)
+                    unmount(path)
