@@ -78,7 +78,9 @@ class LibMountTests(TestCase):
         ]
         for flag in flags:
             with self.subTest(flag=flag), self.get_mount() as path:
+                self.assertTrue(path.is_mount())
                 libmount.unmount(path, flag)
+                self.assertFalse(path.is_mount())
 
     def test_unmount_flags_expire(self):
         """Test unmount MNT_EXPIRE behavior."""
