@@ -192,9 +192,6 @@ class NsJail:
 
         with NamedTemporaryFile() as nsj_log, MemFS(self.memfs_instance_size) as fs:
             nsjail_args = (
-                # Set fslimit to unlimited, cannot be set in cfg
-                # due to upstream protobuf parsing issue
-                "--rlimit_fsize=inf",
                 # Mount `home` with Read/Write access
                 "--bindmount",
                 f"{fs.home}:home",
