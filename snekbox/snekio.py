@@ -40,7 +40,7 @@ class IllegalPathError(ParsingError):
     """Raised when an attachment has an illegal path."""
 
 
-@dataclass
+@dataclass(frozen=True)
 class FileAttachment:
     """A file attachment."""
 
@@ -79,7 +79,7 @@ class FileAttachment:
         file.write_bytes(self.content)
 
     @cached_property
-    def json(self) -> dict[str, str]:
+    def as_dict(self) -> dict[str, str]:
         """Convert the attachment to a dict."""
         content = b64encode(self.content).decode("ascii")
         return {
