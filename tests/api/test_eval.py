@@ -72,7 +72,7 @@ class TestEvalResource(SnekAPITestCase):
                 result = self.simulate_post(self.PATH, json=body)
                 self.assertEqual(result.status_code, 400)
                 expected = {
-                    "title": "Request file path failed validation",
+                    "title": "Request file is invalid",
                     "description": f"File path '{path}' may not traverse beyond root",
                 }
                 self.assertEqual(expected, result.json)

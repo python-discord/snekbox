@@ -28,16 +28,12 @@ def safe_path(path: str) -> str:
     return path
 
 
-class AttachmentError(ValueError):
-    """Raised when an attachment is invalid."""
-
-
-class ParsingError(AttachmentError):
-    """Raised when an incoming file cannot be parsed."""
+class ParsingError(ValueError):
+    """Raised when an incoming content cannot be parsed."""
 
 
 class IllegalPathError(ParsingError):
-    """Raised when an attachment has an illegal path."""
+    """Raised when a request file has an illegal path."""
 
 
 @dataclass(frozen=True)
@@ -49,9 +45,17 @@ class FileAttachment:
 
     @classmethod
     def from_dict(cls, data: dict[str, str]) -> FileAttachment:
-        """Convert a dict to an attachment."""
+        """
+        Convert a dict to an attachment.
+
+        Raises:
+            ParsingError: Raised when the dict has invalid base64 `content`.
+        """
         path = safe_path(data["path"])
-        content = b64decode(data.get("content", ""))
+        try:
+            content = b64decode(data.get("content", ""))
+        except (TypeError, ValueError) as e:
+            raise ParsingError(f"Invalid base64 encoding for file '{path}'") from e
         return cls(path, content)
 
     @classmethod

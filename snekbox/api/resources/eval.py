@@ -9,7 +9,7 @@ from snekbox.nsjail import NsJail
 
 __all__ = ("EvalResource",)
 
-from snekbox.snekio import FileAttachment, IllegalPathError
+from snekbox.snekio import FileAttachment, ParsingError
 
 log = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ class EvalResource:
                     "properties": {
                         "path": {
                             "type": "string",
-                            # Disallow single forward slashes, absolute paths, and null bytes
+                            # Disallow single absolute paths, and null bytes
                             "pattern": r"^[^/\\0].*",
                         },
                         "content": {"type": "string"},
@@ -110,10 +110,8 @@ class EvalResource:
                 py_args=req.media["args"],
                 files=[FileAttachment.from_dict(file) for file in req.media.get("files", [])],
             )
-        except IllegalPathError as e:
-            raise falcon.HTTPBadRequest(
-                title="Request file path failed validation", description=str(e)
-            )
+        except ParsingError as e:
+            raise falcon.HTTPBadRequest(title="Request file is invalid", description=str(e))
         except Exception:
             log.exception("An exception occurred while trying to process the request")
             raise falcon.HTTPInternalServerError
