@@ -229,9 +229,8 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.stderr, None)
 
     def test_null_byte_value_error(self):
-        # This error does not occur without -c, where it
-        # would be a normal SyntaxError.
-        result = self.nsjail.python3(["-c", "\0"])
+        # This error only occurs with `-c` mode
+        result = self.eval_code("\0")
         self.assertEqual(result.returncode, None)
         self.assertEqual(result.stdout, "ValueError: embedded null byte")
         self.assertEqual(result.stderr, None)
