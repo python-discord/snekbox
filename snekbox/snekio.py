@@ -5,9 +5,6 @@ from base64 import b64decode, b64encode
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import Generic, TypeVar
-
-T = TypeVar("T", str, bytes)
 
 
 def safe_path(path: str) -> str:
@@ -44,21 +41,21 @@ class IllegalPathError(ParsingError):
 
 
 @dataclass
-class FileAttachment(Generic[T]):
+class FileAttachment:
     """A file attachment."""
 
     path: str
-    content: T
+    content: bytes
 
     @classmethod
-    def from_dict(cls, data: dict[str, str]) -> FileAttachment[bytes]:
+    def from_dict(cls, data: dict[str, str]) -> FileAttachment:
         """Convert a dict to an attachment."""
         path = safe_path(data["path"])
         content = b64decode(data.get("content", ""))
         return cls(path, content)
 
     @classmethod
-    def from_path(cls, file: Path, relative_to: Path | None = None) -> FileAttachment[bytes]:
+    def from_path(cls, file: Path, relative_to: Path | None = None) -> FileAttachment:
         """
         Create an attachment from a file path.
 
@@ -74,26 +71,17 @@ class FileAttachment(Generic[T]):
         """Size of the attachment."""
         return len(self.content)
 
-    def as_bytes(self) -> bytes:
-        """Return the attachment as bytes."""
-        if isinstance(self.content, bytes):
-            return self.content
-        return self.content.encode("utf-8")
-
     def save_to(self, directory: Path | str) -> None:
         """Write the attachment to a file in `directory`."""
         file = Path(directory, self.path)
         # Create directories if they don't exist
         file.parent.mkdir(parents=True, exist_ok=True)
-        if isinstance(self.content, str):
-            file.write_text(self.content, encoding="utf-8")
-        else:
-            file.write_bytes(self.content)
+        file.write_bytes(self.content)
 
     @cached_property
     def json(self) -> dict[str, str]:
         """Convert the attachment to a dict."""
-        content = b64encode(self.as_bytes()).decode("ascii")
+        content = b64encode(self.content).decode("ascii")
         return {
             "path": self.path,
             "size": self.size,

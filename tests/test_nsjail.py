@@ -26,7 +26,7 @@ class NsJailTests(unittest.TestCase):
         return self.nsjail.python3(["-c", code])
 
     def eval_file(self, code: str, name: str = "test.py", **kwargs):
-        file = FileAttachment(name, code)
+        file = FileAttachment(name, code.encode())
         return self.nsjail.python3([name], [file], **kwargs)
 
     def test_print_returns_0(self):
@@ -59,8 +59,8 @@ class NsJailTests(unittest.TestCase):
 
     def test_multi_files(self):
         files = [
-            FileAttachment("main.py", "import lib; print(lib.x)"),
-            FileAttachment("lib.py", "x = 'hello'"),
+            FileAttachment("main.py", "import lib; print(lib.x)".encode()),
+            FileAttachment("lib.py", "x = 'hello'".encode()),
         ]
 
         result = self.nsjail.python3(["main.py"], files)
@@ -209,7 +209,7 @@ class NsJailTests(unittest.TestCase):
 
     def test_file_write_error(self):
         """Test errors during file write."""
-        result = self.nsjail.python3([""], [FileAttachment("output", "hello")])
+        result = self.nsjail.python3([""], [FileAttachment("output", "hello".encode())])
 
         self.assertEqual(result.returncode, None)
         self.assertEqual(result.stdout, "IsADirectoryError: Failed to create file 'output'.")
