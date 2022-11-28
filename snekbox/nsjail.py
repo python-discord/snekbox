@@ -10,6 +10,7 @@ from google.protobuf import text_format
 
 from snekbox import DEBUG, utils
 from snekbox.config_pb2 import NsJailConfig
+from snekbox.filesystem import Size
 from snekbox.memfs import MemFS
 from snekbox.process import EvalResult
 from snekbox.snekio import FileAttachment
@@ -50,7 +51,7 @@ class NsJail:
         config_path: str = "./config/snekbox.cfg",
         max_output_size: int = 1_000_000,
         read_chunk_size: int = 10_000,
-        memfs_instance_size: int = 48 * 1024 * 1024,
+        memfs_instance_size: int = 48 * Size.MB,
         files_limit: int | None = 100,
         files_timeout: float | None = 8,
         files_pattern: str = "**/*",

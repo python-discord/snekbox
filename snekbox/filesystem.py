@@ -20,13 +20,13 @@ libc.mount.argtypes = (
 libc.umount2.argtypes = (ctypes.c_char_p, ctypes.c_int)
 
 
-class Size(int):
-    """Size in bytes."""
+class Size(IntEnum):
+    """Size multipliers for bytes."""
 
-    @classmethod
-    def from_mb(cls, mb: int) -> Size:
-        """Create a Size from mebibytes."""
-        return cls(mb * 1024 * 1024)
+    KB = 1024
+    MB = 1024**2
+    GB = 1024**3
+    TB = 1024**4
 
 
 class UnmountFlags(IntEnum):
