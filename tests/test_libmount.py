@@ -1,6 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager, suppress
 from pathlib import Path
+from shutil import rmtree
 from unittest import TestCase
 from uuid import uuid4
 
@@ -8,10 +9,15 @@ from snekbox import libmount
 
 
 class LibMountTests(TestCase):
-    def setUp(self):
-        self.temp_dir = Path("/tmp/snekbox-test")
-        self.temp_dir.mkdir(exist_ok=True, parents=True)
-        super().setUp()
+    temp_dir = Path("/tmp/snekbox")
+
+    @classmethod
+    def setUpClass(cls):
+        cls.temp_dir.mkdir(exist_ok=True, parents=True)
+
+    @classmethod
+    def tearDownClass(cls):
+        rmtree(cls.temp_dir, ignore_errors=True)
 
     @contextmanager
     def get_mount(self):
