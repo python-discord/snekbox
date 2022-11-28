@@ -64,8 +64,8 @@ class NsJail:
             max_output_size: Maximum size of the output in bytes.
             read_chunk_size: Size of the read buffer in bytes.
             memfs_instance_size: Size of the tmpfs instance in bytes.
-            files_limit: Maximum number of files to parse for attachments.
-            files_timeout: Maximum time in seconds to wait for files to be written / read.
+            files_limit: Maximum number of output files to parse.
+            files_timeout: Maximum time in seconds to wait for output files to be read.
             files_pattern: Pattern to match files to attach.
         """
         self.nsjail_path = nsjail_path
