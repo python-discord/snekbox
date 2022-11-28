@@ -122,6 +122,7 @@ class EvalResource:
         # If `input` is supplied, default `args` to `-c`
         if "input" in body:
             body.setdefault("args", ["-c"])
+            body["args"].append(body["input"])
         try:
             result = self.nsjail.python3(
                 py_args=body["args"],

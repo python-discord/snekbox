@@ -56,8 +56,8 @@ class IntegrationTests(unittest.TestCase):
         """Test normal eval requests without files."""
         with run_gunicorn():
             cases = [
-                ({"input": "print('Hello')"}, "Hello"),
-                ({"args": ["-c", "print('Hello')"]}, "Hello"),
+                ({"input": "print('Hello')"}, "Hello\n"),
+                ({"args": ["-c", "print('abc12')"]}, "abc12\n"),
             ]
             for body, expected in cases:
                 with self.subTest(body=body):
