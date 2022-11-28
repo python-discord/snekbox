@@ -7,6 +7,9 @@
 
 Python sandbox runners for executing code in isolation aka snekbox.
 
+Supports a memory [virtual read/write file system](#virtual-file-system) within the sandbox,
+allowing text or binary files to be sent and returned.
+
 A client sends Python code to a snekbox, the snekbox executes the code, and finally the results of the execution are returned to the client.
 
 ```mermaid
@@ -60,9 +63,41 @@ The main features of the default configuration are:
 * Memory limit
 * Process count limit
 * No networking
-* Restricted, read-only filesystem
+* Restricted, read-only system filesystem
+* Memory-based virtual read-write filesystem mounted as cwd at `/home`
 
 NsJail is configured through [`snekbox.cfg`]. It contains the exact values for the items listed above. The configuration format is defined by a [protobuf file][7] which can be referred to for documentation. The command-line options of NsJail can also serve as documentation since they closely follow the config file format.
+
+### Memory File System
+
+On each execution, the host will mount an instance-specific `tmpfs` directory,
+this is used as a limited read-write folder for the sandboxed code. There is no
+access of any kind to other files or directories on the host system or container,
+as only this new directory is mounted to NSJail.
+
+The following options for the memory file system are configurable as options in
+[gunicorn.conf.py](config/gunicorn.conf.py)
+
+* `memfs_instance_size` Size in bytes for the capacity of each instance file system.
+* `files_limit` Maximum number of valid output files to parse.
+* `files_timeout` Maximum time in seconds for output file parsing and encoding.
+* `files_pattern` Glob pattern to match files within `output`.
+
+The sandboxed code execution will start with a working directory of `home`, and
+a visible folder `output`. The user has read/write access to any path under `home`.
+```
+/home
+ |- output
+```
+
+Files written to the `output` subfolder will be parsed and returned as
+a list of `FileAttachment` objects in `EvalResult.files` from the `python3` function.
+
+To send files to snekbox, it can be included as the `files` parameter of `python3`.
+
+Within the `/eval` route, files are attached or returned under the `files` key.
+
+> See [api/resources/eval.py](snekbox/api/resources/eval.py) for additional API schema information.
 
 ### Gunicorn
 
