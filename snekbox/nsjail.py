@@ -10,7 +10,7 @@ from google.protobuf import text_format
 
 from snekbox import DEBUG, utils
 from snekbox.config_pb2 import NsJailConfig
-from snekbox.memfs import MemFS, parse_files
+from snekbox.memfs import MemFS
 from snekbox.process import EvalResult
 from snekbox.snekio import FileAttachment
 from snekbox.utils.timed import timed
@@ -252,7 +252,7 @@ class NsJail:
             # Parse attachments with time limit
             try:
                 attachments = timed(
-                    parse_files,
+                    MemFS.files_list,
                     (fs, self.files_limit, self.files_pattern, True),
                     timeout=self.files_timeout,
                 )

@@ -47,7 +47,7 @@ class MemFSTests(TestCase):
             attrgetter("home"),
             attrgetter("output"),
             lambda fs: fs.mkdir(""),
-            lambda fs: list(fs.attachments(1)),
+            lambda fs: list(fs.files(1)),
         ]
 
         memfs = MemFS(10)

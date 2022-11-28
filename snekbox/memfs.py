@@ -14,32 +14,7 @@ from snekbox.snekio import FileAttachment
 
 log = logging.getLogger(__name__)
 
-__all__ = ("MemFS", "parse_files")
-
-
-def parse_files(
-    fs: MemFS,
-    files_limit: int,
-    files_pattern: str,
-    preload_dict: bool = False,
-) -> list[FileAttachment]:
-    """
-    Parse files in a MemFS.
-
-    Args:
-        fs: The MemFS to parse.
-        files_limit: The maximum number of files to parse.
-        files_pattern: The glob pattern to match files against.
-        preload_dict: Whether to preload as_dict property data.
-
-    Returns:
-        List of FileAttachments sorted lexically by path name.
-    """
-    res = sorted(fs.attachments(files_limit, files_pattern), key=lambda f: f.path)
-    if preload_dict:
-        for file in res:
-            _ = file.as_dict
-    return res
+__all__ = ("MemFS",)
 
 
 class MemFS:
@@ -114,27 +89,45 @@ class MemFS:
         folder.chmod(chmod)
         return folder
 
-    def attachments(
-        self, max_count: int, pattern: str = "**/*"
-    ) -> Generator[FileAttachment, None, None]:
+    def files(self, limit: int, pattern: str = "**/*") -> Generator[FileAttachment, None, None]:
         """
-        Generate FileAttachments for files in the MemFS.
+        Yields FileAttachments for files in the MemFS.
 
         Args:
-            max_count: The maximum number of files to parse.
+            limit: The maximum number of files to parse.
             pattern: The glob pattern to match files against.
-
-        Yields:
-            FileAttachments for files in the MemFS.
         """
         count = 0
         for file in self.output.rglob(pattern):
-            if count > max_count:
-                log.info(f"Max attachments {max_count} reached, skipping remaining files")
+            if count > limit:
+                log.info(f"Max attachments {limit} reached, skipping remaining files")
                 break
             if file.is_file():
                 count += 1
                 yield FileAttachment.from_path(file, relative_to=self.output)
+
+    def files_list(
+        self,
+        limit: int,
+        pattern: str,
+        preload_dict: bool = False,
+    ) -> list[FileAttachment]:
+        """
+        Returns a sorted list of output files found in the MemFS.
+
+        Args:
+            limit: The maximum number of files to parse.
+            pattern: The glob pattern to match files against.
+            preload_dict: Whether to preload as_dict property data.
+
+        Returns:
+            List of FileAttachments sorted lexically by path name.
+        """
+        res = sorted(self.files(limit, pattern), key=lambda f: f.path)
+        if preload_dict:
+            for file in res:
+                _ = file.as_dict
+        return res
 
     def cleanup(self) -> None:
         """Unmount the tmpfs."""
