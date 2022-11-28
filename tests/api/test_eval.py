@@ -5,12 +5,16 @@ class TestEvalResource(SnekAPITestCase):
     PATH = "/eval"
 
     def test_post_valid_200(self):
-        body = {"args": ["-c", "print('output')"]}
-        result = self.simulate_post(self.PATH, json=body)
-
-        self.assertEqual(result.status_code, 200)
-        self.assertEqual("output", result.json["stdout"])
-        self.assertEqual(0, result.json["returncode"])
+        cases = [
+            {"args": ["-c", "print('output')"]},
+            {"input": "print('hello')"},
+        ]
+        for body in cases:
+            with self.subTest():
+                result = self.simulate_post(self.PATH, json=body)
+                self.assertEqual(result.status_code, 200)
+                self.assertEqual("output", result.json["stdout"])
+                self.assertEqual(0, result.json["returncode"])
 
     def test_post_invalid_schema_400(self):
         body = {"stuff": "foo"}
@@ -20,7 +24,7 @@ class TestEvalResource(SnekAPITestCase):
 
         expected = {
             "title": "Request data failed validation",
-            "description": "'args' is a required property",
+            "description": "{'stuff': 'foo'} is not valid under any of the given schemas",
         }
 
         self.assertEqual(expected, result.json)

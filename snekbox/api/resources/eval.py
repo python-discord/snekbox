@@ -27,6 +27,7 @@ class EvalResource:
     REQ_SCHEMA = {
         "type": "object",
         "properties": {
+            "input": {"type": "string"},
             "args": {"type": "array", "items": {"type": "string"}},
             "files": {
                 "type": "array",
@@ -44,7 +45,10 @@ class EvalResource:
                 },
             },
         },
-        "required": ["args"],
+        "anyOf": [
+            {"required": ["input"]},
+            {"required": ["args"]},
+        ],
     }
 
     def __init__(self, nsjail: NsJail):
@@ -57,6 +61,11 @@ class EvalResource:
 
         A list of arguments for the Python subprocess can be specified as `args`.
 
+        If `input` is specified, it will be appended as the last argument to `args`,
+        and `args` will have a default argument of `"-c"`.
+
+        Either `input` or `args` must be specified.
+
         The return codes mostly resemble those of a Unix shell. Some noteworthy cases:
 
         - None
@@ -67,6 +76,10 @@ class EvalResource:
             NsJail encountered a fatal error
 
         Request body:
+
+        >>> {
+        ...    "input": "print('Hello')"
+        ... }
 
         >>> {
         ...    "args": ["-c", "print('Hello')"]
@@ -105,10 +118,14 @@ class EvalResource:
         - 415
             Unsupported content type; only application/JSON is supported
         """
+        body: dict[str, str | list[str] | list[dict[str, str]]] = req.media
+        # If `input` is supplied, default `args` to `-c`
+        if "input" in body:
+            body.setdefault("args", ["-c"])
         try:
             result = self.nsjail.python3(
-                py_args=req.media["args"],
-                files=[FileAttachment.from_dict(file) for file in req.media.get("files", [])],
+                py_args=body["args"],
+                files=[FileAttachment.from_dict(file) for file in body.get("files", [])],
             )
         except ParsingError as e:
             raise falcon.HTTPBadRequest(title="Request file is invalid", description=str(e))
