@@ -78,8 +78,10 @@ class TestEvalResource(SnekAPITestCase):
                 self.assertEqual(expected, result.json)
 
     def test_files_illegal_path_absolute(self):
-        """Absolute file paths should be denied with 400 error."""
+        """Absolute file paths should 400-error at json schema validation stage."""
         test_paths = [
+            "/",
+            "/etc",
             "/etc/vars/secrets",
             "/absolute",
             "/file.bin",
@@ -89,11 +91,8 @@ class TestEvalResource(SnekAPITestCase):
                 body = {"args": ["test.py"], "files": [{"path": path}]}
                 result = self.simulate_post(self.PATH, json=body)
                 self.assertEqual(result.status_code, 400)
-                expected = {
-                    "title": "Request file path failed validation",
-                    "description": f"File path '{path}' must be relative",
-                }
-                self.assertEqual(expected, result.json)
+                self.assertEqual("Request data failed validation", result.json["title"])
+                self.assertIn("does not match", result.json["description"])
 
     def test_post_invalid_content_type_415(self):
         body = "{'input': 'foo'}"

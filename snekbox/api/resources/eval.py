@@ -33,7 +33,11 @@ class EvalResource:
                 "items": {
                     "type": "object",
                     "properties": {
-                        "path": {"type": "string"},
+                        "path": {
+                            "type": "string",
+                            # Disallow single forward slashes, absolute paths, and null bytes
+                            "pattern": r"^[^/\\0].*",
+                        },
                         "content": {"type": "string"},
                     },
                     "required": ["path"],
