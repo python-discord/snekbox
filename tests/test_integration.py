@@ -52,6 +52,19 @@ class IntegrationTests(unittest.TestCase):
             self.assertTrue(all(status == 200 for status in statuses))
             self.assertTrue(all(json.loads(response)["returncode"] == 0 for response in responses))
 
+    def test_eval(self):
+        """Test normal eval requests without files."""
+        with run_gunicorn():
+            cases = [
+                ({"input": "print('Hello')"}, "Hello"),
+                ({"args": ["-c", "print('Hello')"]}, "Hello"),
+            ]
+            for body, expected in cases:
+                with self.subTest(body=body):
+                    response, status = snekbox_request(body)
+                    self.assertEqual(status, 200)
+                    self.assertEqual(json.loads(response)["stdout"], expected)
+
     def test_files_send_receive(self):
         """Test sending and receiving files to snekbox."""
         with run_gunicorn():
