@@ -174,9 +174,9 @@ class NsJail:
         Execute Python 3 code in an isolated environment and return the completed process.
 
         Args:
-            py_args: Arguments passed to python3.
-            files: FileAttachments to be written to the sandbox prior to run.
-            nsjail_args: Overrides options in the NsJail config, added to NsJail call.
+            py_args: Arguments to pass to Python.
+            files: FileAttachments to write to the sandbox prior to running Python.
+            nsjail_args: Overrides for the NsJail configuration.
         """
         if self.cgroup_version == 2:
             nsjail_args = ("--use_cgroupv2", *nsjail_args)
