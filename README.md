@@ -91,8 +91,6 @@ To send files to snekbox, it can be included as the `files` parameter of `python
 
 Within the `/eval` route, files are attached or returned under the `files` key.
 
-> See [api/resources/eval.py](snekbox/api/resources/eval.py) for additional API schema information.
-
 ### Gunicorn
 
 [Gunicorn settings] can be found in [`gunicorn.conf.py`]. In the default configuration, the worker count, the bind address, and the WSGI app URI are likely the only things of any interest. Since it uses the default synchronous workers, the [worker count] effectively determines how many concurrent code evaluations can be performed.
