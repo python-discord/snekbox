@@ -20,7 +20,7 @@ __all__ = ("MemFS",)
 
 
 class MemFS:
-    """A memory temporary file system."""
+    """An in-memory temporary file system."""
 
     def __init__(self, instance_size: int, root_dir: str | Path = "/memfs") -> None:
         """
