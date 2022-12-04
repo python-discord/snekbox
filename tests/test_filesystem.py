@@ -1,7 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager, suppress
 from pathlib import Path
-from shutil import rmtree
+from tempfile import TemporaryDirectory
 from unittest import TestCase
 from uuid import uuid4
 
@@ -9,20 +9,20 @@ from snekbox.filesystem import UnmountFlags, mount, unmount
 
 
 class LibMountTests(TestCase):
-    temp_dir = Path("/tmp/snekbox")
+    temp_dir: TemporaryDirectory
 
     @classmethod
     def setUpClass(cls):
-        cls.temp_dir.mkdir(exist_ok=True, parents=True)
+        cls.temp_dir = TemporaryDirectory(prefix="snekbox_tests")
 
     @classmethod
     def tearDownClass(cls):
-        rmtree(cls.temp_dir, ignore_errors=True)
+        cls.temp_dir.cleanup()
 
     @contextmanager
     def get_mount(self):
         """Yield a valid mount point and unmount after context."""
-        path = self.temp_dir / str(uuid4())
+        path = Path(self.temp_dir.name, str(uuid4()))
         path.mkdir()
         try:
             mount(source="", target=path, fs="tmpfs")
@@ -46,7 +46,7 @@ class LibMountTests(TestCase):
             (dict(source="", target=str(uuid4()), fs="tmpfs"), OSError, "No such file"),
             (dict(source=str(uuid4()), target="some/dir", fs="tmpfs"), OSError, "No such file"),
             (
-                dict(source="", target=self.temp_dir, fs="tmpfs", invalid_opt="?"),
+                dict(source="", target=self.temp_dir.name, fs="tmpfs", invalid_opt="?"),
                 OSError,
                 "Invalid argument",
             ),
@@ -59,7 +59,7 @@ class LibMountTests(TestCase):
 
     def test_mount_duplicate(self):
         """Test attempted mount after mounted."""
-        path = self.temp_dir / str(uuid4())
+        path = Path(self.temp_dir.name, str(uuid4()))
         path.mkdir()
         try:
             mount(source="", target=path, fs="tmpfs")
@@ -109,7 +109,7 @@ class LibMountTests(TestCase):
 
     def test_threading(self):
         """Test concurrent mounting works in multi-thread environments."""
-        paths = [self.temp_dir / str(uuid4()) for _ in range(16)]
+        paths = [Path(self.temp_dir.name, str(uuid4())) for _ in range(16)]
 
         for path in paths:
             path.mkdir()
