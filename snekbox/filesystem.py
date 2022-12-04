@@ -23,10 +23,10 @@ libc.umount2.argtypes = (ctypes.c_char_p, ctypes.c_int)
 class Size(IntEnum):
     """Size multipliers for bytes."""
 
-    KB = 1024
-    MB = 1024**2
-    GB = 1024**3
-    TB = 1024**4
+    KiB = 1024
+    MiB = 1024**2
+    GiB = 1024**3
+    TiB = 1024**4
 
 
 class UnmountFlags(IntEnum):
