@@ -51,7 +51,7 @@ class NsJail:
         config_path: str = "./config/snekbox.cfg",
         max_output_size: int = 1_000_000,
         read_chunk_size: int = 10_000,
-        memfs_instance_size: int = 48 * Size.MB,
+        memfs_instance_size: int = 48 * Size.MiB,
         files_limit: int | None = 100,
         files_timeout: float | None = 8,
         files_pattern: str = "**/*",

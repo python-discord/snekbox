@@ -19,7 +19,7 @@ class NsJailTests(unittest.TestCase):
         super().setUp()
 
         # Specify lower limits for unit tests to complete within time limits
-        self.nsjail = NsJail(memfs_instance_size=2 * Size.MB)
+        self.nsjail = NsJail(memfs_instance_size=2 * Size.MiB)
         self.logger = logging.getLogger("snekbox.nsjail")
         self.logger.setLevel(logging.WARNING)
 
@@ -200,7 +200,7 @@ class NsJailTests(unittest.TestCase):
             """
         ).strip()
 
-        nsjail = NsJail(memfs_instance_size=32 * Size.MB, files_timeout=1)
+        nsjail = NsJail(memfs_instance_size=32 * Size.MiB, files_timeout=1)
         result = nsjail.python3(["-c", code])
         self.assertEqual(result.returncode, None)
         self.assertEqual(
