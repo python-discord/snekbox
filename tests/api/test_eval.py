@@ -8,6 +8,9 @@ class TestEvalResource(SnekAPITestCase):
         cases = [
             {"args": ["-c", "print('output')"]},
             {"input": "print('hello')"},
+            {"input": "print('hello')", "args": ["-c"]},
+            {"input": "print('hello')", "args": [""]},
+            {"input": "pass", "args": ["-m", "timeit"]},
         ]
         for body in cases:
             with self.subTest():
