@@ -134,7 +134,7 @@ class MemFS:
         preload_dict: bool = False,
     ) -> list[FileAttachment]:
         """
-        Returns a sorted list of output files found in the MemFS.
+        Return a sorted list of output files found in the MemFS.
 
         Args:
             limit: The maximum number of files to parse.
