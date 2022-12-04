@@ -79,17 +79,11 @@ The following options for the memory file system are configurable as options in 
 * `files_timeout` Maximum time in seconds for output file parsing and encoding.
 * `files_pattern` Glob pattern to match files within `output`.
 
-The sandboxed code execution will start with a working directory of `home`, and a visible folder `output`. The user has read/write access to any path under `home`.
+The sandboxed code execution will start with a writeable working directory of `home`. Any files written within the subfolder `output` will be parsed for output.
 ```
 /home
  |- output
 ```
-
-Files written to the `output` subfolder will be parsed and returned as a list of `FileAttachment` objects in `EvalResult.files` from the `python3` function.
-
-To send files to snekbox, it can be included as the `files` parameter of `python3`.
-
-Within the `/eval` route, files are attached or returned under the `files` key.
 
 ### Gunicorn
 
