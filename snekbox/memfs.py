@@ -22,7 +22,13 @@ __all__ = ("MemFS",)
 class MemFS:
     """An in-memory temporary file system."""
 
-    def __init__(self, instance_size: int, root_dir: str | Path = "/memfs") -> None:
+    def __init__(
+        self,
+        instance_size: int,
+        root_dir: str | Path = "/memfs",
+        home: str = "home",
+        output: str = "output",
+    ) -> None:
         """
         Initialize an in-memory temporary file system.
 
@@ -33,10 +39,14 @@ class MemFS:
         Args:
             instance_size: Size limit of each tmpfs instance in bytes.
             root_dir: Root directory to mount instances in.
+            home: Name of the home directory.
+            output: Name of the output directory within home. If empty, uses home.
         """
         self.instance_size = instance_size
         self.root_dir = Path(root_dir)
         self.root_dir.mkdir(exist_ok=True, parents=True)
+        self._home_name = home
+        self._output_name = output
 
         for _ in range(10):
             name = str(uuid4())
@@ -82,12 +92,12 @@ class MemFS:
     @property
     def home(self) -> Path:
         """Path to home directory."""
-        return self.path / "home"
+        return self.path / self._home_name
 
     @property
     def output(self) -> Path:
         """Path to output directory."""
-        return self.home / "output"
+        return self.home / self._output_name
 
     def __enter__(self) -> MemFS:
         return self
@@ -112,7 +122,7 @@ class MemFS:
 
     def files(self, limit: int, pattern: str = "**/*") -> Generator[FileAttachment, None, None]:
         """
-        Yields FileAttachments for files in the MemFS.
+        Yields FileAttachments for files found in the output directory.
 
         Args:
             limit: The maximum number of files to parse.
@@ -134,7 +144,7 @@ class MemFS:
         preload_dict: bool = False,
     ) -> list[FileAttachment]:
         """
-        Return a sorted list of output files found in the MemFS.
+        Return a sorted list of file paths within the output directory.
 
         Args:
             limit: The maximum number of files to parse.

@@ -52,6 +52,8 @@ class NsJail:
         max_output_size: int = 1_000_000,
         read_chunk_size: int = 10_000,
         memfs_instance_size: int = 48 * Size.MiB,
+        memfs_home: str = "home",
+        memfs_output: str = "output",
         files_limit: int | None = 100,
         files_timeout: float | None = 8,
         files_pattern: str = "**/*",
@@ -65,6 +67,9 @@ class NsJail:
             max_output_size: Maximum size of the output in bytes.
             read_chunk_size: Size of the read buffer in bytes.
             memfs_instance_size: Size of the tmpfs instance in bytes.
+            memfs_home: Name of the mounted home directory.
+            memfs_output: Name of the output directory within home,
+                can be empty to use home as output.
             files_limit: Maximum number of output files to parse.
             files_timeout: Maximum time in seconds to wait for output files to be read.
             files_pattern: Pattern to match files to attach.
@@ -74,6 +79,8 @@ class NsJail:
         self.max_output_size = max_output_size
         self.read_chunk_size = read_chunk_size
         self.memfs_instance_size = memfs_instance_size
+        self.memfs_home = memfs_home
+        self.memfs_output = memfs_output
         self.files_limit = files_limit
         self.files_timeout = files_timeout
         self.files_pattern = files_pattern
@@ -191,7 +198,11 @@ class NsJail:
                 *nsjail_args,
             )
 
-        with NamedTemporaryFile() as nsj_log, MemFS(self.memfs_instance_size) as fs:
+        with NamedTemporaryFile() as nsj_log, MemFS(
+            instance_size=self.memfs_instance_size,
+            home=self.memfs_home,
+            output=self.memfs_output,
+        ) as fs:
             nsjail_args = (
                 # Mount `home` with Read/Write access
                 "--bindmount",
