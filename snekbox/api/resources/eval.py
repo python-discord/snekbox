@@ -36,8 +36,8 @@ class EvalResource:
                     "properties": {
                         "path": {
                             "type": "string",
-                            # Disallow single absolute paths, and null bytes
-                            "pattern": r"^[^/\\0].*",
+                            # Disallow starting with / or containing \0 anywhere
+                            "pattern": r"^(?!/)(?!.*\\0).*$",
                         },
                         "content": {"type": "string"},
                     },
