@@ -70,28 +70,22 @@ NsJail is configured through [`snekbox.cfg`]. It contains the exact values for t
 
 ### Memory File System
 
-On each execution, the host will mount an instance-specific `tmpfs` directory,
-this is used as a limited read-write folder for the sandboxed code. There is no
-access of any kind to other files or directories on the host system or container,
-as only this new directory is mounted to NSJail.
+On each execution, the host will mount an instance-specific `tmpfs` drive, this is used as a limited read-write folder for the sandboxed code. There is no access to other files or directories on the host container beyond the other read-only mounted system folders. Instance file systems are isolated, it is not possible for sandboxed code to access another instance's writeable directory.
 
-The following options for the memory file system are configurable as options in
-[gunicorn.conf.py](config/gunicorn.conf.py)
+The following options for the memory file system are configurable as options in [gunicorn.conf.py](config/gunicorn.conf.py)
 
 * `memfs_instance_size` Size in bytes for the capacity of each instance file system.
 * `files_limit` Maximum number of valid output files to parse.
 * `files_timeout` Maximum time in seconds for output file parsing and encoding.
 * `files_pattern` Glob pattern to match files within `output`.
 
-The sandboxed code execution will start with a working directory of `home`, and
-a visible folder `output`. The user has read/write access to any path under `home`.
+The sandboxed code execution will start with a working directory of `home`, and a visible folder `output`. The user has read/write access to any path under `home`.
 ```
 /home
  |- output
 ```
 
-Files written to the `output` subfolder will be parsed and returned as
-a list of `FileAttachment` objects in `EvalResult.files` from the `python3` function.
+Files written to the `output` subfolder will be parsed and returned as a list of `FileAttachment` objects in `EvalResult.files` from the `python3` function.
 
 To send files to snekbox, it can be included as the `files` parameter of `python3`.
 
