@@ -147,5 +147,6 @@ class MemFS:
         res = sorted(self.files(limit, pattern), key=lambda f: f.path)
         if preload_dict:
             for file in res:
+                # Loads the cached property as attribute
                 _ = file.as_dict
         return res
