@@ -72,7 +72,7 @@ class NsJail:
                 can be empty to use home as output.
             files_limit: Maximum number of output files to parse.
             files_timeout: Maximum time in seconds to wait for output files to be read.
-            files_pattern: Pattern to match files to attach.
+            files_pattern: Pattern to match files to attach within the output directory.
         """
         self.nsjail_path = nsjail_path
         self.config_path = config_path
