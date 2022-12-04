@@ -24,7 +24,7 @@ class MemFS:
 
     def __init__(self, instance_size: int, root_dir: str | Path = "/memfs") -> None:
         """
-        Initialize a memory temporary file system.
+        Initialize an in-memory temporary file system.
 
         Examples:
             >>> with MemFS(1024) as memfs:
