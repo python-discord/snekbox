@@ -51,11 +51,14 @@ class TestEvalResource(SnekAPITestCase):
         """Normal paths should work with 200."""
         test_paths = [
             "file.txt",
-            "./file.jpg",
+            "./0.jpg",
             "path/to/file",
             "folder/../hm",
             "folder/./to/./somewhere",
             "traversal/but/../not/beyond/../root",
+            r"backslash\\okay",
+            r"backslash\okay",
+            "numbers/0123456789",
         ]
         for path in test_paths:
             with self.subTest(path=path):
@@ -92,6 +95,23 @@ class TestEvalResource(SnekAPITestCase):
             "/etc/vars/secrets",
             "/absolute",
             "/file.bin",
+        ]
+        for path in test_paths:
+            with self.subTest(path=path):
+                body = {"args": ["test.py"], "files": [{"path": path}]}
+                result = self.simulate_post(self.PATH, json=body)
+                self.assertEqual(result.status_code, 400)
+                self.assertEqual("Request data failed validation", result.json["title"])
+                self.assertIn("does not match", result.json["description"])
+
+    def test_files_illegal_path_null_byte(self):
+        """Paths containing \0 should 400-error at json schema validation stage."""
+        test_paths = [
+            r"etc/passwd\0",
+            r"a\0b",
+            r"\0",
+            r"\\0",
+            r"var/\0/path",
         ]
         for path in test_paths:
             with self.subTest(path=path):
