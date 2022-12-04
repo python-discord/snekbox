@@ -70,7 +70,7 @@ NsJail is configured through [`snekbox.cfg`]. It contains the exact values for t
 
 ### Memory File System
 
-On each execution, the host will mount an instance-specific `tmpfs` drive, this is used as a limited read-write folder for the sandboxed code. There is no access to other files or directories on the host container beyond the other read-only mounted system folders. Instance file systems are isolated, it is not possible for sandboxed code to access another instance's writeable directory.
+On each execution, the host will mount an instance-specific `tmpfs` drive, this is used as a limited read-write folder for the sandboxed code. There is no access to other files or directories on the host container beyond the other read-only mounted system folders. Instance file systems are isolated; it is not possible for sandboxed code to access another instance's writeable directory.
 
 The following options for the memory file system are configurable as options in [gunicorn.conf.py](config/gunicorn.conf.py)
 
