@@ -43,6 +43,11 @@ class FileAttachment:
     path: str
     content: bytes
 
+    def __repr__(self) -> str:
+        path = f"{self.path[:30]}..." if len(self.path) > 30 else self.path
+        content = f"{self.content[:15]}..." if len(self.content) > 15 else self.content
+        return f"{self.__class__.__name__}(path={path!r}, content={content!r})"
+
     @classmethod
     def from_dict(cls, data: dict[str, str]) -> FileAttachment:
         """
