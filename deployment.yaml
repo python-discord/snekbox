@@ -47,6 +47,7 @@ spec:
                     pendulum~=2.1
                     python-dateutil~=2.8
                     pyyaml~=6.0
+                    scipy~=1.9.2
                     sympy~=1.11
                     toml~=0.10
                     typing-extensions~=4.4
