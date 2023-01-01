@@ -36,7 +36,7 @@ spec:
                     arrow~=1.2
                     attrs~=22.1
                     beautifulsoup4~=4.11
-                    fishhook~=0.1
+                    fishhook~=0.2
                     forbiddenfruit~=0.1
                     fuzzywuzzy~=0.18
                     lark~=1.1
@@ -48,6 +48,7 @@ spec:
                     pendulum~=2.1
                     python-dateutil~=2.8
                     pyyaml~=6.0
+                    scipy~=1.9.2
                     sympy~=1.11
                     toml~=0.10
                     typing-extensions~=4.4
