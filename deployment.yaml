@@ -31,7 +31,7 @@ spec:
                   - "-c"
                   - >-
                     PYTHONUSERBASE=/snekbox/user_base
-                    pip install --user
+                    pip install --user --upgrade
                     anyio[trio]~=3.6
                     arrow~=1.2
                     attrs~=22.1
