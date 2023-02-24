@@ -53,10 +53,10 @@ class NsJail:
         read_chunk_size: int = 10_000,
         memfs_instance_size: int = 48 * Size.MiB,
         memfs_home: str = "home",
-        memfs_output: str = "output",
+        memfs_output: str = "home",
         files_limit: int | None = 100,
         files_timeout: float | None = 8,
-        files_pattern: str = "**/*",
+        files_pattern: str = "**/[!_]*",
     ):
         """
         Initialize NsJail.
@@ -258,11 +258,14 @@ class NsJail:
             # convert negative exit codes to the `N + 128` form.
             returncode = -nsjail.returncode + 128 if nsjail.returncode < 0 else nsjail.returncode
 
+            # Exclude user uploaded files from output
+            to_exclude = [file.path for file in files]
             # Parse attachments with time limit
             try:
                 attachments = timed(
                     MemFS.files_list,
-                    (fs, self.files_limit, self.files_pattern, True),
+                    (fs, self.files_limit, self.files_pattern),
+                    {"preload_dict": True, "exclude_files": to_exclude},
                     timeout=self.files_timeout,
                 )
                 log.info(f"Found {len(attachments)} files.")

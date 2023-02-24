@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 import warnings
 import weakref
-from collections.abc import Generator
+from collections.abc import Generator, Sequence
 from contextlib import suppress
 from pathlib import Path
 from types import TracebackType
@@ -27,7 +27,7 @@ class MemFS:
         instance_size: int,
         root_dir: str | Path = "/memfs",
         home: str = "home",
-        output: str = "output",
+        output: str = "home",
     ) -> None:
         """
         Initialize an in-memory temporary file system.
@@ -97,7 +97,7 @@ class MemFS:
     @property
     def output(self) -> Path:
         """Path to output directory."""
-        return self.home / self._output_name
+        return self.path / self._output_name
 
     def __enter__(self) -> MemFS:
         return self
@@ -120,21 +120,28 @@ class MemFS:
         folder.chmod(chmod)
         return folder
 
-    def files(self, limit: int, pattern: str = "**/*") -> Generator[FileAttachment, None, None]:
+    def files(
+        self, limit: int, pattern: str = "**/*", exclude_files: Sequence[str] = ()
+    ) -> Generator[FileAttachment, None, None]:
         """
         Yields FileAttachments for files found in the output directory.
 
         Args:
             limit: The maximum number of files to parse.
             pattern: The glob pattern to match files against.
+            exclude_files: Files (relative to home directory) to exclude.
         """
         count = 0
         for file in self.output.rglob(pattern):
+            if str(file.relative_to(self.home)) in exclude_files:
+                log.info(f"Skipping excluded file {file!s}")
+                continue
             if count > limit:
                 log.info(f"Max attachments {limit} reached, skipping remaining files")
                 break
             if file.is_file():
                 count += 1
+                log.info(f"Found file {file!s}")
                 yield FileAttachment.from_path(file, relative_to=self.output)
 
     def files_list(
@@ -142,6 +149,7 @@ class MemFS:
         limit: int,
         pattern: str,
         preload_dict: bool = False,
+        exclude_files: Sequence[str] = (),
     ) -> list[FileAttachment]:
         """
         Return a sorted list of file paths within the output directory.
@@ -150,11 +158,11 @@ class MemFS:
             limit: The maximum number of files to parse.
             pattern: The glob pattern to match files against.
             preload_dict: Whether to preload as_dict property data.
-
+            exclude_files: Files (relative to home directory) to exclude.
         Returns:
             List of FileAttachments sorted lexically by path name.
         """
-        res = sorted(self.files(limit, pattern), key=lambda f: f.path)
+        res = sorted(self.files(limit, pattern, exclude_files), key=lambda f: f.path)
         if preload_dict:
             for file in res:
                 # Loads the cached property as attribute
