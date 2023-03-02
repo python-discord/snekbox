@@ -64,7 +64,7 @@ The main features of the default configuration are:
 * Process count limit
 * No networking
 * Restricted, read-only system filesystem
-* Memory-based virtual read-write filesystem mounted as cwd at `/home`
+* Memory-based read-write filesystem mounted as working directory `/home`
 
 NsJail is configured through [`snekbox.cfg`]. It contains the exact values for the items listed above. The configuration format is defined by a [protobuf file][7] which can be referred to for documentation. The command-line options of NsJail can also serve as documentation since they closely follow the config file format.
 
@@ -75,15 +75,13 @@ On each execution, the host will mount an instance-specific `tmpfs` drive, this 
 The following options for the memory file system are configurable as options in [gunicorn.conf.py](config/gunicorn.conf.py)
 
 * `memfs_instance_size` Size in bytes for the capacity of each instance file system.
+* `memfs_home` Path to the home directory within the instance file system.
+* `memfs_output` Path to the output directory within the instance file system.
 * `files_limit` Maximum number of valid output files to parse.
 * `files_timeout` Maximum time in seconds for output file parsing and encoding.
 * `files_pattern` Glob pattern to match files within `output`.
 
-The sandboxed code execution will start with a writeable working directory of `home`. Any files written within the subfolder `output` will be parsed for output.
-```
-/home
- |- output
-```
+The sandboxed code execution will start with a writeable working directory of `home`. By default, the output folder is also `home`. New files, and uploaded files with a newer last modified time, will be uploaded on completion.
 
 ### Gunicorn
 
