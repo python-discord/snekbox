@@ -191,12 +191,12 @@ class NsJailTests(unittest.TestCase):
             data = "a" * 1024
             size = 32 * 1024 * 1024
 
-            with open("output/file", "w") as f:
+            with open("file", "w") as f:
                 for _ in range((size // 1024) - 5):
                     f.write(data)
 
             for i in range(100):
-                os.symlink("file", f"output/file{i}")
+                os.symlink("file", f"file{i}")
             """
         ).strip()
 
@@ -210,7 +210,7 @@ class NsJailTests(unittest.TestCase):
 
     def test_file_write_error(self):
         """Test errors during file write."""
-        result = self.nsjail.python3([""], [FileAttachment("output", "hello".encode())])
+        result = self.nsjail.python3([""], [FileAttachment("../dev", "hello".encode())])
 
         self.assertEqual(result.returncode, None)
         self.assertEqual(result.stdout, "IsADirectoryError: Failed to create file 'output'.")

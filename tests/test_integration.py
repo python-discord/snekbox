@@ -79,11 +79,11 @@ class IntegrationTests(unittest.TestCase):
                             from mod import lib
                             print(lib.var)
 
-                            with open('output/test.txt', 'w') as f:
+                            with open('test.txt', 'w') as f:
                                 f.write('test 1')
 
-                            Path('output/dir').mkdir()
-                            Path('output/dir/test2.txt').write_text('test 2')
+                            Path('dir').mkdir()
+                            Path('dir/test2.txt').write_text('test 2')
                             """
                         ),
                     },
