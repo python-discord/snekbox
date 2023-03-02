@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 import warnings
 import weakref
-from collections.abc import Generator, Sequence
+from collections.abc import Generator
 from contextlib import suppress
 from pathlib import Path
 from types import TracebackType
@@ -121,7 +121,10 @@ class MemFS:
         return folder
 
     def files(
-        self, limit: int, pattern: str = "**/*", exclude_files: Sequence[str] = ()
+        self,
+        limit: int,
+        pattern: str = "**/*",
+        exclude_files: dict[Path, float] | None = None,
     ) -> Generator[FileAttachment, None, None]:
         """
         Yields FileAttachments for files found in the output directory.
@@ -129,13 +132,18 @@ class MemFS:
         Args:
             limit: The maximum number of files to parse.
             pattern: The glob pattern to match files against.
-            exclude_files: Files (relative to home directory) to exclude.
+            exclude_files: A dict of Paths and last modified times.
+                Files will be excluded if their last modified time
+                is equal to the provided value.
         """
         count = 0
         for file in self.output.rglob(pattern):
-            if str(file.relative_to(self.home)) in exclude_files:
-                log.info(f"Skipping excluded file {file!s}")
-                continue
+            if exclude_files and (orig_time := exclude_files.get(file)):
+                new_time = file.stat().st_mtime
+                log.info(f"Checking {file.name} ({orig_time=}, {new_time=})")
+                if file.stat().st_mtime == orig_time:
+                    log.info(f"Skipping {file.name} as it has not been modified")
+                    continue
             if count > limit:
                 log.info(f"Max attachments {limit} reached, skipping remaining files")
                 break
@@ -149,7 +157,7 @@ class MemFS:
         limit: int,
         pattern: str,
         preload_dict: bool = False,
-        exclude_files: Sequence[str] = (),
+        exclude_files: dict[Path, float] | None = None,
     ) -> list[FileAttachment]:
         """
         Return a sorted list of file paths within the output directory.
@@ -158,7 +166,9 @@ class MemFS:
             limit: The maximum number of files to parse.
             pattern: The glob pattern to match files against.
             preload_dict: Whether to preload as_dict property data.
-            exclude_files: Files (relative to home directory) to exclude.
+            exclude_files: A dict of Paths and last modified times.
+                Files will be excluded if their last modified time
+                is equal to the provided value.
         Returns:
             List of FileAttachments sorted lexically by path name.
         """
