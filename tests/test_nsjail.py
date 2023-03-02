@@ -210,11 +210,17 @@ class NsJailTests(unittest.TestCase):
 
     def test_file_write_error(self):
         """Test errors during file write."""
-        result = self.nsjail.python3([""], [FileAttachment("../dev", "hello".encode())])
+        result = self.nsjail.python3(
+            [""],
+            [
+                FileAttachment("dir/test.txt", b"abc"),
+                FileAttachment("dir", b"xyz"),
+            ],
+        )
 
-        self.assertEqual(result.returncode, None)
-        self.assertEqual(result.stdout, "IsADirectoryError: Failed to create file 'output'.")
+        self.assertEqual(result.stdout, "IsADirectoryError: Failed to create file 'dir'.")
         self.assertEqual(result.stderr, None)
+        self.assertEqual(result.returncode, None)
 
     def test_sigsegv_returns_139(self):  # In honour of Juan.
         code = dedent(
