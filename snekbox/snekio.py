@@ -80,12 +80,13 @@ class FileAttachment:
         """Size of the attachment."""
         return len(self.content)
 
-    def save_to(self, directory: Path | str) -> None:
-        """Write the attachment to a file in `directory`."""
+    def save_to(self, directory: Path | str) -> Path:
+        """Write the attachment to a file in `directory`. Return a Path of the file."""
         file = Path(directory, self.path)
         # Create directories if they don't exist
         file.parent.mkdir(parents=True, exist_ok=True)
         file.write_bytes(self.content)
+        return file
 
     @cached_property
     def as_dict(self) -> dict[str, str | int]:
