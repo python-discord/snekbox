@@ -231,6 +231,8 @@ class NsJail:
             for file in files:
                 try:
                     f_path = file.save_to(fs.home)
+                    # Allow file to be writable
+                    f_path.chmod(0o777)
                     # Save the written at time to later check if it was modified
                     files_written[f_path] = f_path.stat().st_mtime
                     log.info(f"Created file at {(fs.home / file.path)!r}.")
