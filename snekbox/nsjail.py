@@ -58,6 +58,7 @@ class NsJail:
         files_limit: int | None = 100,
         files_timeout: float | None = 8,
         files_pattern: str = "**/[!_]*",
+        files_ignore_path: str = "./config/.ignore",
     ):
         """
         Initialize NsJail.
@@ -74,17 +75,21 @@ class NsJail:
             files_limit: Maximum number of output files to parse.
             files_timeout: Maximum time in seconds to wait for output files to be read.
             files_pattern: Pattern to match files to attach within the output directory.
+            files_ignore_path: Path to a file containing a gitignore-like list of file
+                patterns to ignore for upload.
         """
         self.nsjail_path = nsjail_path
         self.config_path = config_path
         self.max_output_size = max_output_size
         self.read_chunk_size = read_chunk_size
+
         self.memfs_instance_size = memfs_instance_size
         self.memfs_home = memfs_home
         self.memfs_output = memfs_output
         self.files_limit = files_limit
         self.files_timeout = files_timeout
         self.files_pattern = files_pattern
+        self.files_ignores = Path(files_ignore_path).read_text().splitlines()
 
         self.config = self._read_config(config_path)
         self.cgroup_version = utils.cgroup.init(self.config)
@@ -269,7 +274,11 @@ class NsJail:
                 attachments = timed(
                     MemFS.files_list,
                     (fs, self.files_limit, self.files_pattern),
-                    {"preload_dict": True, "exclude_files": files_written},
+                    {
+                        "ignores": self.files_ignores,
+                        "preload_dict": True,
+                        "exclude_files": files_written,
+                    },
                     timeout=self.files_timeout,
                 )
                 log.info(f"Found {len(attachments)} files.")

@@ -4,8 +4,9 @@ from __future__ import annotations
 import logging
 import warnings
 import weakref
-from collections.abc import Generator
+from collections.abc import Generator, Sequence
 from contextlib import suppress
+from fnmatch import fnmatch
 from pathlib import Path
 from types import TracebackType
 from typing import Type
@@ -124,6 +125,7 @@ class MemFS:
         self,
         limit: int,
         pattern: str = "**/*",
+        ignores: Sequence[str] = (),
         exclude_files: dict[Path, float] | None = None,
     ) -> Generator[FileAttachment, None, None]:
         """
@@ -132,32 +134,43 @@ class MemFS:
         Args:
             limit: The maximum number of files to parse.
             pattern: The glob pattern to match files against.
+            ignores: A sequence of fnmatch patterns to ignore.
             exclude_files: A dict of Paths and last modified times.
                 Files will be excluded if their last modified time
                 is equal to the provided value.
         """
         count = 0
         for file in self.output.rglob(pattern):
+            if any(
+                fnmatch(str(file.relative_to(self.home)), match_pattern := ignore_pattern)
+                for ignore_pattern in ignores
+            ):
+                log.info(f"Ignoring {file.name!r} as it matches {match_pattern!r}")
+                continue
+
             if exclude_files and (orig_time := exclude_files.get(file)):
                 new_time = file.stat().st_mtime
                 log.info(f"Checking {file.name} ({orig_time=}, {new_time=})")
                 if file.stat().st_mtime == orig_time:
-                    log.info(f"Skipping {file.name} as it has not been modified")
+                    log.info(f"Skipping {file.name!r} as it has not been modified")
                     continue
+
             if count > limit:
                 log.info(f"Max attachments {limit} reached, skipping remaining files")
                 break
+
             if file.is_file():
                 count += 1
-                log.info(f"Found file {file!s}")
+                log.info(f"Found valid file for upload {file.name!r}")
                 yield FileAttachment.from_path(file, relative_to=self.output)
 
     def files_list(
         self,
         limit: int,
         pattern: str,
-        preload_dict: bool = False,
+        ignores: Sequence[str] = (),
         exclude_files: dict[Path, float] | None = None,
+        preload_dict: bool = False,
     ) -> list[FileAttachment]:
         """
         Return a sorted list of file paths within the output directory.
@@ -165,14 +178,18 @@ class MemFS:
         Args:
             limit: The maximum number of files to parse.
             pattern: The glob pattern to match files against.
-            preload_dict: Whether to preload as_dict property data.
+            ignores: A sequence of fnmatch patterns to ignore.
             exclude_files: A dict of Paths and last modified times.
                 Files will be excluded if their last modified time
                 is equal to the provided value.
+            preload_dict: Whether to preload as_dict property data.
         Returns:
             List of FileAttachments sorted lexically by path name.
         """
-        res = sorted(self.files(limit, pattern, exclude_files), key=lambda f: f.path)
+        res = sorted(
+            self.files(limit=limit, pattern=pattern, ignores=ignores, exclude_files=exclude_files),
+            key=lambda f: f.path,
+        )
         if preload_dict:
             for file in res:
                 # Loads the cached property as attribute
