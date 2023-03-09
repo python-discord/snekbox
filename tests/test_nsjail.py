@@ -389,7 +389,7 @@ class NsJailTests(unittest.TestCase):
         for args, expected in cases:
             with self.subTest(args=args):
                 result = self.nsjail.python3(py_args=args)
-                idx = result.args.index("-Squ")
+                idx = result.args.index("-BSqu")
                 self.assertEqual(result.args[idx + 1 :], expected)
                 self.assertEqual(result.returncode, 0)
 
