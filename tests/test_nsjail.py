@@ -170,6 +170,25 @@ class NsJailTests(unittest.TestCase):
         self.assertIn("No space left on device", result.stdout)
         self.assertEqual(result.stderr, None)
 
+    def test_write_hidden_exclude(self):
+        """Hidden paths should be excluded from output."""
+        code = dedent(
+            """
+            from pathlib import Path
+
+            Path("normal").mkdir()
+            Path("normal/a.txt").write_text("a")
+            Path("normal/.hidden.txt").write_text("a")
+            Path(".hidden").mkdir()
+            Path(".hidden/b.txt").write_text("b")
+            """
+        ).strip()
+
+        result = self.eval_file(code)
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(len(result.files), 1)
+        self.assertEqual(result.files[0].content, b"a")
+
     def test_forkbomb_resource_unavailable(self):
         code = dedent(
             """
