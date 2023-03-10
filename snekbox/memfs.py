@@ -138,6 +138,11 @@ class MemFS:
         """
         count = 0
         for file in self.output.rglob(pattern):
+            # Ignore hidden directories or files
+            if any(part.startswith(".") for part in file.parts):
+                log.info(f"Skipping hidden path {file!s}")
+                continue
+
             if exclude_files and (orig_time := exclude_files.get(file)):
                 new_time = file.stat().st_mtime
                 log.info(f"Checking {file.name} ({orig_time=}, {new_time=})")
