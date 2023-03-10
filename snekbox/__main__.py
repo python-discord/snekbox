@@ -37,7 +37,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     """Evaluate Python code through NsJail."""
     args = parse_args()
-    result = NsJail().python3(args.code, nsjail_args=args.nsjail_args, py_args=args.py_args)
+    result = NsJail().python3(py_args=[*args.py_args, args.code], nsjail_args=args.nsjail_args)
     print(result.stdout)
 
     if result.returncode != 0:

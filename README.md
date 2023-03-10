@@ -7,6 +7,9 @@
 
 Python sandbox runners for executing code in isolation aka snekbox.
 
+Supports a memory [virtual read/write file system](#virtual-file-system) within the sandbox,
+allowing text or binary files to be sent and returned.
+
 A client sends Python code to a snekbox, the snekbox executes the code, and finally the results of the execution are returned to the client.
 
 ```mermaid
@@ -60,9 +63,25 @@ The main features of the default configuration are:
 * Memory limit
 * Process count limit
 * No networking
-* Restricted, read-only filesystem
+* Restricted, read-only system filesystem
+* Memory-based read-write filesystem mounted as working directory `/home`
 
 NsJail is configured through [`snekbox.cfg`]. It contains the exact values for the items listed above. The configuration format is defined by a [protobuf file][7] which can be referred to for documentation. The command-line options of NsJail can also serve as documentation since they closely follow the config file format.
+
+### Memory File System
+
+On each execution, the host will mount an instance-specific `tmpfs` drive, this is used as a limited read-write folder for the sandboxed code. There is no access to other files or directories on the host container beyond the other read-only mounted system folders. Instance file systems are isolated; it is not possible for sandboxed code to access another instance's writeable directory.
+
+The following options for the memory file system are configurable as options in [gunicorn.conf.py](config/gunicorn.conf.py)
+
+* `memfs_instance_size` Size in bytes for the capacity of each instance file system.
+* `memfs_home` Path to the home directory within the instance file system.
+* `memfs_output` Path to the output directory within the instance file system.
+* `files_limit` Maximum number of valid output files to parse.
+* `files_timeout` Maximum time in seconds for output file parsing and encoding.
+* `files_pattern` Glob pattern to match files within `output`.
+
+The sandboxed code execution will start with a writeable working directory of `home`. By default, the output folder is also `home`. New files, and uploaded files with a newer last modified time, will be uploaded on completion.
 
 ### Gunicorn
 

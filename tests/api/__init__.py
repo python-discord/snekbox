@@ -1,10 +1,10 @@
 import logging
-from subprocess import CompletedProcess
 from unittest import mock
 
 from falcon import testing
 
 from snekbox.api import SnekAPI
+from snekbox.process import EvalResult
 
 
 class SnekAPITestCase(testing.TestCase):
@@ -13,7 +13,7 @@ class SnekAPITestCase(testing.TestCase):
 
         self.patcher = mock.patch("snekbox.api.snekapi.NsJail", autospec=True)
         self.mock_nsjail = self.patcher.start()
-        self.mock_nsjail.return_value.python3.return_value = CompletedProcess(
+        self.mock_nsjail.return_value.python3.return_value = EvalResult(
             args=[], returncode=0, stdout="output", stderr="error"
         )
         self.addCleanup(self.patcher.stop)

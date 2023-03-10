@@ -63,7 +63,7 @@ class EntrypointTests(unittest.TestCase):
 
     @patch("sys.argv", ["", "import sys; sys.exit(22)"])
     def test_main_exits_with_returncode(self):
-        """Should exit with the subprocess's returncode if it's non-zero."""
+        """Should exit with the subprocess returncode if it's non-zero."""
         with self.assertRaises(SystemExit) as cm:
             snekbox_main.main()
 

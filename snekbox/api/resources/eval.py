@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 
 import falcon
@@ -6,6 +8,8 @@ from falcon.media.validators.jsonschema import validate
 from snekbox.nsjail import NsJail
 
 __all__ = ("EvalResource",)
+
+from snekbox.snekio import FileAttachment, ParsingError
 
 log = logging.getLogger(__name__)
 
@@ -25,8 +29,26 @@ class EvalResource:
         "properties": {
             "input": {"type": "string"},
             "args": {"type": "array", "items": {"type": "string"}},
+            "files": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            # Disallow starting with / or containing \0 anywhere
+                            "pattern": r"^(?!/)(?!.*\\0).*$",
+                        },
+                        "content": {"type": "string"},
+                    },
+                    "required": ["path"],
+                },
+            },
         },
-        "required": ["input"],
+        "anyOf": [
+            {"required": ["input"]},
+            {"required": ["args"]},
+        ],
     }
 
     def __init__(self, nsjail: NsJail):
@@ -38,8 +60,11 @@ class EvalResource:
         Evaluate Python code and return stdout, stderr, and the return code.
 
         A list of arguments for the Python subprocess can be specified as `args`.
-        Otherwise, the default argument "-c" is used to execute the input code.
-        The input code is always passed as the last argument to Python.
+
+        If `input` is specified, it will be appended as the last argument to `args`,
+        and `args` will have a default argument of `"-c"`.
+
+        Either `input` or `args` must be specified.
 
         The return codes mostly resemble those of a Unix shell. Some noteworthy cases:
 
@@ -53,15 +78,35 @@ class EvalResource:
         Request body:
 
         >>> {
-        ...     "input": "[i for i in range(1000)]",
-        ...     "args": ["-m", "timeit"] # This is optional
+        ...    "input": "print('Hello')"
+        ... }
+
+        >>> {
+        ...    "args": ["-c", "print('Hello')"]
+        ... }
+
+        >>> {
+        ...    "args": ["main.py"],
+        ...    "files": [
+        ...        {
+        ...            "path": "main.py",
+        ...            "content": "SGVsbG8...="  # Base64
+        ...        }
+        ...    ]
         ... }
 
         Response format:
 
         >>> {
-        ...     "stdout": "10000 loops, best of 5: 23.8 usec per loop\n",
-        ...     "returncode": 0
+        ...     "stdout": "10000 loops, best of 5: 23.8 usec per loop",
+        ...     "returncode": 0,
+        ...     "files": [
+        ...         {
+        ...             "path": "output.png",
+        ...             "size": 57344,
+        ...             "content": "eJzzSM3...="  # Base64
+        ...         }
+        ...     ]
         ... }
 
         Status codes:
@@ -69,17 +114,28 @@ class EvalResource:
         - 200
             Successful evaluation; not indicative that the input code itself works
         - 400
-           Input's JSON schema is invalid
+           Input JSON schema is invalid
         - 415
             Unsupported content type; only application/JSON is supported
         """
-        code = req.media["input"]
-        args = req.media.get("args", ("-c",))
-
+        body: dict[str, str | list[str] | list[dict[str, str]]] = req.media
+        # If `input` is supplied, default `args` to `-c`
+        if "input" in body:
+            body.setdefault("args", ["-c"])
+            body["args"].append(body["input"])
         try:
-            result = self.nsjail.python3(code, py_args=args)
+            result = self.nsjail.python3(
+                py_args=body["args"],
+                files=[FileAttachment.from_dict(file) for file in body.get("files", [])],
+            )
+        except ParsingError as e:
+            raise falcon.HTTPBadRequest(title="Request file is invalid", description=str(e))
         except Exception:
             log.exception("An exception occurred while trying to process the request")
             raise falcon.HTTPInternalServerError
 
-        resp.media = {"stdout": result.stdout, "returncode": result.returncode}
+        resp.media = {
+            "stdout": result.stdout,
+            "returncode": result.returncode,
+            "files": [f.as_dict for f in result.files],
+        }

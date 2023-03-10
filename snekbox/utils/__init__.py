@@ -1,3 +1,3 @@
-from . import cgroup, logging, swap
+from . import cgroup, logging, swap, timed
 
-__all__ = ("cgroup", "logging", "swap")
+__all__ = ("cgroup", "logging", "swap", "timed")

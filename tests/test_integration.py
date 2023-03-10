@@ -1,14 +1,25 @@
 import json
 import unittest
 import urllib.request
+from base64 import b64encode
 from multiprocessing.dummy import Pool
+from textwrap import dedent
 
 from tests.gunicorn_utils import run_gunicorn
 
 
-def run_code_in_snekbox(code: str) -> tuple[str, int]:
-    body = {"input": code}
-    json_data = json.dumps(body).encode("utf-8")
+def b64encode_code(data: str):
+    data = dedent(data).strip()
+    return b64encode(data.encode()).decode("ascii")
+
+
+def snekbox_run_code(code: str) -> tuple[str, int]:
+    body = {"args": ["-c", code]}
+    return snekbox_request(body)
+
+
+def snekbox_request(content: dict) -> tuple[str, int]:
+    json_data = json.dumps(content).encode("utf-8")
 
     req = urllib.request.Request("http://localhost:8060/eval")
     req.add_header("Content-Type", "application/json; charset=utf-8")
@@ -34,9 +45,71 @@ class IntegrationTests(unittest.TestCase):
 
             args = [code] * processes
             with Pool(processes) as p:
-                results = p.map(run_code_in_snekbox, args)
+                results = p.map(snekbox_run_code, args)
 
             responses, statuses = zip(*results)
 
             self.assertTrue(all(status == 200 for status in statuses))
             self.assertTrue(all(json.loads(response)["returncode"] == 0 for response in responses))
+
+    def test_eval(self):
+        """Test normal eval requests without files."""
+        with run_gunicorn():
+            cases = [
+                ({"input": "print('Hello')"}, "Hello\n"),
+                ({"args": ["-c", "print('abc12')"]}, "abc12\n"),
+            ]
+            for body, expected in cases:
+                with self.subTest(body=body):
+                    response, status = snekbox_request(body)
+                    self.assertEqual(status, 200)
+                    self.assertEqual(json.loads(response)["stdout"], expected)
+
+    def test_files_send_receive(self):
+        """Test sending and receiving files to snekbox."""
+        with run_gunicorn():
+            request = {
+                "args": ["main.py"],
+                "files": [
+                    {
+                        "path": "main.py",
+                        "content": b64encode_code(
+                            """
+                            from pathlib import Path
+                            from mod import lib
+                            print(lib.var)
+
+                            with open('test.txt', 'w') as f:
+                                f.write('test 1')
+
+                            Path('dir').mkdir()
+                            Path('dir/test2.txt').write_text('test 2')
+                            """
+                        ),
+                    },
+                    {"path": "mod/__init__.py"},
+                    {"path": "mod/lib.py", "content": b64encode_code("var = 'hello'")},
+                ],
+            }
+
+            expected = {
+                "stdout": "hello\n",
+                "returncode": 0,
+                "files": [
+                    {
+                        "path": "dir/test2.txt",
+                        "size": len("test 2"),
+                        "content": b64encode_code("test 2"),
+                    },
+                    {
+                        "path": "test.txt",
+                        "size": len("test 1"),
+                        "content": b64encode_code("test 1"),
+                    },
+                ],
+            }
+
+            response, status = snekbox_request(request)
+
+            self.assertEqual(200, status)
+            self.assertEqual(expected, json.loads(response))
