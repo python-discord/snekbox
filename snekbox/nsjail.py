@@ -273,6 +273,7 @@ class NsJail:
                     {
                         "preload_dict": True,
                         "exclude_files": files_written,
+                        "timeout": self.files_timeout,
                     },
                     timeout=self.files_timeout,
                 )
