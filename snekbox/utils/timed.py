@@ -29,7 +29,7 @@ def timed(
     """
     if kwds is None:
         kwds = {}
-    with multiprocessing.Pool(1) as pool:
+    with multiprocessing.Pool(1, maxtasksperchild=1) as pool:
         result = pool.apply_async(func, args, kwds)
         try:
             return result.get(timeout)
