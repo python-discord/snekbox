@@ -227,6 +227,29 @@ class NsJailTests(unittest.TestCase):
         )
         self.assertEqual(result.stderr, None)
 
+    def test_file_parsing_depth_limit(self):
+        code = dedent(
+            """
+            import os
+
+            x = ""
+            for _ in range(1000):
+                x += "a/"
+                os.mkdir(x)
+
+            open(f"{x}test.txt", "w").write("test")
+            """
+        ).strip()
+
+        nsjail = NsJail(memfs_instance_size=32 * Size.MiB, files_timeout=5)
+        result = nsjail.python3(["-c", code])
+        self.assertEqual(result.returncode, None)
+        self.assertEqual(
+            result.stdout,
+            "FileParsingError: Exceeded directory depth limit while parsing attachments",
+        )
+        self.assertEqual(result.stderr, None)
+
     def test_file_write_error(self):
         """Test errors during file write."""
         result = self.nsjail.python3(
