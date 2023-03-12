@@ -277,6 +277,13 @@ class NsJail:
                     timeout=self.files_timeout,
                 )
                 log.info(f"Found {len(attachments)} files.")
+            except RecursionError:
+                log.info("Recursion error while parsing attachments")
+                return EvalResult(
+                    args,
+                    None,
+                    "FileParsingError: Exceeded directory depth limit while parsing attachments",
+                )
             except TimeoutError as e:
                 log.info(f"Exceeded time limit while parsing attachments: {e}")
                 return EvalResult(
