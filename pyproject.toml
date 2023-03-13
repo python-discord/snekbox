@@ -25,7 +25,6 @@ dynamic = ["version"]
 
 requires-python = ">=3.11"
 dependencies = [
-    # Sentry's Falcon integration relies on api_helpers (falconry/falcon#1902).
     "falcon>=3.0.1",
     "jsonschema>=4.0",
     "protobuf>=3.19",
@@ -33,7 +32,7 @@ dependencies = [
 
 [project.optional-dependencies]
 gunicorn = ["gunicorn>=20.1"]  # Lowest which supports wsgi_app in config.
-sentry = ["sentry-sdk[falcon]>=1.16.0"]
+sentry = ["sentry-sdk[falcon]>=1.16.0"] # Minimum of 1.16.0 required for Falcon 3.0 support (getsentry/sentry-python#1733)
 
 [project.urls]
 source = "https://github.com/python-discord/snekbox"
