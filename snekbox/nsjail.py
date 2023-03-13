@@ -15,7 +15,7 @@ from snekbox.filesystem import Size
 from snekbox.memfs import MemFS
 from snekbox.process import EvalResult
 from snekbox.snekio import FileAttachment
-from snekbox.utils.timed import timed
+from snekbox.utils.timed import time_limit
 
 __all__ = ("NsJail",)
 
@@ -267,16 +267,14 @@ class NsJail:
 
             # Parse attachments with time limit
             try:
-                attachments = timed(
-                    MemFS.files_list,
-                    (fs, self.files_limit, self.files_pattern),
-                    {
-                        "preload_dict": True,
-                        "exclude_files": files_written,
-                        "timeout": self.files_timeout,
-                    },
-                    timeout=self.files_timeout,
-                )
+                with time_limit(self.files_timeout):
+                    attachments = fs.files_list(
+                        limit=self.files_limit,
+                        pattern=self.files_pattern,
+                        preload_dict=True,
+                        exclude_files=files_written,
+                        timeout=self.files_timeout,
+                    )
                 log.info(f"Found {len(attachments)} files.")
             except RecursionError:
                 log.info("Recursion error while parsing attachments")
@@ -289,6 +287,11 @@ class NsJail:
                 log.info(f"Exceeded time limit while parsing attachments: {e}")
                 return EvalResult(
                     args, None, "TimeoutError: Exceeded time limit while parsing attachments"
+                )
+            except Exception as e:
+                log.error(f"Unexpected {type(e).__name__} while parse attachments: {e}")
+                return EvalResult(
+                    args, None, "FileParsingError: Unknown error while parsing attachments"
                 )
 
             log_lines = nsj_log.read().decode("utf-8").splitlines()
