@@ -9,6 +9,7 @@ from typing import Iterable, TypeVar
 
 from google.protobuf import text_format
 
+from scripts.python_version import Version
 from snekbox import DEBUG, utils
 from snekbox.config_pb2 import NsJailConfig
 from snekbox.filesystem import Size
@@ -177,6 +178,7 @@ class NsJail:
     def python3(
         self,
         py_args: Iterable[str],
+        version: Version,
         files: Iterable[FileAttachment] = (),
         nsjail_args: Iterable[str] = (),
     ) -> EvalResult:
@@ -185,6 +187,7 @@ class NsJail:
 
         Args:
             py_args: Arguments to pass to Python.
+            version: The python version to perform the eval with.
             files: FileAttachments to write to the sandbox prior to running Python.
             nsjail_args: Overrides for the NsJail configuration.
         """
@@ -218,10 +221,12 @@ class NsJail:
                 self.config_path,
                 "--log",
                 nsj_log.name,
+                "-E",
+                f"PYTHONPATH=/snekbox/user_base/lib/python{version.version_name}/site-packages",
                 *nsjail_args,
                 "--",
-                self.config.exec_bin.path,
-                *self.config.exec_bin.arg,
+                f"/usr/local/bin/python{version.version_name}",
+                *["-BSqu"],
                 # Filter out empty strings at start of py_args
                 # (causes issues with python cli)
                 *iter_lstrip(py_args),

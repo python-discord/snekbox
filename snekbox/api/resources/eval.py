@@ -9,9 +9,12 @@ from snekbox.nsjail import NsJail
 
 __all__ = ("EvalResource",)
 
+from scripts.python_version import get_all_versions
 from snekbox.snekio import FileAttachment, ParsingError
 
 log = logging.getLogger(__name__)
+
+_VERSION_DISPLAY_NAMES = [version.display_name for version in get_all_versions()[0]]
 
 
 class EvalResource:
@@ -29,6 +32,10 @@ class EvalResource:
         "properties": {
             "input": {"type": "string"},
             "args": {"type": "array", "items": {"type": "string"}},
+            "version": {
+                "type": "string",
+                "oneOf": [{"const": name} for name in _VERSION_DISPLAY_NAMES],
+            },
             "files": {
                 "type": "array",
                 "items": {
@@ -53,6 +60,29 @@ class EvalResource:
 
     def __init__(self, nsjail: NsJail):
         self.nsjail = nsjail
+
+    @validate(
+        resp_schema={
+            "versions": {"type": "array", "items": {"type": "str"}},
+        }
+    )
+    def on_get(self, _: falcon.Request, resp: falcon.Response) -> None:
+        """
+        Get information about the server.
+
+        Response format:
+        >>> {
+        ...     "versions": ["Python 3.9", "Python 3.10", "Python 3.12 Beta 1"]
+        ... }
+
+        Status codes:
+
+        - 200
+            Success.
+        """
+        resp.media = {
+            "versions": _VERSION_DISPLAY_NAMES,
+        }
 
     @validate(REQ_SCHEMA)
     def on_post(self, req: falcon.Request, resp: falcon.Response) -> None:
@@ -123,10 +153,20 @@ class EvalResource:
         if "input" in body:
             body.setdefault("args", ["-c"])
             body["args"].append(body["input"])
+
+        # Parse a version from the request body, or use the default version
+        all_versions, selected_version = get_all_versions()
+        if "version" in body:
+            for version in all_versions:
+                if version.display_name == body["version"]:
+                    selected_version = version
+                    break
+
         try:
             result = self.nsjail.python3(
                 py_args=body["args"],
                 files=[FileAttachment.from_dict(file) for file in body.get("files", [])],
+                version=selected_version,
             )
         except ParsingError as e:
             raise falcon.HTTPBadRequest(title="Request file is invalid", description=str(e))

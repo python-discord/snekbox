@@ -70,5 +70,5 @@ force-exclude = "snekbox/config_pb2.py"
 line_length = 100
 profile = "black"
 skip_gitignore = true
-src_paths = ["snekbox"]
+src_paths = ["snekbox", "scripts"]
 extend_skip = ["snekbox/config_pb2.py"]
