@@ -13,7 +13,7 @@ __all__ = ("time_limit",)
 @contextmanager
 def time_limit(timeout: int | None = None) -> Generator[None, None, None]:
     """
-    Decorator to call a function with a time limit. Uses SIGALRM, requires a UNIX system.
+    Decorator to call a function with a time limit.
 
     Args:
         timeout: Timeout limit in seconds.
