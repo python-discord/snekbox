@@ -34,8 +34,12 @@ test:
 report: setup
 	coverage report
 
+.PHONY: prepare-dockerfile
+prepare-versions:
+	python scripts/set_versions.py
+
 .PHONY: build
-build:
+build: prepare-versions
 	docker build -t ghcr.io/python-discord/snekbox:latest .
 
 .PHONY: devsh
