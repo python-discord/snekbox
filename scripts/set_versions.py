@@ -1,6 +1,5 @@
 """Generate a Dockerfile from in.Dockerfile and a version JSON file, and write version info."""
 
-import re
 from pathlib import Path
 from textwrap import dedent
 
@@ -8,28 +7,14 @@ from scripts import python_version
 
 DOCKERFILE_TEMPLATE = Path("scripts/in.Dockerfile").read_text("utf-8")
 DOCKERFILE = Path("Dockerfile")
-JAIL_CONFIG = Path("config/snekbox.cfg")
 
 versions, main_version = python_version.get_all_versions()
 
 # Download and copy multiple python images into one layer
 python_build = ""
-jail_mounts = ""
 previous_layer = "first"
 
 for version in versions:
-    # Configure NSJail mounts
-    jail_mounts += dedent(
-        f"""
-        mount {{
-            src: "/usr/local/bin/python{version.version_name}"
-            dst: "/usr/local/bin/python{version.version_name}"
-            is_bind: true
-            rw: false
-        }}
-    """
-    )
-
     if version.is_main:
         # Main is handled separately later
         continue
@@ -47,14 +32,6 @@ for version in versions:
 # Main version is installed twice, once at the very beginning to make sure
 # its files aren't overwritten, and once at the end which actually makes use of the version
 python_build = f"FROM python:{main_version.image_tag} as base-first\n" + python_build
-
-# Update mounts for python binaries in the NSJail config
-new_config = re.sub(
-    r"(?<=# mount-section-key)[\s\S]+(?=# mount-section-key-end)",
-    jail_mounts,
-    JAIL_CONFIG.read_text("utf-8"),
-)
-JAIL_CONFIG.write_text(new_config, "utf-8")
 
 # Write new dockerfile
 DOCKERFILE.write_text(

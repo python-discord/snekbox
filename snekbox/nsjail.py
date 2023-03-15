@@ -212,6 +212,11 @@ class NsJail:
                 # Mount `home` with Read/Write access
                 "--bindmount",
                 f"{fs.home}:home",
+                # Configure the correct python version
+                "-E",
+                f"PYTHONPATH=/snekbox/user_base/lib/python{version.version_name}/site-packages",
+                "--bindmount_ro",
+                f"/usr/local/bin/python{version.version_name}",
                 *nsjail_args,
             )
 
@@ -221,8 +226,6 @@ class NsJail:
                 self.config_path,
                 "--log",
                 nsj_log.name,
-                "-E",
-                f"PYTHONPATH=/snekbox/user_base/lib/python{version.version_name}/site-packages",
                 *nsjail_args,
                 "--",
                 f"/usr/local/bin/python{version.version_name}",
