@@ -289,7 +289,7 @@ class NsJail:
                     args, None, "TimeoutError: Exceeded time limit while parsing attachments"
                 )
             except Exception as e:
-                log.error(f"Unexpected {type(e).__name__} while parse attachments: {e}")
+                log.exception(f"Unexpected {type(e).__name__} while parse attachments", exc_info=e)
                 return EvalResult(
                     args, None, "FileParsingError: Unknown error while parsing attachments"
                 )
