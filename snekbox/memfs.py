@@ -142,7 +142,7 @@ class MemFS:
                 a TimeoutError will be raised.
         """
         start_time = time.monotonic()
-        added = 0
+        count = 0
         files = glob.iglob(pattern, root_dir=str(self.output), recursive=True, include_hidden=False)
         for file in (Path(self.output, f) for f in files):
             if timeout and (time.monotonic() - start_time) > timeout:
@@ -158,11 +158,11 @@ class MemFS:
                     log.info(f"Skipping {file.name!r} as it has not been modified")
                     continue
 
-            if added > limit:
+            if count > limit:
                 log.info(f"Max attachments {limit} reached, skipping remaining files")
                 break
 
-            added += 1
+            count += 1
             log.info(f"Found valid file for upload {file.name!r}")
             yield FileAttachment.from_path(file, relative_to=self.output)
 
