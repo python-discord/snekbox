@@ -138,8 +138,9 @@ class MemFS:
             exclude_files: A dict of Paths and last modified times.
                 Files will be excluded if their last modified time
                 is equal to the provided value.
-            timeout: The maximum time for the file parsing. If exceeded,
-                a TimeoutError will be raised.
+            timeout: Maximum time in seconds for file parsing.
+        Raises:
+            TimeoutError: If file parsing exceeds timeout.
         """
         start_time = time.monotonic()
         count = 0
@@ -184,10 +185,11 @@ class MemFS:
                 Files will be excluded if their last modified time
                 is equal to the provided value.
             preload_dict: Whether to preload as_dict property data.
-            timeout: The maximum time for the file parsing. If exceeded,
-                a TimeoutError will be raised.
+            timeout: Maximum time in seconds for file parsing.
         Returns:
             List of FileAttachments sorted lexically by path name.
+        Raises:
+            TimeoutError: If file parsing exceeds timeout.
         """
         start_time = time.monotonic()
         res = sorted(
