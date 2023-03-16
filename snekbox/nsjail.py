@@ -56,7 +56,7 @@ class NsJail:
         memfs_home: str = "home",
         memfs_output: str = "home",
         files_limit: int | None = 100,
-        files_timeout: float | None = 5,
+        files_timeout: int | None = 5,
         files_pattern: str = "**/[!_]*",
     ):
         """
