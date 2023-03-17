@@ -1,0 +1,8 @@
+[
+  {
+    "image_tag": "3.11-slim-buster",
+    "version_name": "3.11",
+    "display_name": "CPython 3.11",
+    "is_main": true
+  }
+]

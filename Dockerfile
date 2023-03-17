@@ -22,13 +22,16 @@ RUN make
 # ------------------------------------------------------------------------------
 FROM python:3.11-slim-buster as base-first
 
-FROM python:3.10-slim-buster as base-3-10
+FROM python:3.7-slim-buster as base-3-7
 COPY --from=base-first / /
+
+FROM python:3.9-slim-buster as base-3-9
+COPY --from=base-3-7 / /
 
 # ------------------------------------------------------------------------------
 FROM python:3.11-slim-buster as base
 
-COPY --from=base-3-10 / /
+COPY --from=base-3-9 / /
 
 # Everything will be a user install to allow snekbox's dependencies to be kept
 # separate from the packages exposed during eval.

@@ -1,8 +1,14 @@
 [
   {
-    "image_tag": "3.10-slim-buster",
-    "version_name": "3.10",
-    "display_name": "CPython 3.10",
+    "image_tag": "3.7-slim-buster",
+    "version_name": "3.7",
+    "display_name": "CPython 3.7",
+    "is_main": false
+  },
+  {
+    "image_tag": "3.9-slim-buster",
+    "version_name": "3.9",
+    "display_name": "CPython 3.9",
     "is_main": false
   },
   {
