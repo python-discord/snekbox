@@ -7,6 +7,8 @@ from textwrap import dedent
 
 from tests.gunicorn_utils import run_gunicorn
 
+from scripts.python_version import MAIN_VERSION
+
 
 def b64encode_code(data: str):
     data = dedent(data).strip()
@@ -95,6 +97,7 @@ class IntegrationTests(unittest.TestCase):
             expected = {
                 "stdout": "hello\n",
                 "returncode": 0,
+                "version": MAIN_VERSION.display_name,
                 "files": [
                     {
                         "path": "dir/test2.txt",

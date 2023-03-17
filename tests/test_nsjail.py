@@ -9,6 +9,7 @@ from itertools import product
 from pathlib import Path
 from textwrap import dedent
 
+from scripts.python_version import MAIN_VERSION
 from snekbox.filesystem import Size
 from snekbox.nsjail import NsJail
 from snekbox.snekio import FileAttachment
@@ -24,11 +25,11 @@ class NsJailTests(unittest.TestCase):
         self.logger.setLevel(logging.WARNING)
 
     def eval_code(self, code: str):
-        return self.nsjail.python3(["-c", code])
+        return self.nsjail.python3(["-c", code], MAIN_VERSION)
 
     def eval_file(self, code: str, name: str = "test.py", **kwargs):
         file = FileAttachment(name, code.encode())
-        return self.nsjail.python3([name], [file], **kwargs)
+        return self.nsjail.python3([name], MAIN_VERSION, [file], **kwargs)
 
     def test_print_returns_0(self):
         for fn in (self.eval_code, self.eval_file):
@@ -64,7 +65,7 @@ class NsJailTests(unittest.TestCase):
             FileAttachment("lib.py", "x = 'hello'".encode()),
         ]
 
-        result = self.nsjail.python3(["main.py"], files)
+        result = self.nsjail.python3(["main.py"], MAIN_VERSION, files)
         self.assertEqual(result.returncode, 0)
         self.assertEqual(result.stdout, "hello\n")
         self.assertEqual(result.stderr, None)
@@ -231,6 +232,7 @@ class NsJailTests(unittest.TestCase):
         """Test errors during file write."""
         result = self.nsjail.python3(
             [""],
+            MAIN_VERSION,
             [
                 FileAttachment("dir/test.txt", b"abc"),
                 FileAttachment("dir", b"xyz"),

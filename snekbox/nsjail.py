@@ -9,7 +9,7 @@ from typing import Iterable, TypeVar
 
 from google.protobuf import text_format
 
-from scripts.python_version import Version
+from scripts.python_version import MAIN_VERSION, Version
 from snekbox import DEBUG, utils
 from snekbox.config_pb2 import NsJailConfig
 from snekbox.filesystem import Size
@@ -178,7 +178,7 @@ class NsJail:
     def python3(
         self,
         py_args: Iterable[str],
-        version: Version,
+        version: Version = MAIN_VERSION,
         files: Iterable[FileAttachment] = (),
         nsjail_args: Iterable[str] = (),
     ) -> EvalResult:
