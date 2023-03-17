@@ -34,7 +34,7 @@ test:
 report: setup
 	coverage report
 
-.PHONY: prepare-dockerfile
+.PHONY: prepare-versions
 prepare-versions:
 	python scripts/set_versions.py
 

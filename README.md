@@ -55,6 +55,16 @@ The above command will make the API accessible on the host via `http://localhost
 
 Configuration files can be edited directly. However, this requires rebuilding the image. Alternatively, a Docker volume or bind mounts can be used to override the configuration files at their default locations.
 
+### Python Versions
+You can configure python versions in [`versions.json`](config/versions.json).
+The `image_tag` is the name of the image in the docker registry, `version_name` is the
+name used by python on the system (for instance a version_name of "3.11" would correspond to a binary of /python3.11).
+The `display_name` is only decorative, and is used to distinguish the different versions in a human-readable fashion.
+
+Exactly one of the python versions should be set as "main", which is the default eval version,
+and the version used to run the server. It must be a version which can support the features used in the codebase.
+If the versions file has been updated, the `prepare-versions` make target must be re-run.
+
 ### NsJail
 
 The main features of the default configuration are:
