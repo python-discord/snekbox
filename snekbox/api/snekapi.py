@@ -1,8 +1,7 @@
 import falcon
 
+from snekbox.api.resources import EvalResource, InformationResource
 from snekbox.nsjail import NsJail
-
-from .resources import EvalResource
 
 
 class SnekAPI(falcon.App):
@@ -29,3 +28,4 @@ class SnekAPI(falcon.App):
 
         nsjail = NsJail(*args, **kwargs)
         self.add_route("/eval", EvalResource(nsjail))
+        self.add_route("/info", InformationResource())

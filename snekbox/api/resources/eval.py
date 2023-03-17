@@ -59,29 +59,6 @@ class EvalResource:
     def __init__(self, nsjail: NsJail):
         self.nsjail = nsjail
 
-    @validate(
-        resp_schema={
-            "versions": {"type": "array", "items": {"type": "str"}},
-        }
-    )
-    def on_get(self, _: falcon.Request, resp: falcon.Response) -> None:
-        """
-        Get information about the server.
-
-        Response format:
-        >>> {
-        ...     "versions": ["Python 3.9", "Python 3.10", "Python 3.12 Beta 1"]
-        ... }
-
-        Status codes:
-
-        - 200
-            Success.
-        """
-        resp.media = {
-            "versions": VERSION_DISPLAY_NAMES,
-        }
-
     @validate(REQ_SCHEMA)
     def on_post(self, req: falcon.Request, resp: falcon.Response) -> None:
         """
