@@ -9,12 +9,10 @@ from snekbox.nsjail import NsJail
 
 __all__ = ("EvalResource",)
 
-from scripts.python_version import get_all_versions
+from scripts.python_version import ALL_VERSIONS, MAIN_VERSION, VERSION_DISPLAY_NAMES
 from snekbox.snekio import FileAttachment, ParsingError
 
 log = logging.getLogger(__name__)
-
-_VERSION_DISPLAY_NAMES = [version.display_name for version in get_all_versions()[0]]
 
 
 class EvalResource:
@@ -34,7 +32,7 @@ class EvalResource:
             "args": {"type": "array", "items": {"type": "string"}},
             "version": {
                 "type": "string",
-                "oneOf": [{"const": name} for name in _VERSION_DISPLAY_NAMES],
+                "oneOf": [{"const": name} for name in VERSION_DISPLAY_NAMES],
             },
             "files": {
                 "type": "array",
@@ -81,7 +79,7 @@ class EvalResource:
             Success.
         """
         resp.media = {
-            "versions": _VERSION_DISPLAY_NAMES,
+            "versions": VERSION_DISPLAY_NAMES,
         }
 
     @validate(REQ_SCHEMA)
@@ -130,6 +128,7 @@ class EvalResource:
         >>> {
         ...     "stdout": "10000 loops, best of 5: 23.8 usec per loop",
         ...     "returncode": 0,
+        ...     "version": "Python 3.11",
         ...     "files": [
         ...         {
         ...             "path": "output.png",
@@ -155,9 +154,9 @@ class EvalResource:
             body["args"].append(body["input"])
 
         # Parse a version from the request body, or use the default version
-        all_versions, selected_version = get_all_versions()
+        selected_version = MAIN_VERSION
         if "version" in body:
-            for version in all_versions:
+            for version in ALL_VERSIONS:
                 if version.display_name == body["version"]:
                     selected_version = version
                     break
@@ -177,5 +176,6 @@ class EvalResource:
         resp.media = {
             "stdout": result.stdout,
             "returncode": result.returncode,
+            "version": selected_version.display_name,
             "files": [f.as_dict for f in result.files],
         }
