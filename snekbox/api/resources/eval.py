@@ -30,10 +30,7 @@ class EvalResource:
         "properties": {
             "input": {"type": "string"},
             "args": {"type": "array", "items": {"type": "string"}},
-            "version": {
-                "type": "string",
-                "oneOf": [{"const": name} for name in VERSION_DISPLAY_NAMES],
-            },
+            "version": {"enum": VERSION_DISPLAY_NAMES},
             "files": {
                 "type": "array",
                 "items": {

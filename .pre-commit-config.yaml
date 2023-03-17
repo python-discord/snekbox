@@ -44,3 +44,14 @@ repos:
           --format,
           "::error file=%(path)s,line=%(row)d,col=%(col)d::[flake8] %(code)s: %(text)s",
         ]
+  - repo: local
+    hooks:
+      - id: python-version-script
+        name: check py versions
+        entry: python scripts/set_versions.py
+        language: system
+        always_run: true
+        pass_filenames: false
+        description: Check the Python versions around the project are up to date. If this fails, you most likely need to re-run the set_versions script.
+        args:
+          - --error-modified

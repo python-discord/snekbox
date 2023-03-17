@@ -1,4 +1,9 @@
+from unittest.mock import patch
+
 from tests.api import SnekAPITestCase
+
+from scripts.python_version import VERSION_DISPLAY_NAMES, Version
+from snekbox.api.resources import eval
 
 
 class TestEvalResource(SnekAPITestCase):
@@ -33,8 +38,16 @@ class TestEvalResource(SnekAPITestCase):
         self.assertEqual(expected, result.json)
 
     def test_post_invalid_data_400(self):
-        bodies = ({"args": 400}, {"args": [], "files": [215]})
-        expects = ["400 is not of type 'array'", "215 is not of type 'object'"]
+        bodies = (
+            {"args": 400},
+            {"args": [], "files": [215]},
+            {"input": "", "version": "random-gibberish"},
+        )
+        expects = [
+            "400 is not of type 'array'",
+            "215 is not of type 'object'",
+            f"'random-gibberish' is not one of {VERSION_DISPLAY_NAMES}",
+        ]
         for body, expected in zip(bodies, expects):
             with self.subTest():
                 result = self.simulate_post(self.PATH, json=body)
@@ -120,6 +133,28 @@ class TestEvalResource(SnekAPITestCase):
                 self.assertEqual(result.status_code, 400)
                 self.assertEqual("Request data failed validation", result.json["title"])
                 self.assertIn("does not match", result.json["description"])
+
+    def test_version_selection(self):
+        """A version argument in body properly configures the eval version."""
+        # Configure ALL_VERSIONS to a well-known state to test the function regardless
+        # of version configuration
+        display_name = "Fake test name"
+        versions = [
+            Version("tag1", "3.9", "pypy 3.9", False),
+            Version("tag2", "3.10", display_name, False),
+            Version("tag3", "3.11", "CPython 3.11", True),
+        ]
+        display_names = [version.display_name for version in versions]
+
+        with (
+            patch.object(eval, "ALL_VERSIONS", versions),
+            patch.object(eval, "VERSION_DISPLAY_NAMES", display_names),
+            patch.dict(eval.EvalResource.REQ_SCHEMA["properties"], version={"enum": display_names}),
+        ):
+            body = {"input": "", "version": display_name}
+            result = self.simulate_post(self.PATH, json=body)
+            self.assertEqual(result.status_code, 200)
+            self.assertEqual(result.json["version"], display_name)
 
     def test_post_invalid_content_type_415(self):
         body = "{'input': 'foo'}"

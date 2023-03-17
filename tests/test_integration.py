@@ -7,7 +7,7 @@ from textwrap import dedent
 
 from tests.gunicorn_utils import run_gunicorn
 
-from scripts.python_version import MAIN_VERSION
+from scripts.python_version import ALL_VERSIONS, MAIN_VERSION
 
 
 def b64encode_code(data: str):
@@ -66,6 +66,34 @@ class IntegrationTests(unittest.TestCase):
                     response, status = snekbox_request(body)
                     self.assertEqual(status, 200)
                     self.assertEqual(json.loads(response)["stdout"], expected)
+
+    def test_eval_version(self):
+        """Test eval requests with specific python versions selected."""
+        selected = None
+        for version in ALL_VERSIONS:
+            if not version.is_main:
+                selected = version
+                break
+
+        if selected is None:
+            # Ideally we'd test with some non-main version to ensure the logic is correct
+            # but we're likely running under a configuration where a main version doesn't exist
+            # so we just make the best of it
+            selected = MAIN_VERSION
+
+        with run_gunicorn():
+            response, status = snekbox_request(
+                {
+                    "input": "import sys; print(sys.version)",
+                    "version": selected.display_name,
+                }
+            )
+            parsed = json.loads(response)
+
+            self.assertEqual(status, 200)
+            self.assertEqual(parsed["returncode"], 0)
+            self.assertEqual(parsed["version"], selected.display_name)
+            self.assertIn(selected.version_name, parsed["stdout"])
 
     def test_files_send_receive(self):
         """Test sending and receiving files to snekbox."""
