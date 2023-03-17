@@ -31,7 +31,7 @@ class InformationResource:
 
         Response format:
         >>> {
-        ...     "python_versions": ["Python 3.9", "Python 3.10", "Python 3.12 Beta 1"]
+        ...     "python_versions": ["CPython 3.10", "pypy 3.9", "CPython 3.12 Beta 1"]
         ... }
 
         Status codes:

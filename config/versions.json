@@ -2,13 +2,13 @@
   {
     "image_tag": "3.10-slim-buster",
     "version_name": "3.10",
-    "display_name": "Python 3.10",
+    "display_name": "CPython 3.10",
     "is_main": false
   },
   {
     "image_tag": "3.11-slim-buster",
     "version_name": "3.11",
-    "display_name": "Python 3.11",
+    "display_name": "CPython 3.11",
     "is_main": true
   }
 ]
