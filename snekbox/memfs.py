@@ -1,7 +1,9 @@
 """Memory filesystem for snekbox."""
 from __future__ import annotations
 
+import glob
 import logging
+import time
 import warnings
 import weakref
 from collections.abc import Generator
@@ -125,6 +127,7 @@ class MemFS:
         limit: int,
         pattern: str = "**/*",
         exclude_files: dict[Path, float] | None = None,
+        timeout: float | None = None,
     ) -> Generator[FileAttachment, None, None]:
         """
         Yields FileAttachments for files found in the output directory.
@@ -135,12 +138,18 @@ class MemFS:
             exclude_files: A dict of Paths and last modified times.
                 Files will be excluded if their last modified time
                 is equal to the provided value.
+            timeout: Maximum time in seconds for file parsing.
+        Raises:
+            TimeoutError: If file parsing exceeds timeout.
         """
+        start_time = time.monotonic()
         count = 0
-        for file in self.output.rglob(pattern):
-            # Ignore hidden directories or files
-            if any(part.startswith(".") for part in file.parts):
-                log.info(f"Skipping hidden path {file!s}")
+        files = glob.iglob(pattern, root_dir=str(self.output), recursive=True, include_hidden=False)
+        for file in (Path(self.output, f) for f in files):
+            if timeout and (time.monotonic() - start_time) > timeout:
+                raise TimeoutError("File parsing timeout exceeded in MemFS.files")
+
+            if not file.is_file():
                 continue
 
             if exclude_files and (orig_time := exclude_files.get(file)):
@@ -154,10 +163,9 @@ class MemFS:
                 log.info(f"Max attachments {limit} reached, skipping remaining files")
                 break
 
-            if file.is_file():
-                count += 1
-                log.info(f"Found valid file for upload {file.name!r}")
-                yield FileAttachment.from_path(file, relative_to=self.output)
+            count += 1
+            log.info(f"Found valid file for upload {file.name!r}")
+            yield FileAttachment.from_path(file, relative_to=self.output)
 
     def files_list(
         self,
@@ -165,6 +173,7 @@ class MemFS:
         pattern: str,
         exclude_files: dict[Path, float] | None = None,
         preload_dict: bool = False,
+        timeout: float | None = None,
     ) -> list[FileAttachment]:
         """
         Return a sorted list of file paths within the output directory.
@@ -176,15 +185,21 @@ class MemFS:
                 Files will be excluded if their last modified time
                 is equal to the provided value.
             preload_dict: Whether to preload as_dict property data.
+            timeout: Maximum time in seconds for file parsing.
         Returns:
             List of FileAttachments sorted lexically by path name.
+        Raises:
+            TimeoutError: If file parsing exceeds timeout.
         """
+        start_time = time.monotonic()
         res = sorted(
             self.files(limit=limit, pattern=pattern, exclude_files=exclude_files),
             key=lambda f: f.path,
         )
         if preload_dict:
             for file in res:
+                if timeout and (time.monotonic() - start_time) > timeout:
+                    raise TimeoutError("File parsing timeout exceeded in MemFS.files_list")
                 # Loads the cached property as attribute
                 _ = file.as_dict
         return res
