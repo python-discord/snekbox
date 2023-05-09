@@ -1,9 +1,6 @@
 import logging
 import os
 import sys
-import warnings
-
-from falcon.util.deprecation import DeprecatedWarning
 
 __all__ = ("FORMAT", "init_logger", "init_sentry")
 
@@ -24,14 +21,11 @@ def init_logger(debug: bool) -> None:
 
 def init_sentry(version: str) -> None:
     """Initialise the Sentry SDK if it's installed."""
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore", message=r".*\bapi_helpers\b", category=DeprecatedWarning)
-
-        try:
-            import sentry_sdk
-            from sentry_sdk.integrations.falcon import FalconIntegration
-        except ImportError:
-            return
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.falcon import FalconIntegration
+    except ImportError:
+        return
 
     sentry_sdk.init(
         dsn=os.environ.get("SNEKBOX_SENTRY_DSN", ""),
