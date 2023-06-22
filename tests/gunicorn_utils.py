@@ -33,6 +33,12 @@ def _proc_target(config_path: str, event: multiprocessing.Event, **kwargs) -> No
     def when_ready(_):
         event.set()
 
+    # Clear sys.argv to prevent Gunicorn from trying to interpret the command arguments
+    # used to run the test as it's own arguments.
+    import sys
+
+    sys.argv = [""]
+
     app = _StandaloneApplication(config_path, when_ready=when_ready, **kwargs)
 
     import logging
