@@ -1,6 +1,7 @@
 import concurrent.futures
 import contextlib
 import multiprocessing
+import time
 from typing import Iterator
 
 from gunicorn.app.wsgiapp import WSGIApplication
@@ -83,4 +84,14 @@ def run_gunicorn(config_path: str = "config/gunicorn.conf.py", **kwargs) -> Iter
 
         yield
     finally:
+        # See https://github.com/python-discord/snekbox/issues/177
+        # Sleeping before terminating the process avoids a case where
+        # terminating the process can take >30 seconds.
+        time.sleep(0.2)
+
         proc.terminate()
+
+        # Actually wait for the process to finish. There doesn't seem to be a
+        # reliable way of checking if the timeout was reached or this ended normally,
+        # but if the timeout is reached it will probably error later anyway.
+        proc.join(timeout=10)
