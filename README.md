@@ -121,8 +121,8 @@ If `pip`, `setuptools`, or `wheel` are dependencies or need to be exposed, then 
 See [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
 
-[1]: https://github.com/python-discord/snekbox/workflows/Lint,%20Test,%20Build,%20Push/badge.svg?branch=main
-[2]: https://github.com/python-discord/snekbox/actions?query=workflow%3A%22Lint%2C+Test%2C+Build%2C+Push%22+branch%3Amain
+[1]: https://github.com/python-discord/snekbox/workflows/main/badge.svg?branch=main
+[2]: https://github.com/python-discord/snekbox/actions/workflows/main.yaml?query=event%3Apush+branch%3Amain
 [3]: https://coveralls.io/repos/github/python-discord/snekbox/badge.svg?branch=main
 [4]: https://coveralls.io/github/python-discord/snekbox?branch=main
 [5]: https://raw.githubusercontent.com/python-discord/branding/main/logos/badge/badge_github.svg
