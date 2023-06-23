@@ -1,6 +1,7 @@
 import concurrent.futures
 import contextlib
 import multiprocessing
+import time
 from typing import Iterator
 
 from gunicorn.app.wsgiapp import WSGIApplication
@@ -32,6 +33,12 @@ def _proc_target(config_path: str, event: multiprocessing.Event, **kwargs) -> No
 
     def when_ready(_):
         event.set()
+
+    # Clear sys.argv to prevent Gunicorn from trying to interpret the command arguments
+    # used to run the test as it's own arguments.
+    import sys
+
+    sys.argv = [""]
 
     app = _StandaloneApplication(config_path, when_ready=when_ready, **kwargs)
 
@@ -77,4 +84,15 @@ def run_gunicorn(config_path: str = "config/gunicorn.conf.py", **kwargs) -> Iter
 
         yield
     finally:
+        # See https://github.com/python-discord/snekbox/issues/177
+        # Sleeping before terminating the process avoids a case where
+        # terminating the process can take >30 seconds.
+        time.sleep(0.2)
+
         proc.terminate()
+
+        # Actually wait for the process to finish. There doesn't seem to be a
+        # reliable way of checking if process ended or the timeout was reached,
+        # so kill the process afterwards to be sure.
+        proc.join(timeout=10)
+        proc.kill()
