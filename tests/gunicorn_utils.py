@@ -92,6 +92,7 @@ def run_gunicorn(config_path: str = "config/gunicorn.conf.py", **kwargs) -> Iter
         proc.terminate()
 
         # Actually wait for the process to finish. There doesn't seem to be a
-        # reliable way of checking if the timeout was reached or this ended normally,
-        # but if the timeout is reached it will probably error later anyway.
+        # reliable way of checking if process ended or the timeout was reached,
+        # so kill the process afterwards to be sure.
         proc.join(timeout=10)
+        proc.kill()
