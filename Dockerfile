@@ -1,20 +1,17 @@
 # syntax=docker/dockerfile:1
-FROM python:3.11-slim-buster as builder
+FROM buildpack-deps:buster as builder
 
 WORKDIR /nsjail
 
 RUN apt-get -y update \
-    && apt-get install -y \
+    && apt-get install -y --no-install-recommends \
         bison\
         flex \
-        g++ \
-        gcc \
-        git \
         libprotobuf-dev\
         libnl-route-3-dev \
-        make \
-        pkg-config \
-        protobuf-compiler
+        protobuf-compiler \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN git clone -b master --single-branch https://github.com/google/nsjail.git . \
     && git checkout dccf911fd2659e7b08ce9507c25b2b38ec2c5800
 RUN make
@@ -30,7 +27,7 @@ ENV PATH=/root/.local/bin:$PATH \
     PIP_USER=1
 
 RUN apt-get -y update \
-    && apt-get install -y \
+    && apt-get install -y --no-install-recommends \
         gcc \
         git \
         libnl-route-3-200 \
