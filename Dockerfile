@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM buildpack-deps:buster as builder
+FROM buildpack-deps:buster as builder-nsjail
 
 WORKDIR /nsjail
 
@@ -17,14 +17,35 @@ RUN git clone -b master --single-branch https://github.com/google/nsjail.git . \
 RUN make
 
 # ------------------------------------------------------------------------------
+FROM buildpack-deps:buster as builder-py-base
+
+ENV PYENV_ROOT=/pyenv \
+    PYTHON_CONFIGURE_OPTS='--disable-test-modules --enable-optimizations \
+        --with-lto --with-system-expat --without-ensurepip'
+
+RUN apt-get -y update \
+    && apt-get install -y --no-install-recommends \
+        libxmlsec1-dev \
+        tk-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY scripts/build_python.sh /
+
+# ------------------------------------------------------------------------------
+FROM builder-py-base as builder-py-3_11
+RUN git clone -b v2.3.24 --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROOT \
+    && /build_python.sh 3.11.4
+
+# ------------------------------------------------------------------------------
+FROM builder-py-base as builder-py-3_12
+RUN git clone -b v2.3.24 --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROOT \
+    && /build_python.sh 3.12.0rc1
+
+# ------------------------------------------------------------------------------
 FROM python:3.11-slim-buster as base
 
-# Everything will be a user install to allow snekbox's dependencies to be kept
-# separate from the packages exposed during eval.
-ENV PATH=/root/.local/bin:$PATH \
-    PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    PIP_NO_CACHE_DIR=false \
-    PIP_USER=1
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_NO_CACHE_DIR=false
 
 RUN apt-get -y update \
     && apt-get install -y --no-install-recommends \
@@ -34,8 +55,12 @@ RUN apt-get -y update \
         libprotobuf17 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /nsjail/nsjail /usr/sbin/
-RUN chmod +x /usr/sbin/nsjail
+COPY --from=builder-nsjail /nsjail/nsjail /usr/sbin/
+COPY --from=builder-py-3_11 /lang/ /lang/
+COPY --from=builder-py-3_12 /lang/ /lang/
+
+RUN chmod +x /usr/sbin/nsjail \
+    && ln -s /lang/python/3.11/ /lang/python/default
 
 # ------------------------------------------------------------------------------
 FROM base as venv
@@ -43,7 +68,6 @@ FROM base as venv
 COPY requirements/ /snekbox/requirements/
 WORKDIR /snekbox
 
-# pip installs to the default user site since PIP_USER is set.
 RUN pip install -U -r requirements/requirements.pip
 
 # This must come after the first pip command! From the docs:
@@ -55,7 +79,8 @@ ARG DEV
 RUN if [ -n "${DEV}" ]; \
     then \
         pip install -U -r requirements/coverage.pip \
-        && PYTHONUSERBASE=/snekbox/user_base pip install numpy~=1.19; \
+        && PYTHONUSERBASE=/snekbox/user_base \
+        && /lang/python/default/bin/python -m pip install --user numpy~=1.19; \
     fi
 
 # At the end to avoid re-installing dependencies when only a config changes.

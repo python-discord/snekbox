@@ -79,7 +79,7 @@ class NsJailTests(unittest.TestCase):
             for _ in range({max_pids}):
                 print(subprocess.Popen(
                     [
-                        '/usr/local/bin/python3',
+                        '/lang/python/default/bin/python',
                         '-c',
                         'import time; time.sleep(1)'
                     ],
@@ -431,7 +431,7 @@ class NsJailTests(unittest.TestCase):
         for args, expected in cases:
             with self.subTest(args=args):
                 result = self.nsjail.python3(py_args=args)
-                idx = result.args.index("-BSqu")
+                idx = result.args.index(self.nsjail.config.exec_bin.path)
                 self.assertEqual(result.args[idx + 1 :], expected)
                 self.assertEqual(result.returncode, 0)
 
