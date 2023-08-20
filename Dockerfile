@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1
+# syntax=docker/dockerfile:1.4
 FROM buildpack-deps:buster as builder-nsjail
 
 WORKDIR /nsjail
@@ -29,7 +29,7 @@ RUN apt-get -y update \
         tk-dev \
     && rm -rf /var/lib/apt/lists/*
 
-COPY scripts/build_python.sh /
+COPY --link scripts/build_python.sh /
 
 # ------------------------------------------------------------------------------
 FROM builder-py-base as builder-py-3_11
@@ -55,9 +55,9 @@ RUN apt-get -y update \
         libprotobuf17 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder-nsjail /nsjail/nsjail /usr/sbin/
-COPY --from=builder-py-3_11 /lang/ /lang/
-COPY --from=builder-py-3_12 /lang/ /lang/
+COPY --link --from=builder-nsjail /nsjail/nsjail /usr/sbin/
+COPY --link --from=builder-py-3_11 /lang/ /lang/
+COPY --link --from=builder-py-3_12 /lang/ /lang/
 
 RUN chmod +x /usr/sbin/nsjail \
     && ln -s /lang/python/3.11/ /lang/python/default
@@ -65,7 +65,7 @@ RUN chmod +x /usr/sbin/nsjail \
 # ------------------------------------------------------------------------------
 FROM base as venv
 
-COPY requirements/ /snekbox/requirements/
+COPY --link requirements/ /snekbox/requirements/
 WORKDIR /snekbox
 
 RUN pip install -U -r requirements/requirements.pip
@@ -84,7 +84,7 @@ RUN if [ -n "${DEV}" ]; \
     fi
 
 # At the end to avoid re-installing dependencies when only a config changes.
-COPY config/ /snekbox/config/
+COPY --link config/ /snekbox/config/
 
 ENTRYPOINT ["gunicorn"]
 CMD ["-c", "config/gunicorn.conf.py"]
