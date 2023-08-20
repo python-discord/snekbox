@@ -79,7 +79,7 @@ ARG DEV
 RUN if [ -n "${DEV}" ]; \
     then \
         pip install -U -r requirements/coverage.pip \
-        && PYTHONUSERBASE=/snekbox/user_base \
+        && export PYTHONUSERBASE=/snekbox/user_base \
         && /lang/python/default/bin/python -m pip install --user numpy~=1.19; \
     fi
 
