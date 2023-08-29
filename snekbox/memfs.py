@@ -144,6 +144,7 @@ class MemFS:
         """
         start_time = time.monotonic()
         count = 0
+        total_size = 0
         files = glob.iglob(pattern, root_dir=str(self.output), recursive=True, include_hidden=False)
         for file in (Path(self.output, f) for f in files):
             if timeout and (time.monotonic() - start_time) > timeout:
@@ -152,15 +153,28 @@ class MemFS:
             if not file.is_file():
                 continue
 
+            # file.is_file allows file to be a regular file OR a symlink pointing to a regular file.
+            # It is important that we follow symlinks here, so when we check st_size later it is the
+            # size of the underlying file rather than of the symlink.
+            stat = file.stat(follow_symlinks=True)
+
             if exclude_files and (orig_time := exclude_files.get(file)):
-                new_time = file.stat().st_mtime
+                new_time = stat.st_mtime
                 log.info(f"Checking {file.name} ({orig_time=}, {new_time=})")
-                if file.stat().st_mtime == orig_time:
+                if stat.st_mtime == orig_time:
                     log.info(f"Skipping {file.name!r} as it has not been modified")
                     continue
 
             if count > limit:
                 log.info(f"Max attachments {limit} reached, skipping remaining files")
+                break
+
+            # Due to sparse files and links the total size could end up being greater
+            # than the size limit of the tmpfs. Limit the total size to be read to
+            # prevent high memory usage / OOM when reading files.
+            total_size += stat.st_size
+            if total_size > self.instance_size:
+                log.info(f"Max file size {self.instance_size} reached, skipping remaining files")
                 break
 
             count += 1
