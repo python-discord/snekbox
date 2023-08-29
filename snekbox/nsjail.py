@@ -221,9 +221,9 @@ class NsJail:
                 *nsjail_args,
                 "--",
                 self.config.exec_bin.path,
-                *self.config.exec_bin.arg,
-                # Filter out empty strings at start of py_args
+                # Filter out empty strings at start of Python args
                 # (causes issues with python cli)
+                *iter_lstrip(self.config.exec_bin.arg),
                 *iter_lstrip(py_args),
             ]
 
