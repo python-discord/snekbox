@@ -93,3 +93,31 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: ./coverage.lcov
+
+  dry-run-deploy:
+    name: Dry run deployment.yaml init container
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Download image artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.artifact }}
+
+      - name: Load image from archive
+        run: docker load -i ${{ inputs.artifact }}.tar
+
+      # Needed for the Docker Compose file.
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Install eval deps the same way as init container from deployment.yaml
+      # This is to ensure that deployment won't fail at that step
+      - name: Install eval deps
+        run: |
+          export IMAGE_SUFFIX='-venv:${{ inputs.version }}'
+          export PYTHONUSERBASE=/snekbox/user_base
+          docker compose run \
+            --rm -T --entrypoint /bin/sh snekbox -c \
+            find /lang/python -mindepth 1 -maxdepth 1 -type d -exec \
+            {}/bin/python -m pip install --user -U -r requirements/eval-deps.pip \;
