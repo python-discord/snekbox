@@ -7,8 +7,7 @@
 
 Python sandbox runners for executing code in isolation aka snekbox.
 
-Supports a memory [virtual read/write file system](#virtual-file-system) within the sandbox,
-allowing text or binary files to be sent and returned.
+Supports a memory [virtual read/write file system](#virtual-file-system) within the sandbox, allowing text or binary files to be sent and returned.
 
 A client sends Python code to a snekbox, the snekbox executes the code, and finally the results of the execution are returned to the client.
 
@@ -100,21 +99,18 @@ Name | Description
 
 ## Third-party Packages
 
-By default, the Python interpreter has no access to any packages besides the
-standard library. Even snekbox's own dependencies like Falcon and Gunicorn are
-not exposed.
+By default, the Python interpreter has no access to any packages besides the  standard library. Even snekbox's own dependencies like Falcon and Gunicorn are not exposed.
 
 To expose third-party Python packages during evaluation, install them to a custom user site:
 
 ```sh
-docker exec snekbox /bin/sh -c 'PYTHONUSERBASE=/snekbox/user_base pip install numpy'
+docker exec snekbox /bin/sh -c \
+    'PYTHONUSERBASE=/snekbox/user_base /lang/python/default/bin/python -m pip install --user numpy'
 ```
 
 In the above command, `snekbox` is the name of the running container. The name may be different and can be checked with `docker ps`.
 
 The packages will be installed to the user site within `/snekbox/user_base`. To persist the installed packages, a volume for the directory can be created with Docker. For an example, see [`docker-compose.yml`].
-
-If `pip`, `setuptools`, or `wheel` are dependencies or need to be exposed, then use the `--ignore-installed` option with pip. However, note that this will also re-install packages present in the custom user site, effectively making caching it futile. Current limitations of pip don't allow it to ignore packages extant outside the installation destination.
 
 ## Development Environment
 

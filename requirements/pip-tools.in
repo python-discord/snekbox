@@ -2,5 +2,5 @@
 -c lint.pip
 -c requirements.pip
 
-# Minimum version which supports pip>=22.1
-pip-tools>=6.6.1
+# Minimum version which supports pip>=23.2
+pip-tools>=7.0.0

@@ -82,7 +82,7 @@ class NsJailTests(unittest.TestCase):
             for _ in range({max_pids}):
                 print(subprocess.Popen(
                     [
-                        '/usr/local/bin/python3',
+                        '/lang/python/default/bin/python',
                         '-c',
                         'import time; time.sleep(1)'
                     ],
@@ -240,8 +240,9 @@ class NsJailTests(unittest.TestCase):
                 os.symlink("file", f"file{i}")
             """
         ).strip()
-
-        nsjail = NsJail(memfs_instance_size=32 * Size.MiB, files_timeout=1)
+        # A value higher than the actual memory needed is used to avoid the limit
+        # on total file size being reached before the timeout when reading.
+        nsjail = NsJail(memfs_instance_size=512 * Size.MiB, files_timeout=1)
         result = nsjail.python3(["-c", code])
         self.assertEqual(result.returncode, None)
         self.assertEqual(
@@ -271,6 +272,60 @@ class NsJailTests(unittest.TestCase):
             "FileParsingError: Exceeded directory depth limit while parsing attachments",
         )
         self.assertEqual(result.stderr, None)
+
+    def test_file_parsing_size_limit_sparse_files(self):
+        tmpfs_size = 8 * Size.MiB
+        code = dedent(
+            f"""
+            import os
+            with open("test.txt", "w") as f:
+                os.truncate(f.fileno(), {tmpfs_size // 2 + 1})
+
+            with open("test2.txt", "w") as f:
+                os.truncate(f.fileno(), {tmpfs_size // 2 + 1})
+            """
+        )
+        nsjail = NsJail(memfs_instance_size=tmpfs_size, files_timeout=5)
+        result = nsjail.python3(["-c", code])
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(len(result.files), 1)
+
+    def test_file_parsing_size_limit_sparse_files_large(self):
+        tmpfs_size = 8 * Size.MiB
+        code = dedent(
+            f"""
+            import os
+            with open("test.txt", "w") as f:
+                # Use a very large value to ensure the test fails if the
+                # file is read even if would have been discarded later.
+                os.truncate(f.fileno(), {1024 * Size.TiB})
+            """
+        )
+        nsjail = NsJail(memfs_instance_size=tmpfs_size, files_timeout=5)
+        result = nsjail.python3(["-c", code])
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(len(result.files), 0)
+
+    def test_file_parsing_size_limit_symlinks(self):
+        tmpfs_size = 8 * Size.MiB
+        code = dedent(
+            f"""
+            import os
+            data = "a" * 1024
+            size = {tmpfs_size // 8}
+
+            with open("file", "w") as f:
+                for _ in range(size // 1024):
+                    f.write(data)
+
+            for i in range(20):
+                os.symlink("file", f"file{{i}}")
+            """
+        )
+        nsjail = NsJail(memfs_instance_size=tmpfs_size, files_timeout=5)
+        result = nsjail.python3(["-c", code])
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(len(result.files), 8)
 
     def test_file_write_error(self):
         """Test errors during file write."""
@@ -478,7 +533,7 @@ class NsJailTests(unittest.TestCase):
         for args, expected in cases:
             with self.subTest(args=args):
                 result = self.nsjail.python3(py_args=args)
-                idx = result.args.index("-BSqu")
+                idx = result.args.index(self.nsjail.config.exec_bin.path)
                 self.assertEqual(result.args[idx + 1 :], expected)
                 self.assertEqual(result.returncode, 0)
 
