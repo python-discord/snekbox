@@ -7,7 +7,7 @@
 
 Python sandbox runners for executing code in isolation aka snekbox.
 
-Supports a memory [virtual read/write file system](#virtual-file-system) within the sandbox, allowing text or binary files to be sent and returned.
+Supports a memory [read/write file system](#memory-file-system) within the sandbox, allowing text or binary files to be sent and returned.
 
 A client sends Python code to a snekbox, the snekbox executes the code, and finally the results of the execution are returned to the client.
 
