@@ -7,13 +7,13 @@ fishhook~=0.2
 forbiddenfruit~=0.1
 fuzzywuzzy~=0.18
 lark~=1.1
-matplotlib~=3.7 ; python_version == '3.11'
+matplotlib~=3.7 ; python_version == '3.11'  # https://github.com/matplotlib/matplotlib/pull/26582
 more-itertools~=10.1
 networkx~=3.1
 numpy~=1.25 ; python_version == '3.11'
 numpy==1.26.0b1 ; python_version == '3.12'
 pandas~=2.0 ; python_version == '3.11'
-pendulum~=2.1 ; python_version == '3.11'
+pendulum~=2.1 ; python_version == '3.11'  # https://github.com/sdispater/pendulum/issues/696
 python-dateutil~=2.8
 pyyaml~=6.0
 scipy~=1.11
@@ -21,4 +21,4 @@ sympy~=1.12
 toml~=0.10
 typing-extensions~=4.7
 tzdata~=2023.3
-yarl~=1.9 ; python_version == '3.11'
+yarl~=1.9 ; python_version == '3.11'  # https://github.com/aio-libs/yarl/issues/894
