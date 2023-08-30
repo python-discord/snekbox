@@ -13,6 +13,7 @@ spec:
         app: snekbox
     spec:
       initContainers:
+      # Ensure "dry-run-deploy" job of test.yaml is updated with any changes to this init container
         - name: deps-install
           image: ghcr.io/python-discord/snekbox:latest
           imagePullPolicy: Always
