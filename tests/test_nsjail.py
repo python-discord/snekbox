@@ -23,6 +23,9 @@ class NsJailTests(unittest.TestCase):
         self.logger = logging.getLogger("snekbox.nsjail")
         self.logger.setLevel(logging.WARNING)
 
+        # Hard-coded because it's non-trivial to parse the mount options.
+        self.shm_mount_size = 40 * Size.MiB
+
     def eval_code(self, code: str):
         return self.nsjail.python3(["-c", code])
 
@@ -124,6 +127,25 @@ class NsJailTests(unittest.TestCase):
         exit_codes = result.stdout.strip().split()
         self.assertIn("-9", exit_codes)
         self.assertEqual(result.stderr, None)
+
+    def test_multiprocessing_pool(self):
+        # Validates that shm is working as expected
+        code = dedent(
+            """
+            from multiprocessing import Pool
+
+            def f(x):
+                return x*x
+
+            with Pool(2) as p:
+                print(p.map(f, [1, 2, 3]))
+        """
+        )
+
+        result = self.eval_file(code)
+
+        self.assertEqual(result.stdout, "[1, 4, 9]\n")
+        self.assertEqual(result.returncode, 0)
 
     def test_read_only_file_system(self):
         for path in ("/", "/etc", "/lib", "/lib64", "/snekbox", "/usr"):
@@ -390,35 +412,60 @@ class NsJailTests(unittest.TestCase):
             log.output,
         )
 
-    def test_shm_and_tmp_not_mounted(self):
-        for path in ("/dev/shm", "/run/shm", "/tmp"):
-            with self.subTest(path=path):
-                code = dedent(
-                    f"""
-                    with open('{path}/test', 'wb') as file:
-                        file.write(bytes([255]))
-                    """
-                ).strip()
-
-                result = self.eval_file(code)
-                self.assertEqual(result.returncode, 1)
-                self.assertIn("No such file or directory", result.stdout)
-                self.assertEqual(result.stderr, None)
-
-    def test_multiprocessing_shared_memory_disabled(self):
+    def test_tmp_not_mounted(self):
         code = dedent(
             """
-            from multiprocessing.shared_memory import SharedMemory
-            try:
-                SharedMemory('test', create=True, size=16)
-            except FileExistsError:
-                pass
-            """
+            with open('/tmp/test', 'wb') as file:
+                file.write(bytes([255]))
+        """
         ).strip()
 
         result = self.eval_file(code)
         self.assertEqual(result.returncode, 1)
-        self.assertIn("Function not implemented", result.stdout)
+        self.assertIn("No such file or directory", result.stdout)
+        self.assertEqual(result.stderr, None)
+
+    def test_multiprocessing_shared_memory(self):
+        cases = (
+            (self.shm_mount_size, self.shm_mount_size, 0),
+            # Even if the shared memory object is larger than the mount,
+            # writing data within the size of the mount should succeed.
+            (self.shm_mount_size + 1, self.shm_mount_size, 0),
+            (self.shm_mount_size + 1, self.shm_mount_size + 1, 135),
+        )
+
+        for shm_size, buffer_size, return_code in cases:
+            with self.subTest(shm_size=shm_size, buffer_size=buffer_size):
+                # Need enough memory for buffer and bytearray plus some overhead.
+                mem_max = (buffer_size * 2) + (400 * Size.MiB)
+                code = dedent(
+                    f"""
+                    from multiprocessing.shared_memory import SharedMemory
+
+                    shm = SharedMemory(create=True, size={shm_size})
+                    shm.buf[:{buffer_size}] = bytearray([1] * {buffer_size})
+                """
+                ).strip()
+
+                result = self.eval_file(code, nsjail_args=("--cgroup_mem_max", str(mem_max)))
+
+                self.assertEqual(result.returncode, return_code)
+                self.assertEqual(result.stdout, "")
+                self.assertEqual(result.stderr, None)
+
+    def test_multiprocessing_shared_memory_mmap_limited(self):
+        """The mmap call should be OOM trying to map a large & sparse shared memory object."""
+        code = dedent(
+            f"""
+            from multiprocessing.shared_memory import SharedMemory
+
+            SharedMemory(create=True, size={self.nsjail.config.cgroup_mem_max + Size.GiB})
+        """
+        ).strip()
+
+        result = self.eval_file(code)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("[Errno 12] Cannot allocate memory", result.stdout)
         self.assertEqual(result.stderr, None)
 
     def test_numpy_import(self):
