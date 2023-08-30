@@ -116,8 +116,4 @@ jobs:
       - name: Install eval deps
         run: |
           export IMAGE_SUFFIX='-venv:${{ inputs.version }}'
-          export PYTHONUSERBASE=/snekbox/user_base
-          docker compose run \
-            --rm -T --entrypoint /bin/sh snekbox -c \
-            find /lang/python -mindepth 1 -maxdepth 1 -type d -exec \
-            {}/bin/python -m pip install --user -U -r requirements/eval-deps.pip \;
+          docker compose run --rm -T --entrypoint /bin/sh snekbox scripts/install_eval_deps.sh
