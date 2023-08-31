@@ -66,6 +66,7 @@ RUN chmod +x /usr/sbin/nsjail \
 FROM base as venv
 
 COPY --link requirements/ /snekbox/requirements/
+COPY --link scripts/install_eval_deps.sh /snekbox/scripts/install_eval_deps.sh
 WORKDIR /snekbox
 
 RUN pip install -U -r requirements/requirements.pip
