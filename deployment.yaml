@@ -20,7 +20,7 @@ spec:
             - name: snekbox-user-base-volume
               mountPath: /snekbox/user_base
           command:
-            - /bin/sh
+            - /bin/bash
             - scripts/install_eval_deps.sh
       containers:
         - name: snekbox

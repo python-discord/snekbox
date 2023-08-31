@@ -116,4 +116,4 @@ jobs:
       - name: Install eval deps
         run: |
           export IMAGE_SUFFIX='-venv:${{ inputs.version }}'
-          docker compose run --rm -T --entrypoint /bin/sh snekbox scripts/install_eval_deps.sh
+          docker compose run --rm -T --entrypoint /bin/bash snekbox scripts/install_eval_deps.sh
