@@ -41,3 +41,7 @@ build:
 .PHONY: devsh
 devsh:
 	docker compose run --entrypoint /bin/bash --rm snekbox
+
+.PHONY: eval-deps
+eval-deps:
+	docker compose run --rm -T --entrypoint /bin/bash snekbox scripts/install_eval_deps.sh
