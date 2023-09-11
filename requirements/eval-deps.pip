@@ -11,7 +11,7 @@ matplotlib~=3.7 ; python_version == '3.11'  # https://github.com/matplotlib/matp
 more-itertools~=10.1
 networkx~=3.1
 numpy~=1.25 ; python_version == '3.11'
-numpy==1.26.0b1 ; python_version == '3.12'
+numpy==1.26.0rc1 ; python_version == '3.12'
 pandas~=2.0 ; python_version == '3.11'
 pendulum~=2.1 ; python_version == '3.11'  # https://github.com/sdispater/pendulum/issues/696
 python-dateutil~=2.8
