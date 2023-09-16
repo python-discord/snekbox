@@ -11,7 +11,7 @@ __all__ = ("time_limit",)
 
 
 @contextmanager
-def time_limit(timeout: int | None = None) -> Generator[None, None, None]:
+def time_limit(timeout: float) -> Generator[None, None, None]:
     """
     Decorator to call a function with a time limit.
 
@@ -25,10 +25,12 @@ def time_limit(timeout: int | None = None) -> Generator[None, None, None]:
     def signal_handler(_signum, _frame):
         raise TimeoutError(f"time_limit call timed out after {timeout} seconds.")
 
+    # ITIMER_PROF would be more appropriate, but SIGPROF doesn't seem to interrupt sleeps.
     signal.signal(signal.SIGALRM, signal_handler)
-    signal.alarm(timeout)
+    signal.setitimer(signal.ITIMER_REAL, timeout)
 
     try:
         yield
     finally:
-        signal.alarm(0)
+        # Clear the timer if the function finishes early.
+        signal.setitimer(signal.ITIMER_REAL, 0)

@@ -3,6 +3,7 @@ import re
 import subprocess
 import sys
 from collections.abc import Generator
+from contextlib import nullcontext
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Iterable, TypeVar
@@ -56,7 +57,7 @@ class NsJail:
         memfs_home: str = "home",
         memfs_output: str = "home",
         files_limit: int | None = 100,
-        files_timeout: int | None = 5,
+        files_timeout: float | None = 5,
         files_pattern: str = "**/[!_]*",
     ):
         """
@@ -267,7 +268,7 @@ class NsJail:
 
             # Parse attachments with time limit
             try:
-                with time_limit(self.files_timeout):
+                with time_limit(self.files_timeout) if self.files_timeout else nullcontext():
                     attachments = fs.files_list(
                         limit=self.files_limit,
                         pattern=self.files_pattern,
