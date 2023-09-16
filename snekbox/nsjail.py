@@ -2,11 +2,10 @@ import logging
 import re
 import subprocess
 import sys
-from collections.abc import Generator
+from collections.abc import Iterable
 from contextlib import nullcontext
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Iterable, TypeVar
 
 from google.protobuf import text_format
 
@@ -16,27 +15,16 @@ from snekbox.limits.timed import time_limit
 from snekbox.process import EvalResult
 from snekbox.snekio import FileAttachment, MemFS
 from snekbox.snekio.filesystem import Size
+from snekbox.utils.iter import iter_lstrip
 
 __all__ = ("NsJail",)
 
 log = logging.getLogger(__name__)
 
-_T = TypeVar("_T")
-
 # [level][timestamp][PID]? function_signature:line_no? message
 LOG_PATTERN = re.compile(
     r"\[(?P<level>(I)|[DWEF])\]\[.+?\](?(2)|(?P<func>\[\d+\] .+?:\d+ )) ?(?P<msg>.+)"
 )
-
-
-def iter_lstrip(iterable: Iterable[_T]) -> Generator[_T, None, None]:
-    """Remove leading falsy objects from an iterable."""
-    it = iter(iterable)
-    for item in it:
-        if item:
-            yield item
-            break
-    yield from it
 
 
 class NsJail:
