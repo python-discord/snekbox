@@ -233,7 +233,7 @@ class NsJailTests(unittest.TestCase):
             size = 32 * 1024 * 1024
 
             with open("file", "w") as f:
-                for _ in range((size // 1024) - 5):
+                for _ in range(size // 1024):
                     f.write(data)
 
             for i in range(100):
@@ -242,7 +242,7 @@ class NsJailTests(unittest.TestCase):
         ).strip()
         # A value higher than the actual memory needed is used to avoid the limit
         # on total file size being reached before the timeout when reading.
-        nsjail = NsJail(memfs_instance_size=512 * Size.MiB, files_timeout=1)
+        nsjail = NsJail(memfs_instance_size=128 * Size.MiB, files_timeout=0.1)
         result = nsjail.python3(["-c", code])
         self.assertEqual(result.returncode, None)
         self.assertEqual(
