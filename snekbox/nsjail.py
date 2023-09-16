@@ -2,7 +2,7 @@ import logging
 import re
 import subprocess
 import sys
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from contextlib import nullcontext
 from pathlib import Path
 from tempfile import NamedTemporaryFile
@@ -162,6 +162,43 @@ class NsJail:
 
         return "".join(output)
 
+    def _build_args(
+        self, py_args: Iterable[str], nsjail_args: Iterable[str], log_path: str, fs_home: str
+    ) -> Sequence[str]:
+        if self.cgroup_version == 2:
+            nsjail_args = ("--use_cgroupv2", *nsjail_args)
+
+        if self.ignore_swap_limits:
+            nsjail_args = (
+                "--cgroup_mem_memsw_max",
+                "0",
+                "--cgroup_mem_swap_max",
+                "-1",
+                *nsjail_args,
+            )
+
+        nsjail_args = (
+            # Mount `home` with Read/Write access
+            "--bindmount",
+            f"{fs_home}:home",
+            *nsjail_args,
+        )
+
+        return [
+            self.nsjail_path,
+            "--config",
+            self.config_path,
+            "--log",
+            log_path,
+            *nsjail_args,
+            "--",
+            self.config.exec_bin.path,
+            # Filter out empty strings at start of Python args
+            # (causes issues with python cli)
+            *iter_lstrip(self.config.exec_bin.arg),
+            *iter_lstrip(py_args),
+        ]
+
     def python3(
         self,
         py_args: Iterable[str],
@@ -176,44 +213,12 @@ class NsJail:
             files: FileAttachments to write to the sandbox prior to running Python.
             nsjail_args: Overrides for the NsJail configuration.
         """
-        if self.cgroup_version == 2:
-            nsjail_args = ("--use_cgroupv2", *nsjail_args)
-
-        if self.ignore_swap_limits:
-            nsjail_args = (
-                "--cgroup_mem_memsw_max",
-                "0",
-                "--cgroup_mem_swap_max",
-                "-1",
-                *nsjail_args,
-            )
-
         with NamedTemporaryFile() as nsj_log, MemFS(
             instance_size=self.memfs_instance_size,
             home=self.memfs_home,
             output=self.memfs_output,
         ) as fs:
-            nsjail_args = (
-                # Mount `home` with Read/Write access
-                "--bindmount",
-                f"{fs.home}:home",
-                *nsjail_args,
-            )
-
-            args = [
-                self.nsjail_path,
-                "--config",
-                self.config_path,
-                "--log",
-                nsj_log.name,
-                *nsjail_args,
-                "--",
-                self.config.exec_bin.path,
-                # Filter out empty strings at start of Python args
-                # (causes issues with python cli)
-                *iter_lstrip(self.config.exec_bin.arg),
-                *iter_lstrip(py_args),
-            ]
+            args = self._build_args(py_args, nsjail_args, nsj_log.name, str(fs.home))
 
             # Write provided files if any
             files_written: dict[Path, float] = {}
