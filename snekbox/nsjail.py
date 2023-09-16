@@ -149,14 +149,18 @@ class NsJail:
         with nsjail:
             # We'll consume STDOUT as long as the NsJail subprocess is running.
             while nsjail.poll() is None:
-                chars = nsjail.stdout.read(self.read_chunk_size)
+                try:
+                    chars = nsjail.stdout.read(self.read_chunk_size)
+                except UnicodeDecodeError as e:
+                    raise EvalError("UnicodeDecodeError: invalid Unicode in output pipe") from e
+
                 output_size += sys.getsizeof(chars)
                 output.append(chars)
 
                 if output_size > self.max_output_size:
                     # Terminate the NsJail subprocess with SIGTERM.
                     # This in turn reaps and kills children with SIGKILL.
-                    log.info("Output exceeded the output limit, sending SIGTERM to NsJail.")
+                    log.info("Output exceeded the output limit. Sending SIGTERM to NsJail.")
                     nsjail.terminate()
                     break
 
@@ -264,46 +268,37 @@ class NsJail:
             output=self.memfs_output,
         ) as fs:
             args = self._build_args(py_args, nsjail_args, nsj_log.name, str(fs.home))
-
             try:
                 files_written = self._write_files(fs.home, files)
-            except EvalError as e:
-                return EvalResult(args, None, str(e))
 
-            msg = "Executing code..."
-            if DEBUG:
-                msg = f"{msg[:-3]} with the arguments {args}."
-            log.info(msg)
+                msg = "Executing code..."
+                if DEBUG:
+                    msg = f"{msg[:-3]} with the arguments {args}."
+                log.info(msg)
 
-            try:
-                nsjail = subprocess.Popen(
-                    args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
-                )
-            except ValueError:
-                return EvalResult(args, None, "ValueError: embedded null byte")
+                try:
+                    nsjail = subprocess.Popen(
+                        args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
+                    )
+                except ValueError:
+                    return EvalResult(args, None, "ValueError: embedded null byte")
 
-            try:
                 output = self._consume_stdout(nsjail)
-            except UnicodeDecodeError:
-                return EvalResult(args, None, "UnicodeDecodeError: invalid Unicode in output pipe")
-
-            # When you send signal `N` to a subprocess to terminate it using Popen, it
-            # will return `-N` as its exit code. As we normally get `N + 128` back, we
-            # convert negative exit codes to the `N + 128` form.
-            returncode = -nsjail.returncode + 128 if nsjail.returncode < 0 else nsjail.returncode
-
-            try:
                 attachments = self._parse_attachments(fs, files_written)
+                log_lines = nsj_log.read().decode("utf-8").splitlines()
             except EvalError as e:
                 return EvalResult(args, None, str(e))
 
-            log_lines = nsj_log.read().decode("utf-8").splitlines()
-            if not log_lines and returncode == 255:
-                # NsJail probably failed to parse arguments so log output will still be in stdout
-                log_lines = output.splitlines()
+        # When you send signal `N` to a subprocess to terminate it using Popen, it
+        # will return `-N` as its exit code. As we normally get `N + 128` back, we
+        # convert negative exit codes to the `N + 128` form.
+        return_code = -nsjail.returncode + 128 if nsjail.returncode < 0 else nsjail.returncode
 
-            self._parse_log(log_lines)
+        if not log_lines and return_code == 255:
+            # NsJail probably failed to parse arguments so log output will still be in stdout
+            log_lines = output.splitlines()
 
-        log.info(f"nsjail return code: {returncode}")
+        self._parse_log(log_lines)
+        log.info(f"NsJail return code: {return_code}")
 
-        return EvalResult(args, returncode, output, files=attachments)
+        return EvalResult(args, return_code, output, files=attachments)
