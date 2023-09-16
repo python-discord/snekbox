@@ -217,6 +217,33 @@ class NsJail:
 
         return files_written
 
+    def _parse_attachments(
+        self, fs: MemFS, files_written: dict[Path, float]
+    ) -> list[FileAttachment]:
+        try:
+            with time_limit(self.files_timeout) if self.files_timeout else nullcontext():
+                attachments = fs.files_list(
+                    limit=self.files_limit,
+                    pattern=self.files_pattern,
+                    preload_dict=True,
+                    exclude_files=files_written,
+                    timeout=self.files_timeout,
+                )
+
+            log.info(f"Found {len(attachments)} files.")
+            return attachments
+        except RecursionError as e:
+            log.info("Recursion error while parsing attachments")
+            raise EvalError(
+                "FileParsingError: Exceeded directory depth limit while parsing attachments"
+            ) from e
+        except TimeoutError as e:
+            log.info(f"Exceeded time limit while parsing attachments: {e}")
+            raise EvalError("TimeoutError: Exceeded time limit while parsing attachments") from e
+        except Exception as e:
+            log.exception(f"Unexpected {type(e).__name__} while parse attachments", exc_info=e)
+            raise EvalError("FileParsingError: Unknown error while parsing attachments") from e
+
     def python3(
         self,
         py_args: Iterable[str],
@@ -265,34 +292,10 @@ class NsJail:
             # convert negative exit codes to the `N + 128` form.
             returncode = -nsjail.returncode + 128 if nsjail.returncode < 0 else nsjail.returncode
 
-            # Parse attachments with time limit
             try:
-                with time_limit(self.files_timeout) if self.files_timeout else nullcontext():
-                    attachments = fs.files_list(
-                        limit=self.files_limit,
-                        pattern=self.files_pattern,
-                        preload_dict=True,
-                        exclude_files=files_written,
-                        timeout=self.files_timeout,
-                    )
-                log.info(f"Found {len(attachments)} files.")
-            except RecursionError:
-                log.info("Recursion error while parsing attachments")
-                return EvalResult(
-                    args,
-                    None,
-                    "FileParsingError: Exceeded directory depth limit while parsing attachments",
-                )
-            except TimeoutError as e:
-                log.info(f"Exceeded time limit while parsing attachments: {e}")
-                return EvalResult(
-                    args, None, "TimeoutError: Exceeded time limit while parsing attachments"
-                )
-            except Exception as e:
-                log.exception(f"Unexpected {type(e).__name__} while parse attachments", exc_info=e)
-                return EvalResult(
-                    args, None, "FileParsingError: Unknown error while parsing attachments"
-                )
+                attachments = self._parse_attachments(fs, files_written)
+            except EvalError as e:
+                return EvalResult(args, None, str(e))
 
             log_lines = nsj_log.read().decode("utf-8").splitlines()
             if not log_lines and returncode == 255:
