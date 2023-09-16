@@ -12,7 +12,7 @@ from google.protobuf import text_format
 from snekbox import DEBUG, limits
 from snekbox.config_pb2 import NsJailConfig
 from snekbox.limits.timed import time_limit
-from snekbox.process import EvalResult
+from snekbox.result import EvalError, EvalResult
 from snekbox.snekio import FileAttachment, MemFS
 from snekbox.snekio.filesystem import Size
 from snekbox.utils.iter import iter_lstrip
@@ -199,6 +199,24 @@ class NsJail:
             *iter_lstrip(py_args),
         ]
 
+    def _write_files(self, home: Path, files: Iterable[FileAttachment]) -> dict[Path, float]:
+        files_written = {}
+        for file in files:
+            try:
+                f_path = file.save_to(home)
+                # Allow file to be writable
+                f_path.chmod(0o777)
+                # Save the written at time to later check if it was modified
+                files_written[f_path] = f_path.stat().st_mtime
+                log.info(f"Created file at {(home / file.path)!r}.")
+            except OSError as e:
+                log.info(f"Failed to create file at {(home / file.path)!r}.", exc_info=e)
+                raise EvalError(
+                    f"{e.__class__.__name__}: Failed to create file '{file.path}'."
+                ) from e
+
+        return files_written
+
     def python3(
         self,
         py_args: Iterable[str],
@@ -220,21 +238,10 @@ class NsJail:
         ) as fs:
             args = self._build_args(py_args, nsjail_args, nsj_log.name, str(fs.home))
 
-            # Write provided files if any
-            files_written: dict[Path, float] = {}
-            for file in files:
-                try:
-                    f_path = file.save_to(fs.home)
-                    # Allow file to be writable
-                    f_path.chmod(0o777)
-                    # Save the written at time to later check if it was modified
-                    files_written[f_path] = f_path.stat().st_mtime
-                    log.info(f"Created file at {(fs.home / file.path)!r}.")
-                except OSError as e:
-                    log.info(f"Failed to create file at {(fs.home / file.path)!r}.", exc_info=e)
-                    return EvalResult(
-                        args, None, f"{e.__class__.__name__}: Failed to create file '{file.path}'."
-                    )
+            try:
+                files_written = self._write_files(fs.home, files)
+            except EvalError as e:
+                return EvalResult(args, None, str(e))
 
             msg = "Executing code..."
             if DEBUG:
