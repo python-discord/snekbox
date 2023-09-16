@@ -9,9 +9,9 @@ from itertools import product
 from pathlib import Path
 from textwrap import dedent
 
-from snekbox.filesystem import Size
 from snekbox.nsjail import NsJail
 from snekbox.snekio import FileAttachment
+from snekbox.snekio.filesystem import Size
 
 
 class NsJailTests(unittest.TestCase):
@@ -576,7 +576,7 @@ class NsJailCgroupTests(unittest.TestCase):
     # This should still pass for v2, even if this test isn't relevant.
     def test_cgroupv1(self):
         logging.getLogger("snekbox.nsjail").setLevel(logging.ERROR)
-        logging.getLogger("snekbox.utils.swap").setLevel(logging.ERROR)
+        logging.getLogger("snekbox.limits.swap").setLevel(logging.ERROR)
 
         config_base = dedent(
             """

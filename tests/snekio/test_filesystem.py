@@ -5,7 +5,7 @@ from tempfile import TemporaryDirectory
 from unittest import TestCase
 from uuid import uuid4
 
-from snekbox.filesystem import UnmountFlags, mount, unmount
+from snekbox.snekio.filesystem import UnmountFlags, mount, unmount
 
 
 class LibMountTests(TestCase):

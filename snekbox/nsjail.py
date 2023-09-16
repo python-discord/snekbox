@@ -10,13 +10,12 @@ from typing import Iterable, TypeVar
 
 from google.protobuf import text_format
 
-from snekbox import DEBUG, utils
+from snekbox import DEBUG, limits
 from snekbox.config_pb2 import NsJailConfig
-from snekbox.filesystem import Size
-from snekbox.memfs import MemFS
+from snekbox.limits.timed import time_limit
 from snekbox.process import EvalResult
-from snekbox.snekio import FileAttachment
-from snekbox.utils.timed import time_limit
+from snekbox.snekio import FileAttachment, MemFS
+from snekbox.snekio.filesystem import Size
 
 __all__ = ("NsJail",)
 
@@ -89,8 +88,8 @@ class NsJail:
         self.files_pattern = files_pattern
 
         self.config = self._read_config(config_path)
-        self.cgroup_version = utils.cgroup.init(self.config)
-        self.ignore_swap_limits = utils.swap.should_ignore_limit(self.config, self.cgroup_version)
+        self.cgroup_version = limits.cgroup.init(self.config)
+        self.ignore_swap_limits = limits.swap.should_ignore_limit(self.config, self.cgroup_version)
 
         log.info(f"Assuming cgroup version {self.cgroup_version}.")
 
