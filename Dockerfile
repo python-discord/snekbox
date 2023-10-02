@@ -60,7 +60,7 @@ COPY --link --from=builder-py-3_11 /lang/ /lang/
 COPY --link --from=builder-py-3_12 /lang/ /lang/
 
 RUN chmod +x /usr/sbin/nsjail \
-    && ln -s /lang/python/3.11/ /lang/python/default
+    && ln -s /lang/python/3.12/ /lang/python/default
 
 # ------------------------------------------------------------------------------
 FROM base as venv
