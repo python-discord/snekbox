@@ -38,8 +38,8 @@ RUN git clone -b v2.3.26 --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROO
 
 # ------------------------------------------------------------------------------
 FROM builder-py-base as builder-py-3_12
-RUN git clone -b v2.3.26 --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROOT \
-    && /build_python.sh 3.12.0rc2
+RUN git clone -b v2.3.28 --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROOT \
+    && /build_python.sh 3.12.0
 
 # ------------------------------------------------------------------------------
 FROM python:3.11-slim-bookworm as base
