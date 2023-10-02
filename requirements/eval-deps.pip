@@ -17,7 +17,6 @@ python-dateutil~=2.8
 pyyaml~=6.0
 scipy~=1.11 ; python_version == '3.12'
 sympy~=1.12
-toml~=0.10
 typing-extensions~=4.8
 tzdata~=2023.3
 #yarl~=1.9 # Doesn't support 3.12, see https://github.com/aio-libs/yarl/issues/894
