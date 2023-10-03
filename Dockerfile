@@ -32,15 +32,13 @@ RUN apt-get -y update \
 COPY --link scripts/build_python.sh /
 
 # ------------------------------------------------------------------------------
-FROM builder-py-base as builder-py-3_11
-RUN git clone -b v2.3.26 --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROOT \
-    && /build_python.sh 3.11.5
-
-# ------------------------------------------------------------------------------
 FROM builder-py-base as builder-py-3_12
-RUN git clone -b v2.3.26 --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROOT \
-    && /build_python.sh 3.12.0rc2
-
+RUN git clone -b v2.3.28 --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROOT \
+    && /build_python.sh 3.12.0
+# ------------------------------------------------------------------------------
+FROM builder-py-base as builder-py-3_13
+RUN git clone -b v2.3.28 --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROOT \
+    && /build_python.sh 3.13-dev
 # ------------------------------------------------------------------------------
 FROM python:3.11-slim-bookworm as base
 
@@ -56,11 +54,11 @@ RUN apt-get -y update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --link --from=builder-nsjail /nsjail/nsjail /usr/sbin/
-COPY --link --from=builder-py-3_11 /lang/ /lang/
 COPY --link --from=builder-py-3_12 /lang/ /lang/
+COPY --link --from=builder-py-3_13 /lang/ /lang/
 
 RUN chmod +x /usr/sbin/nsjail \
-    && ln -s /lang/python/3.11/ /lang/python/default
+    && ln -s /lang/python/3.12/ /lang/python/default
 
 # ------------------------------------------------------------------------------
 FROM base as venv

@@ -1,24 +1,22 @@
-anyio[trio]~=3.7
-arrow~=1.2
+anyio[trio]~=4.0
+arrow~=1.3
 attrs~=23.1
 beautifulsoup4~=4.12
-einspect~=0.5
+einspect~=0.5 ; python_version == '3.12'
 fishhook~=0.2
 forbiddenfruit~=0.1
 fuzzywuzzy~=0.18
 lark~=1.1
-matplotlib~=3.7 ; python_version == '3.11'  # https://github.com/matplotlib/matplotlib/pull/26582
+matplotlib~=3.8 ; python_version == '3.12'
 more-itertools~=10.1
 networkx~=3.1
-numpy~=1.25 ; python_version == '3.11'
-numpy==1.26.0rc1 ; python_version == '3.12'
-pandas~=2.0 ; python_version == '3.11'
-pendulum~=2.1 ; python_version == '3.11'  # https://github.com/sdispater/pendulum/issues/696
+numpy~=1.26 ; python_version == '3.12'
+pandas~=2.1 ; python_version == '3.12'
+# pendulum~=2.1 # Doesn't support 3.12, see https://github.com/sdispater/pendulum/issues/696
 python-dateutil~=2.8
 pyyaml~=6.0
-scipy~=1.11
+scipy~=1.11 ; python_version == '3.12'
 sympy~=1.12
-toml~=0.10
-typing-extensions~=4.7
+typing-extensions~=4.8
 tzdata~=2023.3
-yarl~=1.9 ; python_version == '3.11'  # https://github.com/aio-libs/yarl/issues/894
+#yarl~=1.9 # Doesn't support 3.12, see https://github.com/aio-libs/yarl/issues/894
