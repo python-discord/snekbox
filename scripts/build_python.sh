@@ -7,8 +7,8 @@ py_version="${1}"
 # Install Python interpreter under e.g. /lang/python/3.11/ (no patch version).
 "${PYENV_ROOT}/plugins/python-build/bin/python-build" \
     "${py_version}" \
-    "/lang/python/${py_version%.*}"
-"/lang/python/${py_version%.*}/bin/python" -m pip install -U pip
+    "/lang/python/${py_version%[-.]*}"
+"/lang/python/${py_version%[-.]*}/bin/python" -m pip install -U pip
 
 # Clean up some unnecessary files to reduce image size bloat.
 find /lang/python/ -depth \
