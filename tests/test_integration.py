@@ -52,6 +52,35 @@ class IntegrationTests(unittest.TestCase):
             self.assertTrue(all(status == 200 for status in statuses))
             self.assertTrue(all(json.loads(response)["returncode"] == 0 for response in responses))
 
+    def test_multi_binary_support(self):
+        """Test eval requests with different binary paths set."""
+        with run_gunicorn():
+            get_python_version_body = {
+                "input": "import sys; print('.'.join(map(str, sys.version_info[:2])))"
+            }
+            cases = [
+                (
+                    get_python_version_body,
+                    "3.12\n",
+                    "test default binary is used when binary_path not specified",
+                ),
+                (
+                    get_python_version_body | {"binary_path": "/lang/python/3.12/bin/python"},
+                    "3.12\n",
+                    "test default binary is used when explicitly set",
+                ),
+                (
+                    get_python_version_body | {"binary_path": "/lang/python/3.13/bin/python"},
+                    "3.13\n",
+                    "test alternative binary is used when set",
+                ),
+            ]
+            for body, expected, msg in cases:
+                with self.subTest(msg=msg, body=body, expected=expected):
+                    response, status = snekbox_request(body)
+                    self.assertEqual(status, 200)
+                    self.assertEqual(json.loads(response)["stdout"], expected)
+
     def test_eval(self):
         """Test normal eval requests without files."""
         with run_gunicorn():
