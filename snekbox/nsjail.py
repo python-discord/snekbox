@@ -168,7 +168,7 @@ class NsJail:
         return "".join(output)
 
     def _build_args(
-        self, py_args: Iterable[str], nsjail_args: Iterable[str], log_path: str, fs_home: str
+        self, py_args: Iterable[str], nsjail_args: Iterable[str], log_path: str, fs_home: str, binary_path: str
     ) -> Sequence[str]:
         if self.cgroup_version == 2:
             nsjail_args = ("--use_cgroupv2", *nsjail_args)
@@ -197,10 +197,7 @@ class NsJail:
             log_path,
             *nsjail_args,
             "--",
-            self.config.exec_bin.path,
-            # Filter out empty strings at start of Python args
-            # (causes issues with python cli)
-            *iter_lstrip(self.config.exec_bin.arg),
+            binary_path,
             *iter_lstrip(py_args),
         ]
 
@@ -259,6 +256,7 @@ class NsJail:
         py_args: Iterable[str],
         files: Iterable[FileAttachment] = (),
         nsjail_args: Iterable[str] = (),
+        binary_path: Path = "/lang/python/default/bin/python",
     ) -> EvalResult:
         """
         Execute Python 3 code in an isolated environment and return the completed process.
@@ -267,13 +265,14 @@ class NsJail:
             py_args: Arguments to pass to Python.
             files: FileAttachments to write to the sandbox prior to running Python.
             nsjail_args: Overrides for the NsJail configuration.
+            binary_path: The path to the binary to execute under.
         """
         with NamedTemporaryFile() as nsj_log, MemFS(
             instance_size=self.memfs_instance_size,
             home=self.memfs_home,
             output=self.memfs_output,
         ) as fs:
-            args = self._build_args(py_args, nsjail_args, nsj_log.name, str(fs.home))
+            args = self._build_args(py_args, nsjail_args, nsj_log.name, str(fs.home), binary_path)
             try:
                 files_written = self._write_files(fs.home, files)
 
