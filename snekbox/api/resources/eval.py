@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 import falcon
 from falcon.media.validators.jsonschema import validate
@@ -43,6 +44,7 @@ class EvalResource:
                     "required": ["path"],
                 },
             },
+            "binary_path": {"type": "string"},
         },
         "anyOf": [
             {"required": ["input"]},
@@ -122,10 +124,21 @@ class EvalResource:
         if "input" in body:
             body.setdefault("args", ["-c"])
             body["args"].append(body["input"])
+
+        binary_path = body.get("binary_path")
+        if binary_path:
+            binary_path = Path(binary_path)
+            if (
+                not binary_path.resolve().as_posix().startswith("/lang/")
+                or not binary_path.is_file()
+            ):
+                raise falcon.HTTPBadRequest(title="binary_path file is invalid")
+
         try:
             result = self.nsjail.python3(
                 py_args=body["args"],
                 files=[FileAttachment.from_dict(file) for file in body.get("files", [])],
+                binary_path=binary_path,
             )
         except ParsingError as e:
             raise falcon.HTTPBadRequest(title="Request file is invalid", description=str(e))
