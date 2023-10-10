@@ -4,17 +4,23 @@
 #
 #    pip-compile --output-file=requirements/pip-tools.pip requirements/pip-tools.in
 #
-build==0.10.0
+build==1.0.3
     # via pip-tools
-click==8.1.3
+click==8.1.7
     # via pip-tools
-packaging==23.0
-    # via build
+colorama==0.4.6
+    # via
+    #   build
+    #   click
+packaging==23.2
+    # via
+    #   -c requirements\requirements.pip
+    #   build
 pip-tools==7.3.0
     # via -r requirements/pip-tools.in
 pyproject-hooks==1.0.0
     # via build
-wheel==0.38.4
+wheel==0.42.0
     # via pip-tools
 
 # The following packages are considered to be unsafe in a requirements file:

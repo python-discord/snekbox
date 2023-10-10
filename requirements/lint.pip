@@ -4,23 +4,23 @@
 #
 #    pip-compile --output-file=requirements/lint.pip requirements/lint.in
 #
-cfgv==3.3.1
+cfgv==3.4.0
     # via pre-commit
-distlib==0.3.6
+distlib==0.3.8
     # via virtualenv
-filelock==3.9.0
+filelock==3.13.1
     # via virtualenv
-identify==2.5.20
+identify==2.5.33
     # via pre-commit
-nodeenv==1.7.0
+nodeenv==1.8.0
     # via pre-commit
-platformdirs==3.1.1
+platformdirs==4.1.0
     # via virtualenv
-pre-commit==3.1.1
+pre-commit==3.6.0
     # via -r requirements/lint.in
-pyyaml==6.0
+pyyaml==6.0.1
     # via pre-commit
-virtualenv==20.21.0
+virtualenv==20.25.0
     # via pre-commit
 
 # The following packages are considered to be unsafe in a requirements file:
