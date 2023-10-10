@@ -81,6 +81,25 @@ class IntegrationTests(unittest.TestCase):
                     self.assertEqual(status, 200)
                     self.assertEqual(json.loads(response)["stdout"], expected)
 
+    def invalid_binary_paths(self):
+        """Test that passing invalid binary paths result in no code execution."""
+        with run_gunicorn():
+            cases = [
+                ("/bin/bash", "test files outside of /lang cannot be ran"),
+                (
+                    "/lang/../bin/bash",
+                    "test path traversal still stops files outside /lang from running",
+                ),
+                ("/foo/bar", "test non-existant files are not ran"),
+            ]
+            for path, msg in cases:
+                with self.subTest(msg=msg, path=path):
+                    body = {"args": ["-c", "echo", "hi"], "binary_path": path}
+                    response, status = snekbox_request(body)
+                    self.assertEqual(status, 400)
+                    expected = {"title": "binary_path file is invalid"}
+                    self.assertEqual(json.loads(response)["stdout"], expected)
+
     def test_eval(self):
         """Test normal eval requests without files."""
         with run_gunicorn():
