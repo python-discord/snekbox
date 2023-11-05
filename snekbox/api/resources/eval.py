@@ -6,10 +6,9 @@ import falcon
 from falcon.media.validators.jsonschema import validate
 
 from snekbox.nsjail import NsJail
+from snekbox.snekio import FileAttachment, ParsingError
 
 __all__ = ("EvalResource",)
-
-from snekbox.snekio import FileAttachment, ParsingError
 
 log = logging.getLogger(__name__)
 

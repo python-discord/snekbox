@@ -2,7 +2,7 @@ import math
 import time
 from unittest import TestCase
 
-from snekbox.utils.timed import time_limit
+from snekbox.limits.timed import time_limit
 
 
 class TimedTests(TestCase):

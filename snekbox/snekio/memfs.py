@@ -13,8 +13,8 @@ from types import TracebackType
 from typing import Type
 from uuid import uuid4
 
-from snekbox.filesystem import mount, unmount
 from snekbox.snekio import FileAttachment
+from snekbox.snekio.filesystem import mount, unmount
 
 log = logging.getLogger(__name__)
 

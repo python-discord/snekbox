@@ -1,10 +1,12 @@
-"""Utilities for process management."""
+"""Types for representing the result of an evaluation job."""
 from collections.abc import Sequence
 from os import PathLike
 from subprocess import CompletedProcess
 from typing import TypeVar
 
 from snekbox.snekio import FileAttachment
+
+__all__ = ("EvalError", "EvalResult")
 
 _T = TypeVar("_T")
 ArgType = (
@@ -14,6 +16,10 @@ ArgType = (
     | PathLike[bytes]
     | Sequence[str | bytes | PathLike[str] | PathLike[bytes]]
 )
+
+
+class EvalError(RuntimeError):
+    """An error that occurred during evaluation."""
 
 
 class EvalResult(CompletedProcess[_T]):

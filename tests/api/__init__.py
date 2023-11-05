@@ -4,7 +4,7 @@ from unittest import mock
 from falcon import testing
 
 from snekbox.api import SnekAPI
-from snekbox.process import EvalResult
+from snekbox.result import EvalResult
 
 
 class SnekAPITestCase(testing.TestCase):

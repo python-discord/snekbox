@@ -4,7 +4,7 @@ from contextlib import ExitStack
 from unittest import TestCase, mock
 from uuid import uuid4
 
-from snekbox.memfs import MemFS
+from snekbox.snekio import MemFS
 
 UUID_TEST = uuid4()
 
@@ -12,10 +12,10 @@ UUID_TEST = uuid4()
 class MemFSTests(TestCase):
     def setUp(self):
         super().setUp()
-        self.logger = logging.getLogger("snekbox.memfs")
+        self.logger = logging.getLogger("snekbox.snekio.memfs")
         self.logger.setLevel(logging.WARNING)
 
-    @mock.patch("snekbox.memfs.uuid4", lambda: UUID_TEST)
+    @mock.patch("snekbox.snekio.memfs.uuid4", lambda: UUID_TEST)
     def test_assignment_thread_safe(self):
         """Test concurrent mounting works in multi-thread environments."""
         # Concurrently create MemFS in threads, check only 1 can be created

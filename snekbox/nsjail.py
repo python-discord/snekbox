@@ -2,42 +2,29 @@ import logging
 import re
 import subprocess
 import sys
-from collections.abc import Generator
+from collections.abc import Iterable, Sequence
 from contextlib import nullcontext
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Iterable, TypeVar
 
 from google.protobuf import text_format
 
-from snekbox import DEBUG, utils
+from snekbox import DEBUG, limits
 from snekbox.config_pb2 import NsJailConfig
-from snekbox.filesystem import Size
-from snekbox.memfs import MemFS
-from snekbox.process import EvalResult
-from snekbox.snekio import FileAttachment
-from snekbox.utils.timed import time_limit
+from snekbox.limits.timed import time_limit
+from snekbox.result import EvalError, EvalResult
+from snekbox.snekio import FileAttachment, MemFS
+from snekbox.snekio.filesystem import Size
+from snekbox.utils.iter import iter_lstrip
 
 __all__ = ("NsJail",)
 
 log = logging.getLogger(__name__)
 
-_T = TypeVar("_T")
-
 # [level][timestamp][PID]? function_signature:line_no? message
 LOG_PATTERN = re.compile(
     r"\[(?P<level>(I)|[DWEF])\]\[.+?\](?(2)|(?P<func>\[\d+\] .+?:\d+ )) ?(?P<msg>.+)"
 )
-
-
-def iter_lstrip(iterable: Iterable[_T]) -> Generator[_T, None, None]:
-    """Remove leading falsy objects from an iterable."""
-    it = iter(iterable)
-    for item in it:
-        if item:
-            yield item
-            break
-    yield from it
 
 
 class NsJail:
@@ -89,8 +76,8 @@ class NsJail:
         self.files_pattern = files_pattern
 
         self.config = self._read_config(config_path)
-        self.cgroup_version = utils.cgroup.init(self.config)
-        self.ignore_swap_limits = utils.swap.should_ignore_limit(self.config, self.cgroup_version)
+        self.cgroup_version = limits.cgroup.init(self.config)
+        self.ignore_swap_limits = limits.swap.should_ignore_limit(self.config, self.cgroup_version)
 
         log.info(f"Assuming cgroup version {self.cgroup_version}.")
 
@@ -162,18 +149,104 @@ class NsJail:
         with nsjail:
             # We'll consume STDOUT as long as the NsJail subprocess is running.
             while nsjail.poll() is None:
-                chars = nsjail.stdout.read(self.read_chunk_size)
+                try:
+                    chars = nsjail.stdout.read(self.read_chunk_size)
+                except UnicodeDecodeError as e:
+                    raise EvalError("UnicodeDecodeError: invalid Unicode in output pipe") from e
+
                 output_size += sys.getsizeof(chars)
                 output.append(chars)
 
                 if output_size > self.max_output_size:
                     # Terminate the NsJail subprocess with SIGTERM.
                     # This in turn reaps and kills children with SIGKILL.
-                    log.info("Output exceeded the output limit, sending SIGTERM to NsJail.")
+                    log.info("Output exceeded the output limit. Sending SIGTERM to NsJail.")
                     nsjail.terminate()
                     break
 
         return "".join(output)
+
+    def _build_args(
+        self, py_args: Iterable[str], nsjail_args: Iterable[str], log_path: str, fs_home: str
+    ) -> Sequence[str]:
+        if self.cgroup_version == 2:
+            nsjail_args = ("--use_cgroupv2", *nsjail_args)
+
+        if self.ignore_swap_limits:
+            nsjail_args = (
+                "--cgroup_mem_memsw_max",
+                "0",
+                "--cgroup_mem_swap_max",
+                "-1",
+                *nsjail_args,
+            )
+
+        nsjail_args = (
+            # Mount `home` with Read/Write access
+            "--bindmount",
+            f"{fs_home}:home",
+            *nsjail_args,
+        )
+
+        return [
+            self.nsjail_path,
+            "--config",
+            self.config_path,
+            "--log",
+            log_path,
+            *nsjail_args,
+            "--",
+            self.config.exec_bin.path,
+            # Filter out empty strings at start of Python args
+            # (causes issues with python cli)
+            *iter_lstrip(self.config.exec_bin.arg),
+            *iter_lstrip(py_args),
+        ]
+
+    def _write_files(self, home: Path, files: Iterable[FileAttachment]) -> dict[Path, float]:
+        files_written = {}
+        for file in files:
+            try:
+                f_path = file.save_to(home)
+                # Allow file to be writable
+                f_path.chmod(0o777)
+                # Save the written at time to later check if it was modified
+                files_written[f_path] = f_path.stat().st_mtime
+                log.info(f"Created file at {(home / file.path)!r}.")
+            except OSError as e:
+                log.info(f"Failed to create file at {(home / file.path)!r}.", exc_info=e)
+                raise EvalError(
+                    f"{e.__class__.__name__}: Failed to create file '{file.path}'."
+                ) from e
+
+        return files_written
+
+    def _parse_attachments(
+        self, fs: MemFS, files_written: dict[Path, float]
+    ) -> list[FileAttachment]:
+        try:
+            with time_limit(self.files_timeout) if self.files_timeout else nullcontext():
+                attachments = fs.files_list(
+                    limit=self.files_limit,
+                    pattern=self.files_pattern,
+                    preload_dict=True,
+                    exclude_files=files_written,
+                    timeout=self.files_timeout,
+                )
+
+            log.info(f"Found {len(attachments)} files.")
+            return attachments
+        except RecursionError as e:
+            log.info("Recursion error while parsing attachments")
+            raise EvalError(
+                "FileParsingError: Exceeded directory depth limit while parsing attachments"
+            ) from e
+        except TimeoutError as e:
+            log.info(f"Exceeded time limit while parsing attachments: {e}")
+            raise EvalError("TimeoutError: Exceeded time limit while parsing attachments") from e
+        except Exception as e:
+            log.exception(f"Unexpected {type(e).__name__} while parse attachments", exc_info=e)
+            raise EvalError("FileParsingError: Unknown error while parsing attachments") from e
 
     def python3(
         self,
@@ -189,119 +262,43 @@ class NsJail:
             files: FileAttachments to write to the sandbox prior to running Python.
             nsjail_args: Overrides for the NsJail configuration.
         """
-        if self.cgroup_version == 2:
-            nsjail_args = ("--use_cgroupv2", *nsjail_args)
-
-        if self.ignore_swap_limits:
-            nsjail_args = (
-                "--cgroup_mem_memsw_max",
-                "0",
-                "--cgroup_mem_swap_max",
-                "-1",
-                *nsjail_args,
-            )
-
         with NamedTemporaryFile() as nsj_log, MemFS(
             instance_size=self.memfs_instance_size,
             home=self.memfs_home,
             output=self.memfs_output,
         ) as fs:
-            nsjail_args = (
-                # Mount `home` with Read/Write access
-                "--bindmount",
-                f"{fs.home}:home",
-                *nsjail_args,
-            )
+            args = self._build_args(py_args, nsjail_args, nsj_log.name, str(fs.home))
+            try:
+                files_written = self._write_files(fs.home, files)
 
-            args = [
-                self.nsjail_path,
-                "--config",
-                self.config_path,
-                "--log",
-                nsj_log.name,
-                *nsjail_args,
-                "--",
-                self.config.exec_bin.path,
-                # Filter out empty strings at start of Python args
-                # (causes issues with python cli)
-                *iter_lstrip(self.config.exec_bin.arg),
-                *iter_lstrip(py_args),
-            ]
+                msg = "Executing code..."
+                if DEBUG:
+                    msg = f"{msg[:-3]} with the arguments {args}."
+                log.info(msg)
 
-            # Write provided files if any
-            files_written: dict[Path, float] = {}
-            for file in files:
                 try:
-                    f_path = file.save_to(fs.home)
-                    # Allow file to be writable
-                    f_path.chmod(0o777)
-                    # Save the written at time to later check if it was modified
-                    files_written[f_path] = f_path.stat().st_mtime
-                    log.info(f"Created file at {(fs.home / file.path)!r}.")
-                except OSError as e:
-                    log.info(f"Failed to create file at {(fs.home / file.path)!r}.", exc_info=e)
-                    return EvalResult(
-                        args, None, f"{e.__class__.__name__}: Failed to create file '{file.path}'."
+                    nsjail = subprocess.Popen(
+                        args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
                     )
+                except ValueError:
+                    return EvalResult(args, None, "ValueError: embedded null byte")
 
-            msg = "Executing code..."
-            if DEBUG:
-                msg = f"{msg[:-3]} with the arguments {args}."
-            log.info(msg)
-
-            try:
-                nsjail = subprocess.Popen(
-                    args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
-                )
-            except ValueError:
-                return EvalResult(args, None, "ValueError: embedded null byte")
-
-            try:
                 output = self._consume_stdout(nsjail)
-            except UnicodeDecodeError:
-                return EvalResult(args, None, "UnicodeDecodeError: invalid Unicode in output pipe")
+                attachments = self._parse_attachments(fs, files_written)
+                log_lines = nsj_log.read().decode("utf-8").splitlines()
+            except EvalError as e:
+                return EvalResult(args, None, str(e))
 
-            # When you send signal `N` to a subprocess to terminate it using Popen, it
-            # will return `-N` as its exit code. As we normally get `N + 128` back, we
-            # convert negative exit codes to the `N + 128` form.
-            returncode = -nsjail.returncode + 128 if nsjail.returncode < 0 else nsjail.returncode
+        # When you send signal `N` to a subprocess to terminate it using Popen, it
+        # will return `-N` as its exit code. As we normally get `N + 128` back, we
+        # convert negative exit codes to the `N + 128` form.
+        return_code = -nsjail.returncode + 128 if nsjail.returncode < 0 else nsjail.returncode
 
-            # Parse attachments with time limit
-            try:
-                with time_limit(self.files_timeout) if self.files_timeout else nullcontext():
-                    attachments = fs.files_list(
-                        limit=self.files_limit,
-                        pattern=self.files_pattern,
-                        preload_dict=True,
-                        exclude_files=files_written,
-                        timeout=self.files_timeout,
-                    )
-                log.info(f"Found {len(attachments)} files.")
-            except RecursionError:
-                log.info("Recursion error while parsing attachments")
-                return EvalResult(
-                    args,
-                    None,
-                    "FileParsingError: Exceeded directory depth limit while parsing attachments",
-                )
-            except TimeoutError as e:
-                log.info(f"Exceeded time limit while parsing attachments: {e}")
-                return EvalResult(
-                    args, None, "TimeoutError: Exceeded time limit while parsing attachments"
-                )
-            except Exception as e:
-                log.exception(f"Unexpected {type(e).__name__} while parse attachments", exc_info=e)
-                return EvalResult(
-                    args, None, "FileParsingError: Unknown error while parsing attachments"
-                )
+        if not log_lines and return_code == 255:
+            # NsJail probably failed to parse arguments so log output will still be in stdout
+            log_lines = output.splitlines()
 
-            log_lines = nsj_log.read().decode("utf-8").splitlines()
-            if not log_lines and returncode == 255:
-                # NsJail probably failed to parse arguments so log output will still be in stdout
-                log_lines = output.splitlines()
+        self._parse_log(log_lines)
+        log.info(f"NsJail return code: {return_code}")
 
-            self._parse_log(log_lines)
-
-        log.info(f"nsjail return code: {returncode}")
-
-        return EvalResult(args, returncode, output, files=attachments)
+        return EvalResult(args, return_code, output, files=attachments)

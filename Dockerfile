@@ -36,10 +36,6 @@ FROM builder-py-base as builder-py-3_12
 RUN git clone -b v2.3.28 --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROOT \
     && /build_python.sh 3.12.0
 # ------------------------------------------------------------------------------
-FROM builder-py-base as builder-py-3_13
-RUN git clone -b v2.3.28 --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROOT \
-    && /build_python.sh 3.13-dev
-# ------------------------------------------------------------------------------
 FROM python:3.11-slim-bookworm as base
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
@@ -55,7 +51,6 @@ RUN apt-get -y update \
 
 COPY --link --from=builder-nsjail /nsjail/nsjail /usr/sbin/
 COPY --link --from=builder-py-3_12 /lang/ /lang/
-COPY --link --from=builder-py-3_13 /lang/ /lang/
 
 RUN chmod +x /usr/sbin/nsjail \
     && ln -s /lang/python/3.12/ /lang/python/default

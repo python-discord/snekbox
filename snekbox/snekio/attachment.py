@@ -6,6 +6,10 @@ from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
 
+from .errors import IllegalPathError, ParsingError
+
+__all__ = ("safe_path", "FileAttachment")
+
 
 def safe_path(path: str) -> str:
     """
@@ -26,14 +30,6 @@ def safe_path(path: str) -> str:
         raise IllegalPathError(f"File path '{path}' may not traverse beyond root")
 
     return path
-
-
-class ParsingError(ValueError):
-    """Raised when an incoming content cannot be parsed."""
-
-
-class IllegalPathError(ParsingError):
-    """Raised when a request file has an illegal path."""
 
 
 @dataclass(frozen=True)
