@@ -12,11 +12,11 @@ more-itertools~=10.1
 networkx~=3.1
 numpy~=1.26 ; python_version == '3.12'
 pandas~=2.1 ; python_version == '3.12'
-# pendulum~=2.1 # Doesn't support 3.12, see https://github.com/sdispater/pendulum/issues/696
+pendulum~=3.0
 python-dateutil~=2.8
 pyyaml~=6.0
 scipy~=1.11 ; python_version == '3.12'
 sympy~=1.12
 typing-extensions~=4.8
 tzdata~=2023.3
-#yarl~=1.9 # Doesn't support 3.12, see https://github.com/aio-libs/yarl/issues/894
+yarl~=1.9
