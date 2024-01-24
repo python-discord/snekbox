@@ -4,5 +4,5 @@
 #
 #    pip-compile --output-file=requirements/coverage.pip requirements/coverage.in
 #
-coverage[toml]==7.2.1
+coverage[toml]==7.4.0
     # via -r requirements/coverage.in

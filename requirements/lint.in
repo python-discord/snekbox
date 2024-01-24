@@ -1,4 +1,4 @@
 -c coverage.pip
 -c requirements.pip
 
-pre-commit>=2.13
+pre-commit>=3.4
