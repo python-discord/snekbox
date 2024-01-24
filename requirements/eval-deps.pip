@@ -13,6 +13,7 @@ networkx~=3.2
 numpy~=1.26 ; python_version == '3.12'
 pandas~=2.1 ; python_version == '3.12'
 pendulum~=3.0
+pyarrow~=15.0
 python-dateutil~=2.8
 pyyaml~=6.0
 scipy~=1.11 ; python_version == '3.12'
