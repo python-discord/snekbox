@@ -20,4 +20,4 @@ scipy~=1.12 ; python_version == '3.12'
 sympy~=1.12
 typing-extensions~=4.10
 tzdata~=2024.1
-# yarl~=1.9  Requires multidict wheels in order to build https://github.com/aio-libs/multidict/issues/887
+yarl~=1.9
