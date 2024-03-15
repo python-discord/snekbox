@@ -36,7 +36,7 @@ FROM builder-py-base as builder-py-3_12
 RUN git clone -b v2.3.36 --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROOT \
     && /build_python.sh 3.12.2
 # ------------------------------------------------------------------------------
-FROM python:3.11-slim-bookworm as base
+FROM python:3.12-slim-bookworm as base
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=false
