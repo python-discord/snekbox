@@ -14,6 +14,7 @@ from snekbox.config_pb2 import NsJailConfig
 from snekbox.limits.timed import time_limit
 from snekbox.result import EvalError, EvalResult
 from snekbox.snekio import FileAttachment, MemFS
+from snekbox.snekio.errors import IllegalPathError
 from snekbox.snekio.filesystem import Size
 from snekbox.utils.iter import iter_lstrip
 
@@ -244,6 +245,9 @@ class NsJail:
         except TimeoutError as e:
             log.info(f"Exceeded time limit while parsing attachments: {e}")
             raise EvalError("TimeoutError: Exceeded time limit while parsing attachments") from e
+        except IllegalPathError as e:
+            log.info(f"Invalid bytes in filename while parsing attachments: {e}")
+            raise EvalError("FileParsingError: invalid bytes in filename while parsing attachments")
         except Exception as e:
             log.exception(f"Unexpected {type(e).__name__} while parse attachments", exc_info=e)
             raise EvalError("FileParsingError: Unknown error while parsing attachments") from e
