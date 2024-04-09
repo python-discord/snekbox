@@ -252,12 +252,12 @@ class NsJailTests(unittest.TestCase):
 
     def test_filename_encoding_illegal_chars(self):
         code = dedent(
-            """
+            r"""
             with open(b"\xC3.txt", "w") as f:
                 f.write("test")
             """
         ).strip()
-        result = self.eval_code(code)
+        result = self.eval_file(code)
         self.assertEqual(result.returncode, None)
         self.assertEqual(
             result.stdout, "FileParsingError: invalid bytes in filename while parsing attachments"

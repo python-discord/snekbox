@@ -247,7 +247,9 @@ class NsJail:
             raise EvalError("TimeoutError: Exceeded time limit while parsing attachments") from e
         except IllegalPathError as e:
             log.info(f"Invalid bytes in filename while parsing attachments: {e}")
-            raise EvalError("FileParsingError: invalid bytes in filename while parsing attachments")
+            raise EvalError(
+                "FileParsingError: invalid bytes in filename while parsing attachments"
+            ) from e
         except Exception as e:
             log.exception(f"Unexpected {type(e).__name__} while parse attachments", exc_info=e)
             raise EvalError("FileParsingError: Unknown error while parsing attachments") from e
