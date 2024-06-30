@@ -26,6 +26,8 @@ class NsJailTests(unittest.TestCase):
         # Hard-coded because it's non-trivial to parse the mount options.
         self.shm_mount_size = 40 * Size.MiB
 
+        self.default_binary_path = "/lang/python/default/bin/python"
+
     def eval_code(self, code: str):
         return self.nsjail.python3(["-c", code])
 
@@ -547,7 +549,7 @@ class NsJailTests(unittest.TestCase):
         for args, expected in cases:
             with self.subTest(args=args):
                 result = self.nsjail.python3(py_args=args)
-                idx = result.args.index(self.nsjail.config.exec_bin.path)
+                idx = result.args.index(self.default_binary_path)
                 self.assertEqual(result.args[idx + 1 :], expected)
                 self.assertEqual(result.returncode, 0)
 
