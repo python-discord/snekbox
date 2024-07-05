@@ -24,12 +24,12 @@ jobs:
           printf "%s\n" "${version}"
 
       - name: Create a Sentry.io release
-        uses: tclindner/sentry-releases-action@v1.3.0
+        uses: getsentry/action-release@v1
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: python-discord
           SENTRY_PROJECT: snekbox
         with:
-          tagName: ${{ steps.version.outputs.version }}
+          version: ${{ steps.version.outputs.version }}
           environment: production
-          releaseNamePrefix: snekbox@
+          version_prefix: snekbox@
