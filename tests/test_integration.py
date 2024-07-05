@@ -52,6 +52,54 @@ class IntegrationTests(unittest.TestCase):
             self.assertTrue(all(status == 200 for status in statuses))
             self.assertTrue(all(json.loads(response)["returncode"] == 0 for response in responses))
 
+    def test_multi_binary_support(self):
+        """Test eval requests with different binary paths set."""
+        with run_gunicorn():
+            get_python_version_body = {
+                "input": "import sys; print('.'.join(map(str, sys.version_info[:2])))"
+            }
+            cases = [
+                (
+                    get_python_version_body,
+                    "3.12\n",
+                    "test default binary is used when binary_path not specified",
+                ),
+                (
+                    get_python_version_body | {"binary_path": "/lang/python/3.12/bin/python"},
+                    "3.12\n",
+                    "test default binary is used when explicitly set",
+                ),
+                (
+                    get_python_version_body | {"binary_path": "/lang/python/3.13/bin/python"},
+                    "3.13\n",
+                    "test alternative binary is used when set",
+                ),
+            ]
+            for body, expected, msg in cases:
+                with self.subTest(msg=msg, body=body, expected=expected):
+                    response, status = snekbox_request(body)
+                    self.assertEqual(status, 200)
+                    self.assertEqual(json.loads(response)["stdout"], expected)
+
+    def invalid_binary_paths(self):
+        """Test that passing invalid binary paths result in no code execution."""
+        with run_gunicorn():
+            cases = [
+                ("/bin/bash", "test files outside of /lang cannot be ran"),
+                (
+                    "/lang/../bin/bash",
+                    "test path traversal still stops files outside /lang from running",
+                ),
+                ("/foo/bar", "test non-existant files are not ran"),
+            ]
+            for path, msg in cases:
+                with self.subTest(msg=msg, path=path):
+                    body = {"args": ["-c", "echo", "hi"], "binary_path": path}
+                    response, status = snekbox_request(body)
+                    self.assertEqual(status, 400)
+                    expected = {"title": "binary_path file is invalid"}
+                    self.assertEqual(json.loads(response)["stdout"], expected)
+
     def test_eval(self):
         """Test normal eval requests without files."""
         with run_gunicorn():
