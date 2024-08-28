@@ -33,8 +33,8 @@ COPY --link scripts/build_python.sh /
 
 # ------------------------------------------------------------------------------
 FROM builder-py-base as builder-py-3_12
-RUN git clone -b v2.3.36 --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROOT \
-    && /build_python.sh 3.12.2
+RUN git clone -b v2.4.10 --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROOT \
+    && /build_python.sh 3.12.5
 # ------------------------------------------------------------------------------
 FROM python:3.12-slim-bookworm as base
 
