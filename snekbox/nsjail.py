@@ -26,6 +26,7 @@ log = logging.getLogger(__name__)
 LOG_PATTERN = re.compile(
     r"\[(?P<level>(I)|[DWEF])\]\[.+?\](?(2)|(?P<func>\[\d+\] .+?:\d+ )) ?(?P<msg>.+)"
 )
+DEFAULT_BINARY_PATH = "/snekbin/python/default/bin/python"
 
 
 class NsJail:
@@ -168,7 +169,12 @@ class NsJail:
         return "".join(output)
 
     def _build_args(
-        self, py_args: Iterable[str], nsjail_args: Iterable[str], log_path: str, fs_home: str, binary_path: str
+        self,
+        py_args: Iterable[str],
+        nsjail_args: Iterable[str],
+        log_path: str,
+        fs_home: str,
+        binary_path: str,
     ) -> Sequence[str]:
         if self.cgroup_version == 2:
             nsjail_args = ("--use_cgroupv2", *nsjail_args)
@@ -185,7 +191,7 @@ class NsJail:
         nsjail_args = (
             # Mount `home` with Read/Write access
             "--bindmount",
-            f"{fs_home}:home",
+            f"{fs_home}:home",  # noqa: E231
             *nsjail_args,
         )
 
@@ -256,7 +262,7 @@ class NsJail:
         py_args: Iterable[str],
         files: Iterable[FileAttachment] = (),
         nsjail_args: Iterable[str] = (),
-        binary_path: Path = "/lang/python/default/bin/python",
+        binary_path: Path = DEFAULT_BINARY_PATH,
     ) -> EvalResult:
         """
         Execute Python 3 code in an isolated environment and return the completed process.

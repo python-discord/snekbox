@@ -6,7 +6,7 @@ from pathlib import Path
 import falcon
 from falcon.media.validators.jsonschema import validate
 
-from snekbox.nsjail import NsJail
+from snekbox.nsjail import DEFAULT_BINARY_PATH, NsJail
 from snekbox.snekio import FileAttachment, ParsingError
 
 __all__ = ("EvalResource",)
@@ -126,7 +126,9 @@ class EvalResource:
             body["args"].append(body["input"])
 
         binary_path = body.get("binary_path")
-        if binary_path:
+        if not binary_path:
+            binary_path = DEFAULT_BINARY_PATH
+        else:
             binary_path = Path(binary_path)
             if not binary_path.exists():
                 raise falcon.HTTPBadRequest(title="binary_path does not exist")
@@ -134,6 +136,7 @@ class EvalResource:
                 raise falcon.HTTPBadRequest(title="binary_path is not a file")
             if not binary_path.stat().st_mode & 0o100 == 0o100:
                 raise falcon.HTTPBadRequest(title="binary_path is not executable")
+            binary_path = binary_path.resolve().as_posix()
 
         try:
             result = self.nsjail.python3(
