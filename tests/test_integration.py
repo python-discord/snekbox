@@ -85,12 +85,12 @@ class IntegrationTests(unittest.TestCase):
         """Test that passing invalid binary paths result in no code execution."""
         with run_gunicorn():
             cases = [
-                ("/bin/bash", "test files outside of /lang cannot be ran"),
+                ("/bin/bash", "test files outside of /lang cannot be run"),
                 (
                     "/lang/../bin/bash",
                     "test path traversal still stops files outside /lang from running",
                 ),
-                ("/foo/bar", "test non-existant files are not ran"),
+                ("/foo/bar", "test non-existant files are not run"),
             ]
             for path, msg in cases:
                 with self.subTest(msg=msg, path=path):
