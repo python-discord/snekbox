@@ -1,5 +1,3 @@
-version: "3.7"
-
 services:
   snekbox:
     container_name: snekbox_dev
