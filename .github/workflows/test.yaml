@@ -52,6 +52,7 @@ jobs:
           name: coverage-${{ matrix.os }}
           path: .coverage.*
           retention-days: 1
+          include-hidden-files: true
 
   report:
     name: Report coverage
