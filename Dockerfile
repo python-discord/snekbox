@@ -29,13 +29,16 @@ RUN apt-get -y update \
         tk-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git clone -b v2.4.10 --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROOT
+RUN git clone -b v2.4.14 --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROOT
 
 COPY --link scripts/build_python.sh /
 
 # ------------------------------------------------------------------------------
 FROM builder-py-base as builder-py-3_12
 RUN /build_python.sh 3.12.5
+# ------------------------------------------------------------------------------
+FROM builder-py-base as builder-py-3_13
+RUN /build_python.sh 3.13.0rc3
 # ------------------------------------------------------------------------------
 FROM python:3.12-slim-bookworm as base
 
@@ -52,6 +55,7 @@ RUN apt-get -y update \
 
 COPY --link --from=builder-nsjail /nsjail/nsjail /usr/sbin/
 COPY --link --from=builder-py-3_12 /lang/ /lang/
+COPY --link --from=builder-py-3_13 /lang/ /lang/
 
 RUN chmod +x /usr/sbin/nsjail \
     && ln -s /lang/python/3.12/ /lang/python/default
