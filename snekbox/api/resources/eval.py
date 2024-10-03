@@ -132,6 +132,8 @@ class EvalResource:
                 raise falcon.HTTPBadRequest(title="binary_path does not exist")
             if not binary_path.is_file():
                 raise falcon.HTTPBadRequest(title="binary_path is not a file")
+            if not binary_path.stat().st_mode & 0o100 == 0o100:
+                raise falcon.HTTPBadRequest(title="binary_path is not executable")
 
         try:
             result = self.nsjail.python3(
