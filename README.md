@@ -105,7 +105,7 @@ To expose third-party Python packages during evaluation, install them to a custo
 
 ```sh
 docker exec snekbox /bin/sh -c \
-    'PYTHONUSERBASE=/snekbox/user_base /lang/python/default/bin/python -m pip install --user numpy'
+    'PYTHONUSERBASE=/snekbox/user_base /snekbin/python/default/bin/python -m pip install --user numpy'
 ```
 
 In the above command, `snekbox` is the name of the running container. The name may be different and can be checked with `docker ps`.

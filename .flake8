@@ -18,4 +18,4 @@ ignore =
     # Type Annotations
     ANN002,ANN003,ANN101,ANN102,ANN204,ANN206
 
-per-file-ignores = tests/*:D1,ANN
+per-file-ignores = tests/*:D1,ANN,E202,E231,E241,E272,E702

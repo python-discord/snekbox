@@ -54,11 +54,11 @@ RUN apt-get -y update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --link --from=builder-nsjail /nsjail/nsjail /usr/sbin/
-COPY --link --from=builder-py-3_12 /lang/ /lang/
-COPY --link --from=builder-py-3_13 /lang/ /lang/
+COPY --link --from=builder-py-3_12 /snekbin/ /snekbin/
+COPY --link --from=builder-py-3_13 /snekbin/ /snekbin/
 
 RUN chmod +x /usr/sbin/nsjail \
-    && ln -s /lang/python/3.12/ /lang/python/default
+    && ln -s /snekbin/python/3.12/ /snekbin/python/default
 
 # ------------------------------------------------------------------------------
 FROM base as venv
@@ -79,7 +79,7 @@ RUN if [ -n "${DEV}" ]; \
     then \
         pip install -U -r requirements/coverage.pip \
         && export PYTHONUSERBASE=/snekbox/user_base \
-        && /lang/python/default/bin/python -m pip install --user numpy~=1.19; \
+        && /snekbin/python/default/bin/python -m pip install --user numpy~=1.19; \
     fi
 
 # At the end to avoid re-installing dependencies when only a config changes.

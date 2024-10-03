@@ -26,7 +26,7 @@ class NsJailTests(unittest.TestCase):
         # Hard-coded because it's non-trivial to parse the mount options.
         self.shm_mount_size = 40 * Size.MiB
 
-        self.default_binary_path = "/lang/python/default/bin/python"
+        self.default_binary_path = "/snekbin/python/default/bin/python"
 
     def eval_code(self, code: str):
         return self.nsjail.python3(["-c", code])
@@ -84,7 +84,7 @@ class NsJailTests(unittest.TestCase):
             for _ in range({max_pids}):
                 print(subprocess.Popen(
                     [
-                        '/lang/python/default/bin/python',
+                        '/snekbin/python/default/bin/python',
                         '-c',
                         'import time; time.sleep(1)'
                     ],

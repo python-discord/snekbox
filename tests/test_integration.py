@@ -65,12 +65,12 @@ class IntegrationTests(unittest.TestCase):
                     "test default binary is used when binary_path not specified",
                 ),
                 (
-                    get_python_version_body | {"binary_path": "/lang/python/3.12/bin/python"},
+                    get_python_version_body | {"binary_path": "/snekbin/python/3.12/bin/python"},
                     "3.12\n",
                     "test default binary is used when explicitly set",
                 ),
                 (
-                    get_python_version_body | {"binary_path": "/lang/python/3.13/bin/python"},
+                    get_python_version_body | {"binary_path": "/snekbin/python/3.13/bin/python"},
                     "3.13\n",
                     "test alternative binary is used when set",
                 ),
@@ -85,10 +85,10 @@ class IntegrationTests(unittest.TestCase):
         """Test that passing invalid binary paths result in no code execution."""
         with run_gunicorn():
             cases = [
-                ("/bin/bash", "test files outside of /lang cannot be run"),
+                ("/bin/bash", "test files outside of /snekbin cannot be run"),
                 (
-                    "/lang/../bin/bash",
-                    "test path traversal still stops files outside /lang from running",
+                    "/snekbin/../bin/bash",
+                    "test path traversal still stops files outside /snekbin from running",
                 ),
                 ("/foo/bar", "test non-existant files are not run"),
             ]

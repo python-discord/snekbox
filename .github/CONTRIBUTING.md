@@ -64,11 +64,11 @@ Other things to look out for are breaking changes to NsJail's config format, its
 
 ## Adding and Updating Python Interpreters
 
-Python interpreters are built using pyenv via the `scripts/build_python.sh` helper script. This script accepts a pyenv version specifier (`pyenv install --list`) and builds the interpreter in a version-specific directory under `/lang/python`. In the image, each minor version of a Python interpreter should have its own build stage and the resulting `/lang/python` directory can be copied from that stage into the `base` stage.
+Python interpreters are built using pyenv via the `scripts/build_python.sh` helper script. This script accepts a pyenv version specifier (`pyenv install --list`) and builds the interpreter in a version-specific directory under `/snekbin/python`. In the image, each minor version of a Python interpreter should have its own build stage and the resulting `/snekbin/python` directory can be copied from that stage into the `base` stage.
 
 When updating a patch version (e.g. 3.11.3 to 3.11.4), edit the existing build stage in the image for the minor version (3.11); do not add a new build stage. To have access to a new version, pyenv likely needs to be updated. To do so, change the tag in the `git clone` command in the image, but only for the build stage that needs access to the new version. Updating pyenv for all build stages will just cause unnecessary build cache invalidations.
 
-To change the default interpreter used by NsJail, update the target of the `/lang/python/default` symlink created in the `base` stage.
+To change the default interpreter used by NsJail, update the target of the `/snekbin/python/default` symlink created in the `base` stage.
 
 [readme]: ../README.md
 [Dockerfile]: ../Dockerfile
