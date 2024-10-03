@@ -128,6 +128,8 @@ class EvalResource:
         binary_path = body.get("binary_path")
         if binary_path:
             binary_path = Path(binary_path)
+            if not binary_path.exists():
+                raise falcon.HTTPBadRequest(title="binary_path does not exist")
             if not binary_path.is_file():
                 raise falcon.HTTPBadRequest(title="binary_path is not a file")
 
