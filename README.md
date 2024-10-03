@@ -50,6 +50,14 @@ To run it in the background, use the `-d` option. See the documentation on [`doc
 
 The above command will make the API accessible on the host via `http://localhost:8060/`. Currently, there's only one endpoint: `http://localhost:8060/eval`.
 
+### Python multi-version support
+
+By default, the binary ran within nsjail is the binary specified by `DEFAULT_BINARY_PATH` at the top of [`nsjail.py`]. This can be overridden by specifying `binary_path` in the request body of calls to `POST /eval` or by setting the `binary_path` kwarg if calling `NSJail.python3()` directly.
+
+Any binary that exists within the container is a valid value for `binary_path`. The main use case of this feature is currently to specify the version of Python to use.
+
+Python versions currently available can be found in the [`Dockerfile`] by looking for build stages that match `builder-py-*`. These binaries are then copied into the `base` build stage further down.
+
 ## Configuration
 
 Configuration files can be edited directly. However, this requires rebuilding the image. Alternatively, a Docker volume or bind mounts can be used to override the configuration files at their default locations.
@@ -126,9 +134,11 @@ See [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 [7]: https://github.com/google/nsjail/blob/master/config.proto
 [`gunicorn.conf.py`]: config/gunicorn.conf.py
 [`snekbox.cfg`]: config/snekbox.cfg
+[`nsjail.py`]: snekbox/nsjail.py
 [`snekapi.py`]: snekbox/api/snekapi.py
 [`resources`]: snekbox/api/resources
 [`docker-compose.yml`]: docker-compose.yml
+[`Dockerfile`]: Dockerfile
 [`docker run`]: https://docs.docker.com/engine/reference/commandline/run/
 [nsjail]: https://github.com/google/nsjail
 [falcon]: https://falconframework.org/
