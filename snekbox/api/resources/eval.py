@@ -128,11 +128,8 @@ class EvalResource:
         binary_path = body.get("binary_path")
         if binary_path:
             binary_path = Path(binary_path)
-            if (
-                not binary_path.resolve().as_posix().startswith("/lang/")
-                or not binary_path.is_file()
-            ):
-                raise falcon.HTTPBadRequest(title="binary_path file is invalid")
+            if not binary_path.is_file():
+                raise falcon.HTTPBadRequest(title="binary_path is not a file")
 
         try:
             result = self.nsjail.python3(
