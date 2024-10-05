@@ -9,7 +9,7 @@ from itertools import product
 from pathlib import Path
 from textwrap import dedent
 
-from snekbox.nsjail import NsJail
+from snekbox.nsjail import DEFAULT_EXECUTABLE_PATH, NsJail
 from snekbox.snekio import FileAttachment
 from snekbox.snekio.filesystem import Size
 
@@ -25,8 +25,6 @@ class NsJailTests(unittest.TestCase):
 
         # Hard-coded because it's non-trivial to parse the mount options.
         self.shm_mount_size = 40 * Size.MiB
-
-        self.default_binary_path = "/snekbin/python/default/bin/python"
 
     def eval_code(self, code: str):
         return self.nsjail.python3(["-c", code])
@@ -549,7 +547,7 @@ class NsJailTests(unittest.TestCase):
         for args, expected in cases:
             with self.subTest(args=args):
                 result = self.nsjail.python3(py_args=args)
-                idx = result.args.index(self.default_binary_path)
+                idx = result.args.index(DEFAULT_EXECUTABLE_PATH)
                 self.assertEqual(result.args[idx + 1 :], expected)
                 self.assertEqual(result.returncode, 0)
 
