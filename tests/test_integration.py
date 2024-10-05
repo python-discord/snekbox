@@ -85,11 +85,11 @@ class IntegrationTests(unittest.TestCase):
         """Test that passing invalid binary paths result in no code execution."""
         with run_gunicorn():
             cases = [
-                ("/abc/def", "test non-existant files are not run", "binary_path does not exist"),
-                ("/snekbin", "test directories are not ran", "binary_path is not a file"),
+                ("/abc/def", "test non-existent files are not run", "binary_path does not exist"),
+                ("/snekbin", "test directories are not run", "binary_path is not a file"),
                 (
                     "/etc/hostname",
-                    "test non-executable files are not ran",
+                    "test non-executable files are not run",
                     "binary_path is not executable",
                 ),
             ]
