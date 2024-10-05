@@ -52,8 +52,8 @@ class IntegrationTests(unittest.TestCase):
             self.assertTrue(all(status == 200 for status in statuses))
             self.assertTrue(all(json.loads(response)["returncode"] == 0 for response in responses))
 
-    def test_multi_binary_support(self):
-        """Test eval requests with different binary paths set."""
+    def test_alternate_executable_support(self):
+        """Test eval requests with different executable paths set."""
         with run_gunicorn():
             get_python_version_body = {
                 "input": "import sys; print('.'.join(map(str, sys.version_info[:2])))"
@@ -62,17 +62,19 @@ class IntegrationTests(unittest.TestCase):
                 (
                     get_python_version_body,
                     "3.12\n",
-                    "test default binary is used when binary_path not specified",
+                    "test default executable is used when executable_path not specified",
                 ),
                 (
-                    get_python_version_body | {"binary_path": "/snekbin/python/3.12/bin/python"},
+                    get_python_version_body
+                    | {"executable_path": "/snekbin/python/3.12/bin/python"},
                     "3.12\n",
-                    "test default binary is used when explicitly set",
+                    "test default executable is used when explicitly set",
                 ),
                 (
-                    get_python_version_body | {"binary_path": "/snekbin/python/3.13/bin/python"},
+                    get_python_version_body
+                    | {"executable_path": "/snekbin/python/3.13/bin/python"},
                     "3.13\n",
-                    "test alternative binary is used when set",
+                    "test alternative executable is used when set",
                 ),
             ]
             for body, expected, msg in cases:
@@ -81,21 +83,25 @@ class IntegrationTests(unittest.TestCase):
                     self.assertEqual(status, 200)
                     self.assertEqual(json.loads(response)["stdout"], expected)
 
-    def invalid_binary_paths(self):
-        """Test that passing invalid binary paths result in no code execution."""
+    def invalid_executable_paths(self):
+        """Test that passing invalid executable paths result in no code execution."""
         with run_gunicorn():
             cases = [
-                ("/abc/def", "test non-existent files are not run", "binary_path does not exist"),
-                ("/snekbin", "test directories are not run", "binary_path is not a file"),
+                (
+                    "/abc/def",
+                    "test non-existent files are not run",
+                    "executable_path does not exist",
+                ),
+                ("/snekbin", "test directories are not run", "executable_path is not a file"),
                 (
                     "/etc/hostname",
                     "test non-executable files are not run",
-                    "binary_path is not executable",
+                    "executable_path is not executable",
                 ),
             ]
             for path, msg, expected in cases:
                 with self.subTest(msg=msg, path=path, expected=expected):
-                    body = {"args": ["-c", "echo", "hi"], "binary_path": path}
+                    body = {"args": ["-c", "echo", "hi"], "executable_path": path}
                     response, status = snekbox_request(body)
                     self.assertEqual(status, 400)
                     self.assertEqual(json.loads(response)["stdout"], expected)

@@ -52,9 +52,9 @@ The above command will make the API accessible on the host via `http://localhost
 
 ### Python multi-version support
 
-By default, the binary that runs within nsjail is the binary specified by `DEFAULT_BINARY_PATH` at the top of [`nsjail.py`]. This can be overridden by specifying `binary_path` in the request body of calls to `POST /eval` or by setting the `binary_path` kwarg if calling `NSJail.python3()` directly.
+By default, the executable that runs within nsjail is defined by `DEFAULT_EXECUTABLE_PATH` at the top of [`nsjail.py`]. This can be overridden by specifying `executable_path` in the request body of calls to `POST /eval` or by setting the `executable_path` kwarg if calling `NSJail.python3()` directly.
 
-Any binary that exists within the container is a valid value for `binary_path`. The main use case of this feature is currently to specify the version of Python to use.
+Any executable that exists within the container is a valid value for `executable_path`. The main use case of this feature is currently to specify the version of Python to use.
 
 Python versions currently available can be found in the [`Dockerfile`] by looking for build stages that match `builder-py-*`. These binaries are then copied into the `base` build stage further down.
 

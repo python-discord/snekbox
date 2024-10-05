@@ -6,7 +6,7 @@ from pathlib import Path
 import falcon
 from falcon.media.validators.jsonschema import validate
 
-from snekbox.nsjail import DEFAULT_BINARY_PATH, NsJail
+from snekbox.nsjail import DEFAULT_EXECUTABLE_PATH, NsJail
 from snekbox.snekio import FileAttachment, ParsingError
 
 __all__ = ("EvalResource",)
@@ -44,7 +44,7 @@ class EvalResource:
                     "required": ["path"],
                 },
             },
-            "binary_path": {"type": "string"},
+            "executable_path": {"type": "string"},
         },
         "anyOf": [
             {"required": ["input"]},
@@ -125,24 +125,24 @@ class EvalResource:
             body.setdefault("args", ["-c"])
             body["args"].append(body["input"])
 
-        binary_path = body.get("binary_path")
-        if not binary_path:
-            binary_path = DEFAULT_BINARY_PATH
+        executable_path = body.get("executable_path")
+        if not executable_path:
+            executable_path = DEFAULT_EXECUTABLE_PATH
         else:
-            binary_path = Path(binary_path)
-            if not binary_path.exists():
-                raise falcon.HTTPBadRequest(title="binary_path does not exist")
-            if not binary_path.is_file():
-                raise falcon.HTTPBadRequest(title="binary_path is not a file")
-            if not binary_path.stat().st_mode & 0o100 == 0o100:
-                raise falcon.HTTPBadRequest(title="binary_path is not executable")
-            binary_path = binary_path.resolve().as_posix()
+            executable_path = Path(executable_path)
+            if not executable_path.exists():
+                raise falcon.HTTPBadRequest(title="executable_path does not exist")
+            if not executable_path.is_file():
+                raise falcon.HTTPBadRequest(title="executable_path is not a file")
+            if not executable_path.stat().st_mode & 0o100 == 0o100:
+                raise falcon.HTTPBadRequest(title="executable_path is not executable")
+            executable_path = executable_path.resolve().as_posix()
 
         try:
             result = self.nsjail.python3(
                 py_args=body["args"],
                 files=[FileAttachment.from_dict(file) for file in body.get("files", [])],
-                binary_path=binary_path,
+                executable_path=executable_path,
             )
         except ParsingError as e:
             raise falcon.HTTPBadRequest(title="Request file is invalid", description=str(e))

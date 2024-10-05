@@ -26,7 +26,7 @@ log = logging.getLogger(__name__)
 LOG_PATTERN = re.compile(
     r"\[(?P<level>(I)|[DWEF])\]\[.+?\](?(2)|(?P<func>\[\d+\] .+?:\d+ )) ?(?P<msg>.+)"
 )
-DEFAULT_BINARY_PATH = "/snekbin/python/default/bin/python"
+DEFAULT_EXECUTABLE_PATH = "/snekbin/python/default/bin/python"
 
 
 class NsJail:
@@ -174,7 +174,7 @@ class NsJail:
         nsjail_args: Iterable[str],
         log_path: str,
         fs_home: str,
-        binary_path: str,
+        executable_path: str,
     ) -> Sequence[str]:
         if self.cgroup_version == 2:
             nsjail_args = ("--use_cgroupv2", *nsjail_args)
@@ -203,7 +203,7 @@ class NsJail:
             log_path,
             *nsjail_args,
             "--",
-            binary_path,
+            executable_path,
             *iter_lstrip(py_args),
         ]
 
@@ -262,7 +262,7 @@ class NsJail:
         py_args: Iterable[str],
         files: Iterable[FileAttachment] = (),
         nsjail_args: Iterable[str] = (),
-        binary_path: Path = DEFAULT_BINARY_PATH,
+        executable_path: Path = DEFAULT_EXECUTABLE_PATH,
     ) -> EvalResult:
         """
         Execute Python 3 code in an isolated environment and return the completed process.
@@ -271,14 +271,20 @@ class NsJail:
             py_args: Arguments to pass to Python.
             files: FileAttachments to write to the sandbox prior to running Python.
             nsjail_args: Overrides for the NsJail configuration.
-            binary_path: The path to the binary to execute under.
+            executable_path: The path to the executable to run within nsjail.
         """
         with NamedTemporaryFile() as nsj_log, MemFS(
             instance_size=self.memfs_instance_size,
             home=self.memfs_home,
             output=self.memfs_output,
         ) as fs:
-            args = self._build_args(py_args, nsjail_args, nsj_log.name, str(fs.home), binary_path)
+            args = self._build_args(
+                py_args,
+                nsjail_args,
+                nsj_log.name,
+                str(fs.home),
+                executable_path,
+            )
             try:
                 files_written = self._write_files(fs.home, files)
 
