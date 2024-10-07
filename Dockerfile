@@ -35,7 +35,7 @@ COPY --link scripts/build_python.sh /
 
 # ------------------------------------------------------------------------------
 FROM builder-py-base as builder-py-3_12
-RUN /build_python.sh 3.12.5
+RUN /build_python.sh 3.12.7
 # ------------------------------------------------------------------------------
 FROM builder-py-base as builder-py-3_13
 RUN /build_python.sh 3.13.0rc3
