@@ -40,6 +40,14 @@ RUN /build_python.sh 3.12.7
 FROM builder-py-base as builder-py-3_13
 RUN /build_python.sh 3.13.0rc3
 # ------------------------------------------------------------------------------
+FROM builder-py-base as builder-py-3_13t
+# Building with all 3 of the options below causes tests to fail.
+# Removing just the first means the image is a bit bigger, but we keep optimisations
+# --disable-test-modules --enable-optimizations --with-lto
+ENV PYTHON_CONFIGURE_OPTS='--enable-optimizations --with-lto --with-system-expat --without-ensurepip'
+RUN /build_python.sh 3.13.0rc3t
+RUN mv /snekbin/python/3.13 /snekbin/python/3.13t
+# ------------------------------------------------------------------------------
 FROM python:3.12-slim-bookworm as base
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
@@ -56,6 +64,7 @@ RUN apt-get -y update \
 COPY --link --from=builder-nsjail /nsjail/nsjail /usr/sbin/
 COPY --link --from=builder-py-3_12 /snekbin/ /snekbin/
 COPY --link --from=builder-py-3_13 /snekbin/ /snekbin/
+COPY --link --from=builder-py-3_13t /snekbin/ /snekbin/
 
 RUN chmod +x /usr/sbin/nsjail \
     && ln -s /snekbin/python/3.12/ /snekbin/python/default
