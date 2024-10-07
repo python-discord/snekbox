@@ -4,11 +4,19 @@ shopt -s inherit_errexit
 
 py_version="${1}"
 
-# Install Python interpreter under e.g. /snekbin/python/3.11/ (no patch version).
+# Install Python interpreter under e.g. /snekbin/python/3.13/ (no patch version)
+# By dropping everything after, and including, the last period.
+install_path="${1%[-.]*}"
+
+# If python version ends with a t, then ensure Python is installed to a dir ending with a t.
+if [[ $py_version == *t ]]; then
+    install_path+="t"
+fi
+
 "${PYENV_ROOT}/plugins/python-build/bin/python-build" \
     "${py_version}" \
-    "/snekbin/python/${py_version%[-.]*}"
-"/snekbin/python/${py_version%[-.]*}/bin/python" -m pip install -U pip
+    "/snekbin/python/${install_path}"
+"/snekbin/python/${install_path}/bin/python" -m pip install -U pip
 
 # Clean up some unnecessary files to reduce image size bloat.
 find /snekbin/python/ -depth \
