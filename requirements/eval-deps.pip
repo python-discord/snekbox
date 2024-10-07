@@ -7,7 +7,7 @@ fishhook~=0.3; python_version == '3.12'
 forbiddenfruit~=0.1
 fuzzywuzzy~=0.18
 lark~=1.2
-matplotlib~=3.9
+matplotlib~=3.9 ; python_version != '3.13'
 more-itertools~=10.5
 networkx~=3.3
 numpy~=2.1
@@ -16,7 +16,7 @@ pendulum~=3.0 ; python_version == '3.12'
 pyarrow~=17.0; python_version == '3.12'
 python-dateutil~=2.9
 pyyaml~=6.0
-scipy~=1.14
+scipy~=1.14 ; python_version != '3.13'
 sympy~=1.13
 typing-extensions~=4.12
 tzdata~=2024.2
