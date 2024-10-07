@@ -83,6 +83,25 @@ class IntegrationTests(unittest.TestCase):
                     self.assertEqual(status, 200)
                     self.assertEqual(json.loads(response)["stdout"], expected)
 
+    def test_gil_status(self):
+        """Test no-gil builds actually don't have a gil."""
+        with run_gunicorn():
+            get_gil_status = {
+                "input": "import sysconfig; print(sysconfig.get_config_var('Py_GIL_DISABLED'))"
+            }
+            cases = [
+                ("3.13", "0\n"),
+                ("3.13t", "1\n"),
+            ]
+            for version, expected in cases:
+                with self.subTest(version=version, expected=expected):
+                    response, status = snekbox_request(
+                        get_gil_status
+                        | {"executable_path": f"/snekbin/python/{version}/bin/python"}
+                    )
+                    self.assertEqual(status, 200)
+                    self.assertEqual(json.loads(response)["stdout"], expected)
+
     def invalid_executable_paths(self):
         """Test that passing invalid executable paths result in no code execution."""
         with run_gunicorn():
