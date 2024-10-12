@@ -29,7 +29,7 @@ RUN apt-get -y update \
         tk-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git clone -b v2.4.14 --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROOT
+RUN git clone -b v2.4.15 --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROOT
 
 COPY --link scripts/build_python.sh /
 
@@ -38,14 +38,14 @@ FROM builder-py-base as builder-py-3_12
 RUN /build_python.sh 3.12.7
 # ------------------------------------------------------------------------------
 FROM builder-py-base as builder-py-3_13
-RUN /build_python.sh 3.13.0rc3
+RUN /build_python.sh 3.13.0
 # ------------------------------------------------------------------------------
 FROM builder-py-base as builder-py-3_13t
 # Building with all 3 of the options below causes tests to fail.
 # Removing just the first means the image is a bit bigger, but we keep optimisations
 # --disable-test-modules --enable-optimizations --with-lto
 ENV PYTHON_CONFIGURE_OPTS='--enable-optimizations --with-lto --with-system-expat --without-ensurepip'
-RUN /build_python.sh 3.13.0rc3t
+RUN /build_python.sh 3.13.0t
 # ------------------------------------------------------------------------------
 FROM python:3.12-slim-bookworm as base
 
