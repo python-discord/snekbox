@@ -47,7 +47,7 @@ FROM builder-py-base as builder-py-3_13t
 ENV PYTHON_CONFIGURE_OPTS='--enable-optimizations --with-lto --with-system-expat --without-ensurepip'
 RUN /build_python.sh 3.13.0t
 # ------------------------------------------------------------------------------
-FROM python:3.12-slim-bookworm as base
+FROM python:3.13-slim-bookworm as base
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=false
