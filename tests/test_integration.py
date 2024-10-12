@@ -95,10 +95,11 @@ class IntegrationTests(unittest.TestCase):
             ]
             for version, expected in cases:
                 with self.subTest(version=version, expected=expected):
-                    response, status = snekbox_request(
-                        get_gil_status
-                        | {"executable_path": f"/snekbin/python/{version}/bin/python"}
-                    )
+                    payload = {
+                        "executable_path": f"/snekbin/python/{version}/bin/python",
+                        **get_gil_status,
+                    }
+                    response, status = snekbox_request(payload)
                     self.assertEqual(status, 200)
                     self.assertEqual(json.loads(response)["stdout"], expected)
 
