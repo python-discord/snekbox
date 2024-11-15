@@ -91,7 +91,7 @@ jobs:
       # Comment on the PR with the coverage results and register a GitHub check
       # which links to the coveralls.io job.
       - name: Publish coverage report to coveralls.io
-        uses: coverallsapp/github-action@v2.3.1
+        uses: coverallsapp/github-action@v2.3.4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           format: lcov
