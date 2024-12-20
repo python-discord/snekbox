@@ -22,3 +22,4 @@ typing-extensions~=4.12
 tzdata~=2024.2
 yarl~=1.13
 plotly~=5.24
+kaleido==0.1.*
