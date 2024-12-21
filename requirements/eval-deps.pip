@@ -14,7 +14,6 @@ networkx~=3.4
 numpy~=2.2
 pandas~=2.2
 pendulum~=3.0; python_version == '3.12'
-plotly~=5.24
 pyarrow~=18.1
 python-dateutil~=2.9
 pyyaml~=6.0
