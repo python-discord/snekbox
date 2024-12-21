@@ -41,10 +41,6 @@ FROM builder-py-base as builder-py-3_13
 RUN /build_python.sh 3.13.1
 # ------------------------------------------------------------------------------
 FROM builder-py-base as builder-py-3_13t
-# Building with all 3 of the options below causes tests to fail.
-# Removing just the first means the image is a bit bigger, but we keep optimisations
-# --disable-test-modules --enable-optimizations --with-lto
-ENV PYTHON_CONFIGURE_OPTS='--enable-optimizations --with-lto --with-system-expat --without-ensurepip'
 RUN /build_python.sh 3.13.1t
 # ------------------------------------------------------------------------------
 FROM python:3.12-slim-bookworm as base
