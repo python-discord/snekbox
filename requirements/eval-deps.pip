@@ -17,7 +17,7 @@ pendulum~=3.0; python_version == '3.12'
 pyarrow~=18.1
 python-dateutil~=2.9
 pyyaml~=6.0
-scipy~=1.14; python_version == '3.12'
+scipy~=1.15
 sympy~=1.13
 typing-extensions~=4.12
 tzdata~=2024.2
