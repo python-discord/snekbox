@@ -83,7 +83,7 @@ RUN if [ -n "${DEV}" ]; \
     then \
         pip install -U -r requirements/coverage.pip \
         && export PYTHONUSERBASE=/snekbox/user_base \
-        && /snekbin/python/default/bin/python -m pip install --user numpy~=1.19; \
+        && /snekbin/python/default/bin/python -m pip install --user numpy~=2.2.5; \
     fi
 
 # At the end to avoid re-installing dependencies when only a config changes.
