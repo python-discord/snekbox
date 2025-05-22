@@ -11,11 +11,7 @@ on:
 jobs:
   test:
     name: Test with coverage
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-20.04, ubuntu-22.04]
-
+    runs-on: ubuntu-latest
     steps:
       - name: Download image artifact
         uses: actions/download-artifact@v4
@@ -40,7 +36,7 @@ jobs:
         run: |
           export IMAGE_SUFFIX='-venv:${{ inputs.version }}'
           docker compose run \
-            --rm -T -e COVERAGE_DATAFILE=.coverage.${{ matrix.os }} \
+            --rm -T -e COVERAGE_DATAFILE=.coverage \
             --entrypoint coverage \
             snekbox \
             run -m unittest
@@ -49,8 +45,8 @@ jobs:
       - name: Upload coverage data
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-${{ matrix.os }}
-          path: .coverage.*
+          name: coverage
+          path: .coverage
           retention-days: 1
           include-hidden-files: true
 
@@ -76,11 +72,8 @@ jobs:
       - name: Download coverage data
         uses: actions/download-artifact@v4
         with:
-          pattern: coverage-*
+          pattern: coverage
           merge-multiple: true
-
-      - name: Combine coverage data
-        run: coverage combine .coverage.*
 
       - name: Display coverage report
         run: coverage report -m

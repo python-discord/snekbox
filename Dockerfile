@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.4
-FROM buildpack-deps:bookworm as builder-nsjail
+FROM buildpack-deps:bookworm AS builder-nsjail
 
 WORKDIR /nsjail
 
@@ -17,7 +17,7 @@ RUN git clone -b master --single-branch https://github.com/google/nsjail.git . \
 RUN make
 
 # ------------------------------------------------------------------------------
-FROM buildpack-deps:bookworm as builder-py-base
+FROM buildpack-deps:bookworm AS builder-py-base
 
 ENV PYENV_ROOT=/pyenv \
     PYTHON_CONFIGURE_OPTS='--disable-test-modules --enable-optimizations \
@@ -29,21 +29,21 @@ RUN apt-get -y update \
         tk-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git clone -b v2.4.23 --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROOT
+RUN git clone -b v2.5.7 --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROOT
 
 COPY --link scripts/build_python.sh /
 
 # ------------------------------------------------------------------------------
-FROM builder-py-base as builder-py-3_12
-RUN /build_python.sh 3.12.8
+FROM builder-py-base AS builder-py-3_13
+RUN /build_python.sh 3.13.2
 # ------------------------------------------------------------------------------
-FROM builder-py-base as builder-py-3_13
-RUN /build_python.sh 3.13.1
+FROM builder-py-base AS builder-py-3_13t
+RUN /build_python.sh 3.13.2t
 # ------------------------------------------------------------------------------
-FROM builder-py-base as builder-py-3_13t
-RUN /build_python.sh 3.13.1t
+FROM builder-py-base AS builder-py-3_14
+RUN /build_python.sh 3.14-dev
 # ------------------------------------------------------------------------------
-FROM python:3.13-slim-bookworm as base
+FROM python:3.13-slim-bookworm AS base
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=false
@@ -57,15 +57,15 @@ RUN apt-get -y update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --link --from=builder-nsjail /nsjail/nsjail /usr/sbin/
-COPY --link --from=builder-py-3_12 /snekbin/ /snekbin/
 COPY --link --from=builder-py-3_13 /snekbin/ /snekbin/
 COPY --link --from=builder-py-3_13t /snekbin/ /snekbin/
+COPY --link --from=builder-py-3_14 /snekbin/ /snekbin/
 
 RUN chmod +x /usr/sbin/nsjail \
-    && ln -s /snekbin/python/3.12/ /snekbin/python/default
+    && ln -s /snekbin/python/3.13/ /snekbin/python/default
 
 # ------------------------------------------------------------------------------
-FROM base as venv
+FROM base AS venv
 
 COPY --link requirements/ /snekbox/requirements/
 COPY --link scripts/install_eval_deps.sh /snekbox/scripts/install_eval_deps.sh
@@ -83,7 +83,7 @@ RUN if [ -n "${DEV}" ]; \
     then \
         pip install -U -r requirements/coverage.pip \
         && export PYTHONUSERBASE=/snekbox/user_base \
-        && /snekbin/python/default/bin/python -m pip install --user numpy~=1.19; \
+        && /snekbin/python/default/bin/python -m pip install --user numpy~=2.2.5; \
     fi
 
 # At the end to avoid re-installing dependencies when only a config changes.

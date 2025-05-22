@@ -61,13 +61,13 @@ class IntegrationTests(unittest.TestCase):
             cases = [
                 (
                     get_python_version_body,
-                    "3.12\n",
+                    "3.13\n",
                     "test default executable is used when executable_path not specified",
                 ),
                 (
                     get_python_version_body
-                    | {"executable_path": "/snekbin/python/3.12/bin/python"},
-                    "3.12\n",
+                    | {"executable_path": "/snekbin/python/3.13/bin/python"},
+                    "3.13\n",
                     "test default executable is used when explicitly set",
                 ),
                 (
