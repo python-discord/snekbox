@@ -28,7 +28,7 @@ lint: setup
 test:
 	docker compose build -q --force-rm
 	docker compose run --entrypoint /bin/bash --rm snekbox -c \
-    	'coverage run -m unittest; e=$?; chown --reference=. .coverage; exit $e'
+		'coverage run -m unittest; e=$?; chown --reference=. .coverage; exit $e'
 
 .PHONY: report
 report: setup
