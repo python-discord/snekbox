@@ -3,10 +3,10 @@ arrow~=1.3
 attrs~=25.3
 beautifulsoup4~=4.13
 
-# These packages don't support 3.13, 3.13t, nor 3.14-dev, so are commented out for now.
+# Doesn't support 3.13, 3.13t, nor 3.14-dev, so commented out for now.
 # einspect~=0.5
-# fishhook~=0.3
 
+fishhook~=0.3; python_version == "3.13"
 forbiddenfruit~=0.1
 fuzzywuzzy~=0.18
 kaleido~=0.2
