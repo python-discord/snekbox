@@ -14,14 +14,14 @@ lark~=1.2
 matplotlib~=3.10; python_version == "3.13"
 more-itertools~=10.7
 networkx~=3.5
-numpy~=2.2; python_version == "3.13"
-pandas~=2.2; python_version == "3.13"
+numpy~=2.3; python_version == "3.13"
+pandas~=2.3; python_version == "3.13"
 pendulum~=3.1
-pyarrow~=20.0; python_version == "3.13"
+pyarrow~=21.0; python_version == "3.13"
 python-dateutil~=2.9
 pyyaml~=6.0
-scipy~=1.15; python_version == "3.13"
+scipy~=1.16; python_version == "3.13"
 sympy~=1.14
-typing-extensions~=4.13
+typing-extensions~=4.14
 tzdata~=2025.2
 yarl~=1.20
