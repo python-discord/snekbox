@@ -35,13 +35,13 @@ COPY --link scripts/build_python.sh /
 
 # ------------------------------------------------------------------------------
 FROM builder-py-base AS builder-py-3_13
-RUN /build_python.sh 3.13.2
+RUN /build_python.sh 3.13.5
 # ------------------------------------------------------------------------------
 FROM builder-py-base AS builder-py-3_13t
 RUN /build_python.sh 3.13.2t
 # ------------------------------------------------------------------------------
 FROM builder-py-base AS builder-py-3_14
-RUN /build_python.sh 3.14.0b2
+RUN /build_python.sh 3.14.0rc1
 # ------------------------------------------------------------------------------
 FROM python:3.13-slim-bookworm AS base
 
