@@ -458,6 +458,8 @@ class NsJailTests(unittest.TestCase):
 
                     shm = SharedMemory(create=True, size={shm_size})
                     shm.buf[:{buffer_size}] = bytearray([1] * {buffer_size})
+                    shm.close()
+                    shm.unlink()
                 """
                 ).strip()
 

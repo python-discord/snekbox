@@ -29,19 +29,20 @@ RUN apt-get -y update \
         tk-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git clone -b v2.6.0 --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROOT
+RUN git clone -b v2.6.5 --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROOT
 
 COPY --link scripts/build_python.sh /
 
 # ------------------------------------------------------------------------------
 FROM builder-py-base AS builder-py-3_13
-RUN /build_python.sh 3.13.2
+RUN /build_python.sh 3.13.5
 # ------------------------------------------------------------------------------
 FROM builder-py-base AS builder-py-3_13t
+# This can't be bumped to latest until https://github.com/python/cpython/issues/135734 is resolved.
 RUN /build_python.sh 3.13.2t
 # ------------------------------------------------------------------------------
 FROM builder-py-base AS builder-py-3_14
-RUN /build_python.sh 3.14.0b2
+RUN /build_python.sh 3.14.0rc1
 # ------------------------------------------------------------------------------
 FROM python:3.13-slim-bookworm AS base
 
