@@ -38,6 +38,7 @@ FROM builder-py-base AS builder-py-3_13
 RUN /build_python.sh 3.13.5
 # ------------------------------------------------------------------------------
 FROM builder-py-base AS builder-py-3_13t
+# This can't be bumped to latest until https://github.com/python/cpython/issues/135734 is resolved.
 RUN /build_python.sh 3.13.2t
 # ------------------------------------------------------------------------------
 FROM builder-py-base AS builder-py-3_14
