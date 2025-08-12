@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download image artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ${{ inputs.artifact }}
 
@@ -23,7 +23,7 @@ jobs:
 
       # Needed for the Docker Compose file.
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Memory limit tests would fail if this isn't disabled.
       - name: Disable swap memory
@@ -57,7 +57,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -70,7 +70,7 @@ jobs:
         run: pip install -U -r requirements/coverage.pip
 
       - name: Download coverage data
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: coverage
           merge-multiple: true
@@ -95,7 +95,7 @@ jobs:
     needs: test
     steps:
       - name: Download image artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ${{ inputs.artifact }}
 
@@ -104,7 +104,7 @@ jobs:
 
       # Needed for the Docker Compose file.
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Install eval deps the same way as init container from deployment.yaml
       # This is to ensure that deployment won't fail at that step
