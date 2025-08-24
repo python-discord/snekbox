@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           # The version script relies on history. Fetch 100 commits to be safe.
           fetch-depth: 100
