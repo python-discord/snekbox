@@ -1,13 +1,13 @@
 # syntax=docker/dockerfile:1.4
-FROM buildpack-deps:bookworm AS builder-nsjail
+FROM buildpack-deps:trixie AS builder-nsjail
 
 WORKDIR /nsjail
 
 RUN apt-get -y update \
     && apt-get install -y --no-install-recommends \
-        bison\
+        bison \
         flex \
-        libprotobuf-dev\
+        libprotobuf-dev \
         libnl-route-3-dev \
         protobuf-compiler \
     && rm -rf /var/lib/apt/lists/*
@@ -17,7 +17,7 @@ RUN git clone -b master --single-branch https://github.com/google/nsjail.git . \
 RUN make
 
 # ------------------------------------------------------------------------------
-FROM buildpack-deps:bookworm AS builder-py-base
+FROM buildpack-deps:trixie AS builder-py-base
 
 ENV PYENV_ROOT=/pyenv \
     PYTHON_CONFIGURE_OPTS='--disable-test-modules --enable-optimizations \
@@ -44,7 +44,7 @@ RUN /build_python.sh 3.13.2t
 FROM builder-py-base AS builder-py-3_14
 RUN /build_python.sh 3.14.0rc1
 # ------------------------------------------------------------------------------
-FROM python:3.13-slim-bookworm AS base
+FROM python:3.13-slim-trixie AS base
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=false
