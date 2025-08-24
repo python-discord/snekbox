@@ -12,8 +12,7 @@ RUN apt-get -y update \
         protobuf-compiler \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git clone -b master --single-branch https://github.com/google/nsjail.git . \
-    && git checkout dccf911fd2659e7b08ce9507c25b2b38ec2c5800
+RUN git clone -b 3.4 --depth 1 https://github.com/google/nsjail.git .
 RUN make
 
 # ------------------------------------------------------------------------------
