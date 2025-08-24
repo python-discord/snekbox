@@ -44,7 +44,7 @@ ENV PYTHON_CONFIGURE_OPTS='--enable-optimizations --with-lto \
 RUN /build_python.sh 3.13.6t
 # ------------------------------------------------------------------------------
 FROM builder-py-base AS builder-py-3_14
-RUN /build_python.sh 3.14.0rc1
+RUN /build_python.sh 3.14.0rc2
 # ------------------------------------------------------------------------------
 FROM python:3.13-slim-bookworm AS base
 
