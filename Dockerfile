@@ -1,23 +1,22 @@
 # syntax=docker/dockerfile:1.4
-FROM buildpack-deps:bookworm AS builder-nsjail
+FROM buildpack-deps:trixie AS builder-nsjail
 
 WORKDIR /nsjail
 
 RUN apt-get -y update \
     && apt-get install -y --no-install-recommends \
-        bison\
+        bison \
         flex \
-        libprotobuf-dev\
+        libprotobuf-dev \
         libnl-route-3-dev \
         protobuf-compiler \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git clone -b master --single-branch https://github.com/google/nsjail.git . \
-    && git checkout dccf911fd2659e7b08ce9507c25b2b38ec2c5800
+RUN git clone -b 3.4 --depth 1 https://github.com/google/nsjail.git .
 RUN make
 
 # ------------------------------------------------------------------------------
-FROM buildpack-deps:bookworm AS builder-py-base
+FROM buildpack-deps:trixie AS builder-py-base
 
 ENV PYENV_ROOT=/pyenv \
     PYTHON_CONFIGURE_OPTS='--disable-test-modules --enable-optimizations \
@@ -29,22 +28,25 @@ RUN apt-get -y update \
         tk-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git clone -b v2.6.5 --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROOT
+RUN git clone -b v2.6.7 --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROOT
 
 COPY --link scripts/build_python.sh /
 
 # ------------------------------------------------------------------------------
 FROM builder-py-base AS builder-py-3_13
-RUN /build_python.sh 3.13.5
+RUN /build_python.sh 3.13.6
 # ------------------------------------------------------------------------------
 FROM builder-py-base AS builder-py-3_13t
-# This can't be bumped to latest until https://github.com/python/cpython/issues/135734 is resolved.
-RUN /build_python.sh 3.13.2t
+# https://github.com/python/cpython/issues/135734 will be released in 3.13.8
+# until then test-modules cannot be disabled for free-threaded 3.13.
+ENV PYTHON_CONFIGURE_OPTS='--enable-optimizations --with-lto \
+    --with-system-expat --without-ensurepip'
+RUN /build_python.sh 3.13.6t
 # ------------------------------------------------------------------------------
 FROM builder-py-base AS builder-py-3_14
-RUN /build_python.sh 3.14.0rc1
+RUN /build_python.sh 3.14.0rc2
 # ------------------------------------------------------------------------------
-FROM python:3.13-slim-bookworm AS base
+FROM python:3.13-slim-trixie AS base
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=false
