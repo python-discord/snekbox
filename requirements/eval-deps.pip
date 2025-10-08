@@ -11,7 +11,7 @@ forbiddenfruit~=0.1
 fuzzywuzzy~=0.18
 kaleido~=0.2
 lark~=1.2
-matplotlib~=3.10; python_version == "3.13"
+matplotlib~=3.10.5
 more-itertools~=10.7
 networkx~=3.5
 numpy~=2.3
