@@ -42,7 +42,7 @@ FROM builder-py-base AS builder-py-3_13t
 RUN /build_python.sh 3.13.2t
 # ------------------------------------------------------------------------------
 FROM builder-py-base AS builder-py-3_14
-RUN /build_python.sh 3.14.0rc1
+RUN /build_python.sh 3.14.0
 # ------------------------------------------------------------------------------
 FROM python:3.13-slim-bookworm AS base
 
