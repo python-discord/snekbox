@@ -21,7 +21,7 @@ FROM buildpack-deps:bookworm AS builder-py-base
 
 ENV PYENV_ROOT=/pyenv \
     PYTHON_CONFIGURE_OPTS='--disable-test-modules --enable-optimizations \
-        --with-lto --with-system-expat --without-ensurepip'
+        --with-lto --without-ensurepip'
 
 RUN apt-get -y update \
     && apt-get install -y --no-install-recommends \
