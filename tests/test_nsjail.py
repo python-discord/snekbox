@@ -213,6 +213,13 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.files[0].content, b"a")
 
     def test_forkbomb_resource_unavailable(self):
+        # Using the production max PIDs causes processes to be killed due to memory instead of
+        # PID allocation exhaustion. For this test case, the PID limit is reduced to ensure
+        # that PID exhaustion is still something that is guarded against.
+
+        previous_pids_max = self.nsjail.config.cgroup_pids_max
+        self.nsjail.config.cgroup_pids_max = 5
+
         code = dedent(
             """
             import os
@@ -221,10 +228,13 @@ class NsJailTests(unittest.TestCase):
             """
         ).strip()
 
-        result = self.eval_file(code)
-        self.assertEqual(result.returncode, 1)
-        self.assertIn("Resource temporarily unavailable", result.stdout)
-        self.assertEqual(result.stderr, None)
+        try:
+            result = self.eval_file(code)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("Resource temporarily unavailable", result.stdout)
+            self.assertEqual(result.stderr, None)
+        finally:
+            self.nsjail.config.cgroup_pids_max = previous_pids_max
 
     def test_file_parsing_timeout(self):
         code = dedent(
