@@ -61,13 +61,13 @@ class IntegrationTests(unittest.TestCase):
             cases = [
                 (
                     get_python_version_body,
-                    "3.13\n",
+                    "3.14\n",
                     "test default executable is used when executable_path not specified",
                 ),
                 (
                     get_python_version_body
-                    | {"executable_path": "/snekbin/python/3.13/bin/python"},
-                    "3.13\n",
+                    | {"executable_path": "/snekbin/python/3.14/bin/python"},
+                    "3.14\n",
                     "test default executable is used when explicitly set",
                 ),
                 (
@@ -90,8 +90,8 @@ class IntegrationTests(unittest.TestCase):
                 "input": "import sysconfig; print(sysconfig.get_config_var('Py_GIL_DISABLED'))"
             }
             cases = [
-                ("3.13", "0\n"),
-                ("3.13t", "1\n"),
+                ("3.14", "0\n"),
+                ("3.14t", "1\n"),
             ]
             for version, expected in cases:
                 with self.subTest(version=version, expected=expected):
