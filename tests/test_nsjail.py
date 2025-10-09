@@ -108,17 +108,17 @@ class NsJailTests(unittest.TestCase):
                 object = "A" * 40_000_000
                 time.sleep(0.5)
 
+            if __name__ == "__main__":
+                proc_1 = Process(target=f)
+                proc_2 = Process(target=f)
 
-            proc_1 = Process(target=f)
-            proc_2 = Process(target=f)
+                proc_1.start()
+                proc_2.start()
 
-            proc_1.start()
-            proc_2.start()
+                proc_1.join()
+                proc_2.join()
 
-            proc_1.join()
-            proc_2.join()
-
-            print(proc_1.exitcode, proc_2.exitcode)
+                print(proc_1.exitcode, proc_2.exitcode)
             """
         )
 
@@ -137,8 +137,9 @@ class NsJailTests(unittest.TestCase):
             def f(x):
                 return x*x
 
-            with Pool(2) as p:
-                print(p.map(f, [1, 2, 3]))
+            if __name__ == "__main__":
+                with Pool(2) as p:
+                    print(p.map(f, [1, 2, 3]))
         """
         )
 
