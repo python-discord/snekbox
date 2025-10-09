@@ -35,14 +35,13 @@ COPY --link scripts/build_python.sh /
 
 # ------------------------------------------------------------------------------
 FROM builder-py-base AS builder-py-3_13
-RUN /build_python.sh 3.13.5
-# ------------------------------------------------------------------------------
-FROM builder-py-base AS builder-py-3_13t
-# This can't be bumped to latest until https://github.com/python/cpython/issues/135734 is resolved.
-RUN /build_python.sh 3.13.2t
+RUN /build_python.sh 3.13.8
 # ------------------------------------------------------------------------------
 FROM builder-py-base AS builder-py-3_14
 RUN /build_python.sh 3.14.0
+# ------------------------------------------------------------------------------
+FROM builder-py-base AS builder-py-3_14t
+RUN /build_python.sh 3.14.0t
 # ------------------------------------------------------------------------------
 FROM python:3.13-slim-bookworm AS base
 
@@ -59,11 +58,11 @@ RUN apt-get -y update \
 
 COPY --link --from=builder-nsjail /nsjail/nsjail /usr/sbin/
 COPY --link --from=builder-py-3_13 /snekbin/ /snekbin/
-COPY --link --from=builder-py-3_13t /snekbin/ /snekbin/
 COPY --link --from=builder-py-3_14 /snekbin/ /snekbin/
+COPY --link --from=builder-py-3_14t /snekbin/ /snekbin/
 
 RUN chmod +x /usr/sbin/nsjail \
-    && ln -s /snekbin/python/3.13/ /snekbin/python/default
+    && ln -s /snekbin/python/3.14/ /snekbin/python/default
 
 # ------------------------------------------------------------------------------
 FROM base AS venv
