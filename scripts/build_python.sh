@@ -8,9 +8,16 @@ py_version="${1}"
 # By dropping everything after, and including, the last period or hyphen.
 install_path="${py_version%[-.]*}"
 
-# If python version ends with a t, then ensure Python is installed to a dir ending with a t.
+# Ensure the suffix letter is retained for free-threaded or JIT versions of Python.
 if [[ $py_version == *t ]]; then
     install_path+="t"
+fi
+
+if [[ $py_version == *j ]]; then
+    # Enable JIT mode when passed a version that ends with a "j"
+    install_path+="j"
+    py_version="${py_version%j}"
+    PYTHON_CONFIGURE_OPTS+=" --enable-experimental-jit"
 fi
 
 "${PYENV_ROOT}/plugins/python-build/bin/python-build" \
