@@ -27,6 +27,9 @@ RUN apt-get -y update \
     && apt-get install -y --no-install-recommends \
         libxmlsec1-dev \
         tk-dev \
+        lsb-release \
+        software-properties-common \
+        gnupg \
     && rm -rf /var/lib/apt/lists/*
 
 RUN git clone -b v2.6.9 --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROOT
@@ -42,6 +45,16 @@ RUN /build_python.sh 3.14.0
 # ------------------------------------------------------------------------------
 FROM builder-py-base AS builder-py-3_14t
 RUN /build_python.sh 3.14.0t
+# ------------------------------------------------------------------------------
+FROM builder-py-base AS builder-py-3_14j
+
+# Following guidance from https://github.com/python/cpython/blob/main/Tools/jit/README.md
+RUN curl -o /tmp/llvm.sh https://apt.llvm.org/llvm.sh \
+    && chmod +x /tmp/llvm.sh \
+    && /tmp/llvm.sh 19 \
+    && rm /tmp/llvm.sh
+
+RUN /build_python.sh 3.14.0j
 # ------------------------------------------------------------------------------
 FROM python:3.13-slim-bookworm AS base
 
@@ -60,6 +73,7 @@ COPY --link --from=builder-nsjail /nsjail/nsjail /usr/sbin/
 COPY --link --from=builder-py-3_13 /snekbin/ /snekbin/
 COPY --link --from=builder-py-3_14 /snekbin/ /snekbin/
 COPY --link --from=builder-py-3_14t /snekbin/ /snekbin/
+COPY --link --from=builder-py-3_14j /snekbin/ /snekbin/
 
 RUN chmod +x /usr/sbin/nsjail \
     && ln -s /snekbin/python/3.14/ /snekbin/python/default
