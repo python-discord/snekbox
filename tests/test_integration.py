@@ -103,6 +103,26 @@ class IntegrationTests(unittest.TestCase):
                     self.assertEqual(status, 200)
                     self.assertEqual(json.loads(response)["stdout"], expected)
 
+    def test_jit_status(self):
+        """Tests that JIT builds have the JIT available and enabled."""
+        with run_gunicorn():
+            get_jit_status = {
+                "input": "import sys; print(sys._jit.is_available(), sys._jit.is_enabled())"
+            }
+            cases = [
+                ("3.14", "False False\n"),
+                ("3.14j", "True True\n"),
+            ]
+            for version, expected in cases:
+                with self.subTest(version=version, expected=expected):
+                    payload = {
+                        "executable_path": f"/snekbin/python/{version}/bin/python",
+                        **get_jit_status,
+                    }
+                    response, status = snekbox_request(payload)
+                    self.assertEqual(status, 200)
+                    self.assertEqual(json.loads(response)["stdout"], expected)
+
     def invalid_executable_paths(self):
         """Test that passing invalid executable paths result in no code execution."""
         with run_gunicorn():
