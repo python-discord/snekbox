@@ -43,7 +43,7 @@ RUN /build_python.sh 3.14.0
 FROM builder-py-base AS builder-py-3_14t
 RUN /build_python.sh 3.14.0t
 # ------------------------------------------------------------------------------
-FROM python:3.13-slim-bookworm AS base
+FROM python:3.14-slim-bookworm AS base
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=false
