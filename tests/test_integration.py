@@ -103,6 +103,33 @@ class IntegrationTests(unittest.TestCase):
                     self.assertEqual(status, 200)
                     self.assertEqual(json.loads(response)["stdout"], expected)
 
+    def test_jit_status(self):
+        """Tests that JIT builds have the JIT available and enabled."""
+        with run_gunicorn():
+            get_jit_status = {"input": "import sys; print(sys._jit.is_enabled())"}
+
+            # This test will only work on tests where the sys._jit namespace exists.
+            #
+            # The namespace was added in 3.14 but is not guaranteed to be there for other
+            # implementations of Python, see https://docs.python.org/3/library/sys.html#sys._jit
+            # for full information.
+            #
+            # For now, the two below test cases are guaranteed to have the sys._jit module available
+            # and (if compiled correctly) should return the below values.
+            cases = [
+                ("3.14", "False\n"),
+                ("3.14j", "True\n"),
+            ]
+            for version, expected in cases:
+                with self.subTest(version=version, expected=expected):
+                    payload = {
+                        "executable_path": f"/snekbin/python/{version}/bin/python",
+                        **get_jit_status,
+                    }
+                    response, status = snekbox_request(payload)
+                    self.assertEqual(status, 200)
+                    self.assertEqual(json.loads(response)["stdout"], expected)
+
     def invalid_executable_paths(self):
         """Test that passing invalid executable paths result in no code execution."""
         with run_gunicorn():
