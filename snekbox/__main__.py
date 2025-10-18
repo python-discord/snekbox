@@ -14,28 +14,40 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("code", help="the Python code to evaluate")
     parser.add_argument(
         "nsjail_args",
-        action="store_const",
-        const=[],
-        help="override configured NsJail options (default: [])",
+        nargs="*",
+        default=[],
+        help="override configured NsJail options",
     )
     parser.add_argument(
         "py_args",
-        action="store_const",
-        const=["-c"],
-        help="arguments to pass to the Python process (default: ['-c'])",
+        nargs="*",
+        default=["-c"],
+        help="arguments to pass to the Python process",
     )
-
     # nsjail_args and py_args are just dummies for documentation purposes.
     # Their actual values come from all the unknown arguments.
     # There doesn't seem to be a better solution with argparse.
-    args, unknown = parser.parse_known_args()
-    try:
-        # Can't use double dash because that has special semantics for argparse already.
-        split = unknown.index("---")
-        args.nsjail_args = unknown[:split]
-        args.py_args = unknown[split + 1 :]
-    except ValueError:
-        args.nsjail_args = unknown
+
+    # Split sys.argv based on '---' separator
+    if "---" in sys.argv:
+        separator_index = sys.argv.index("---")
+        args_before = sys.argv[1:separator_index]
+        args_after = sys.argv[separator_index + 1 :]
+    else:
+        args_before = sys.argv[1:]
+        args_after = None
+
+    # Parse only the first positional argument (code) and known flags
+    args, unknown = parser.parse_known_args(args_before[:1] if args_before else [])
+
+    # Everything after 'code' and before '---' goes to nsjail_args
+    args.nsjail_args = args_before[1:] if len(args_before) > 1 else []
+
+    # Everything after '---' goes to py_args
+    if args_after is not None:
+        args.py_args = args_after
+    else:
+        args.py_args = ["-c"]
 
     return args
 
