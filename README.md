@@ -105,6 +105,24 @@ Name | Description
 `SNEKBOX_DEBUG` | Enable debug logging if set to a non-empty value.
 `SNEKBOX_SENTRY_DSN` | [Data Source Name] for Sentry. Sentry is disabled if left unset.
 
+### Additional Interpreters
+
+By default, snekbox will use and make available the system Python (the version used to run snekbox itself). Additional interpreters or binaries should be placed in `/snekbin/` which is mounted to the nsjail container.
+
+You can use the `executable_path` parameter in `POST` requests to `/eval` to select an interpreter, e.g.
+
+```js
+{
+  "executable_path": "/snekbin/python/3.14/bin/python",
+  // Rest of /eval body
+  ...
+}
+```
+
+The default interpreter is at `/snekbin/python/default/bin/python`, you can symlink `/snekbin/python/default` to another interpreter such as `/snekbin/python/3.14` to change this default.
+
+See [`Dockerfile.pydis`](Dockerfile.pydis) for an example using additional prebuilt interpreters and how to change the defaults.. This uses images built from [`python-discord/python-builds`](https://github.com/python-discord/python-builds).
+
 ## Third-party Packages
 
 By default, the Python interpreter has no access to any packages besides the  standard library. Even snekbox's own dependencies like Falcon and Gunicorn are not exposed.
