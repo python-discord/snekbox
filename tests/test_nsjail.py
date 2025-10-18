@@ -90,7 +90,7 @@ class NsJailTests(unittest.TestCase):
             """
         ).strip()
 
-        result = self.eval_file(code)
+        result = self.eval_file(code, nsjail_args=("--cgroup_mem_max", "0"))
         self.assertEqual(result.returncode, 1)
         self.assertIn("Resource temporarily unavailable", result.stdout)
         # Expect n-1 processes to be opened by the presence of string like "2\n3\n4\n"
@@ -220,13 +220,6 @@ class NsJailTests(unittest.TestCase):
         # limit so that the only reason the test code should be killed is due to
         # PID exhaustion.
 
-        previous_pids_max, previous_mem_max = (
-            self.nsjail.config.cgroup_pids_max,
-            self.nsjail.config.cgroup_mem_max,
-        )
-        self.nsjail.config.cgroup_pids_max = 5
-        self.nsjail.config.cgroup_mem_max = 0
-
         code = dedent(
             """
             import os
@@ -235,14 +228,12 @@ class NsJailTests(unittest.TestCase):
             """
         ).strip()
 
-        try:
-            result = self.eval_file(code)
-            self.assertEqual(result.returncode, 1)
-            self.assertIn("Resource temporarily unavailable", result.stdout)
-            self.assertEqual(result.stderr, None)
-        finally:
-            self.nsjail.config.cgroup_pids_max = previous_pids_max
-            self.nsjail.config.cgroup_mem_max = previous_mem_max
+        result = self.eval_file(
+            code, nsjail_args=("--cgroup_mem_max", "0", "--cgroup_pids_max", "5")
+        )
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("Resource temporarily unavailable", result.stdout)
+        self.assertEqual(result.stderr, None)
 
     def test_file_parsing_timeout(self):
         code = dedent(

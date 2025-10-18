@@ -1,0 +1,14 @@
+# This is a custom additional build of Snekbox that includes multiple Python versions.
+
+# The Python versions are now pulled from pre-built images to reduce build time
+# and complexity. The images are built in the python-builds repository.
+
+ARG SNEKBOX_IMAGE=ghcr.io/python-discord/snekbox:latest
+FROM ${SNEKBOX_IMAGE}
+
+COPY --link --from=ghcr.io/python-discord/python-builds:3.13 /snekbin/ /snekbin/
+COPY --link --from=ghcr.io/python-discord/python-builds:3.14 /snekbin/ /snekbin/
+COPY --link --from=ghcr.io/python-discord/python-builds:3.14t /snekbin/ /snekbin/
+COPY --link --from=ghcr.io/python-discord/python-builds:3.14j /snekbin/ /snekbin/
+
+RUN rm /snekbin/python/default && ln -s /snekbin/python/3.14/ /snekbin/python/default

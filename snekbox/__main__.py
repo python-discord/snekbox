@@ -13,18 +13,19 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("code", help="the Python code to evaluate")
     parser.add_argument(
-        "nsjail_args",
-        action="store_const",
-        const=[],
+        "--nsjail-args",
+        nargs="*",
+        default=[],
+        dest="nsjail_args",
         help="override configured NsJail options (default: [])",
     )
     parser.add_argument(
-        "py_args",
-        action="store_const",
-        const=["-c"],
+        "--py-args",
+        nargs="*",
+        default=["-c"],
+        dest="py_args",
         help="arguments to pass to the Python process (default: ['-c'])",
     )
-
     # nsjail_args and py_args are just dummies for documentation purposes.
     # Their actual values come from all the unknown arguments.
     # There doesn't seem to be a better solution with argparse.

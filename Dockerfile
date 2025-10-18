@@ -16,47 +16,9 @@ RUN git clone -b master --single-branch https://github.com/google/nsjail.git . \
     && git checkout dccf911fd2659e7b08ce9507c25b2b38ec2c5800
 RUN make
 
-# ------------------------------------------------------------------------------
-FROM buildpack-deps:bookworm AS builder-py-base
+FROM python:3.14-slim-bookworm AS base
 
-ENV PYENV_ROOT=/pyenv \
-    PYTHON_CONFIGURE_OPTS='--disable-test-modules --enable-optimizations \
-        --with-lto --without-ensurepip'
-
-RUN apt-get -y update \
-    && apt-get install -y --no-install-recommends \
-        libxmlsec1-dev \
-        tk-dev \
-        lsb-release \
-        software-properties-common \
-        gnupg \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN git clone -b v2.6.9 --depth 1 https://github.com/pyenv/pyenv.git $PYENV_ROOT
-
-COPY --link scripts/build_python.sh /
-
-# ------------------------------------------------------------------------------
-FROM builder-py-base AS builder-py-3_13
-RUN /build_python.sh 3.13.8
-# ------------------------------------------------------------------------------
-FROM builder-py-base AS builder-py-3_14
-RUN /build_python.sh 3.14.0
-# ------------------------------------------------------------------------------
-FROM builder-py-base AS builder-py-3_14t
-RUN /build_python.sh 3.14.0t
-# ------------------------------------------------------------------------------
-FROM builder-py-base AS builder-py-3_14j
-
-# Following guidance from https://github.com/python/cpython/blob/main/Tools/jit/README.md
-RUN curl -o /tmp/llvm.sh https://apt.llvm.org/llvm.sh \
-    && chmod +x /tmp/llvm.sh \
-    && /tmp/llvm.sh 19 \
-    && rm /tmp/llvm.sh
-
-RUN /build_python.sh 3.14.0j
-# ------------------------------------------------------------------------------
-FROM python:3.13-slim-bookworm AS base
+RUN mkdir -p /snekbin/python/
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=false
@@ -70,13 +32,10 @@ RUN apt-get -y update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --link --from=builder-nsjail /nsjail/nsjail /usr/sbin/
-COPY --link --from=builder-py-3_13 /snekbin/ /snekbin/
-COPY --link --from=builder-py-3_14 /snekbin/ /snekbin/
-COPY --link --from=builder-py-3_14t /snekbin/ /snekbin/
-COPY --link --from=builder-py-3_14j /snekbin/ /snekbin/
 
+# Snekbox defaults to using system Python unless additional versions are added.
 RUN chmod +x /usr/sbin/nsjail \
-    && ln -s /snekbin/python/3.14/ /snekbin/python/default
+    && ln -s /usr/local /snekbin/python/default
 
 # ------------------------------------------------------------------------------
 FROM base AS venv
@@ -97,7 +56,7 @@ RUN if [ -n "${DEV}" ]; \
     then \
         pip install -U -r requirements/coverage.pip \
         && export PYTHONUSERBASE=/snekbox/user_base \
-        && /snekbin/python/default/bin/python -m pip install --user numpy~=2.3.3; \
+        && /snekbin/python/default/bin/python -m pip install --user numpy~=2.3.4; \
     fi
 
 # At the end to avoid re-installing dependencies when only a config changes.

@@ -34,7 +34,7 @@ jobs:
       - name: Run tests
         id: run_tests
         run: |
-          export IMAGE_SUFFIX='-venv:${{ inputs.version }}'
+          export IMAGE_SUFFIX='-integration:${{ inputs.version }}'
           docker compose run \
             --rm -T -e COVERAGE_DATAFILE=.coverage \
             --entrypoint coverage \
@@ -110,5 +110,5 @@ jobs:
       # This is to ensure that deployment won't fail at that step
       - name: Install eval deps
         run: |
-          export IMAGE_SUFFIX='-venv:${{ inputs.version }}'
+          export IMAGE_SUFFIX='-integration:${{ inputs.version }}'
           docker compose run --rm -T --entrypoint /bin/bash snekbox scripts/install_eval_deps.sh
