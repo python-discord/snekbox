@@ -2,7 +2,7 @@ on:
   workflow_call:
     outputs:
       artifact:
-        description: The name of the uploaded image aretfact.
+        description: The name of the uploaded image artefact.
         value: ${{ jobs.build.outputs.artifact }}
       version:
         description: The package's version.
@@ -10,13 +10,13 @@ on:
 
 jobs:
   build:
-    name: Build snekbox-venv image
+    name: Build snekbox-integration image
     runs-on: ubuntu-latest
     outputs:
       artifact: ${{ env.artifact }}
       version: ${{ steps.version.outputs.version }}
     env:
-      artifact: image_artifact_snekbox-venv
+      artifact: image_artifact_snekbox-integration
 
     steps:
       - name: Checkout code
@@ -81,13 +81,29 @@ jobs:
           push: false
           target: venv
           build-args: DEV=1
-          outputs: type=docker,dest=${{ env.artifact }}.tar
           cache-from: |
             ${{ steps.cache_config.outputs.cache_from }}
             ghcr.io/python-discord/snekbox-base:latest
             ghcr.io/python-discord/snekbox-venv:latest
           cache-to: ${{ steps.cache_config.outputs.cache_to }}
-          tags: ghcr.io/python-discord/snekbox-venv:${{ steps.version.outputs.version }}
+          tags: snekbox-venv:${{ steps.version.outputs.version }}
+
+      - name: Build integration image for testing
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile.pydis
+          push: false
+          pull: false
+          outputs: type=docker,dest=${{ env.artifact }}.tar
+          build-args: SNEKBOX_IMAGE=snekbox-venv
+          build-contexts: |
+            snekbox-venv=docker-image://snekbox-venv:${{ steps.version.outputs.version }}
+          cache-from: |
+            ${{ steps.cache_config.outputs.cache_from }}
+            ghcr.io/python-discord/snekbox-venv:latest
+          cache-to: ${{ steps.cache_config.outputs.cache_to }}
+          tags: ghcr.io/python-discord/snekbox-integration:${{ steps.version.outputs.version }}
 
       # Make the image available as an artifact so other jobs will be able to
       # download it.
