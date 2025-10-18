@@ -15,6 +15,11 @@ jobs:
   deploy:
     name: Build, push, & deploy
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
 
     steps:
       - name: Download image artifact
@@ -58,6 +63,7 @@ jobs:
           tags: |
             ghcr.io/python-discord/snekbox:latest
             ghcr.io/python-discord/snekbox:${{ inputs.version }}
+            localhost:5000/local/snekbox:${{ inputs.version }}
 
       - name: Build PyDis final image
         uses: docker/build-push-action@v6
@@ -67,6 +73,7 @@ jobs:
           push: true
           cache-from: |
             ghcr.io/python-discord/snekbox:latest-pydis
+          build-args: SNEKBOX_IMAGE=localhost:5000/local/snekbox:${{ inputs.version }}
           cache-to: type=inline
           tags: |
             ghcr.io/python-discord/snekbox:latest-pydis
