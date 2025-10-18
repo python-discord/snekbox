@@ -15,7 +15,7 @@ spec:
     spec:
       initContainers:
         - name: deps-install
-          image: ghcr.io/python-discord/snekbox:latest
+          image: ghcr.io/python-discord/snekbox:latest-pydis
           imagePullPolicy: Always
           volumeMounts:
             - name: snekbox-user-base-volume
@@ -25,7 +25,7 @@ spec:
             - scripts/install_eval_deps.sh
       containers:
         - name: snekbox
-          image: ghcr.io/python-discord/snekbox:latest
+          image: ghcr.io/python-discord/snekbox:latest-pydis
           imagePullPolicy: Always
           ports:
             - containerPort: 8060
