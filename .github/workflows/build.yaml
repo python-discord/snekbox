@@ -92,7 +92,7 @@ jobs:
       # Make the image available as an artifact so other jobs will be able to
       # download it.
       - name: Upload image archive as an artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ env.artifact }}
           path: ${{ env.artifact }}.tar

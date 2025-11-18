@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download image artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: ${{ inputs.artifact }}
 
@@ -43,7 +43,7 @@ jobs:
 
       # Upload it so the coverage from all matrix jobs can be combined later.
       - name: Upload coverage data
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: coverage
           path: .coverage
@@ -70,7 +70,7 @@ jobs:
         run: pip install -U -r requirements/coverage.pip
 
       - name: Download coverage data
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           pattern: coverage
           merge-multiple: true
@@ -84,7 +84,7 @@ jobs:
       # Comment on the PR with the coverage results and register a GitHub check
       # which links to the coveralls.io job.
       - name: Publish coverage report to coveralls.io
-        uses: coverallsapp/github-action@v2.3.6
+        uses: coverallsapp/github-action@v2.3.7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           format: lcov
@@ -95,7 +95,7 @@ jobs:
     needs: test
     steps:
       - name: Download image artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: ${{ inputs.artifact }}
 
