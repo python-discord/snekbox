@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: Download image artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: ${{ inputs.artifact }}
 
@@ -44,7 +44,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN  }}
 
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           # The version script relies on history. Fetch 100 commits to be safe.
           fetch-depth: 100
