@@ -25,7 +25,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           # The version script relies on history. Fetch 100 commits to be safe.
           fetch-depth: 100
@@ -113,7 +113,7 @@ jobs:
       # Make the image available as an artifact so other jobs will be able to
       # download it.
       - name: Upload image archive as an artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ env.artifact }}
           path: ${{ env.artifact }}.tar
