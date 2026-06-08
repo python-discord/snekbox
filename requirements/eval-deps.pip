@@ -19,7 +19,7 @@ matplotlib~=3.10
 more-itertools~=10.8
 networkx~=3.5
 numpy~=2.3
-pandas~=2.3
+pandas~=3.0
 pendulum~=3.1
 pyarrow~=21.0; python_version == "3.13"
 python-dateutil~=2.9
