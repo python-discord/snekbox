@@ -44,4 +44,6 @@ devsh:
 
 .PHONY: eval-deps
 eval-deps:
-	docker compose run --rm -T --entrypoint /bin/bash snekbox scripts/install_eval_deps.sh
+	docker build -t snekbox:base-dev --target venv --build-arg DEV=1 .
+	docker build -t ghcr.io/python-discord/snekbox-pydis:dev -f Dockerfile.pydis --build-arg SNEKBOX_IMAGE=snekbox:base-dev .
+	IMAGE_SUFFIX=-pydis:dev docker compose run --rm -T --entrypoint bash snekbox scripts/install_eval_deps.sh
