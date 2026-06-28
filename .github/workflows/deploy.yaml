@@ -31,6 +31,9 @@ jobs:
       - name: Load image from archive
         run: docker load -i ${{ inputs.artifact }}.tar
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
         with:
@@ -57,6 +60,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
+          platforms: linux/amd64,linux/arm64
           cache-from: |
             ghcr.io/python-discord/snekbox-base:latest
             ghcr.io/python-discord/snekbox-venv:latest
@@ -73,6 +77,7 @@ jobs:
           context: .
           file: ./Dockerfile.pydis
           push: true
+          platforms: linux/amd64,linux/arm64
           cache-from: |
             ghcr.io/python-discord/snekbox:latest-pydis
           build-args: SNEKBOX_IMAGE=localhost:5000/local/snekbox:${{ inputs.version }}
@@ -106,6 +111,7 @@ jobs:
           file: ./Dockerfile
           target: base
           push: true
+          platforms: linux/amd64,linux/arm64
           cache-from: ghcr.io/python-discord/snekbox-base:latest
           cache-to: type=inline
           tags: |
@@ -120,6 +126,7 @@ jobs:
           file: ./Dockerfile
           target: venv
           push: true
+          platforms: linux/amd64,linux/arm64
           cache-from: |
             ghcr.io/python-discord/snekbox-base:latest
             ghcr.io/python-discord/snekbox-venv:latest
