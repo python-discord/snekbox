@@ -40,7 +40,7 @@ jobs:
           driver-opts: network=host
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v4
+        uses: docker/login-action@v4.5.2
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -97,7 +97,7 @@ jobs:
           kubeconfig: ${{ secrets.KUBECONFIG }}
 
       - name: Deploy to Kubernetes
-        uses: azure/k8s-deploy@v6
+        uses: azure/k8s-deploy@v7
         with:
           namespace: snekbox
           manifests: deployment.yaml
