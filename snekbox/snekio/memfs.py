@@ -146,11 +146,19 @@ class MemFS:
         count = 0
         total_size = 0
         files = glob.iglob(pattern, root_dir=str(self.output), recursive=True, include_hidden=False)
+        output_root = self.output.resolve()
+
         for file in (Path(self.output, f) for f in files):
             if timeout and (time.monotonic() - start_time) > timeout:
                 raise TimeoutError("File parsing timeout exceeded in MemFS.files")
 
             if not file.is_file():
+                continue
+
+            # Resolve all symlinks and verify the target is still within the output directory.
+            real_path = file.resolve()
+            if not real_path.is_relative_to(output_root):
+                log.info(f"Skipping file {file} as it is outside the output directory")
                 continue
 
             # file.is_file allows file to be a regular file OR a symlink pointing to a regular file.
