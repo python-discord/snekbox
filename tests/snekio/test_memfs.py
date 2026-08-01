@@ -1,6 +1,9 @@
 import logging
+import os
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import ExitStack
+from pathlib import Path
+from tempfile import NamedTemporaryFile
 from unittest import TestCase, mock
 from uuid import uuid4
 
@@ -63,3 +66,37 @@ class MemFSTests(TestCase):
         with self.assertWarns(ResourceWarning):
             del memfs
         self.assertFalse(path.exists())
+
+    def test_symlink_to_file_outside_output_is_not_collected(self):
+        """A symlink pointing at a file outside output must not be read."""
+        with NamedTemporaryFile(mode="w", suffix=".secret", delete=False) as f:
+            f.write("host-secret-content")
+            secret_path = Path(f.name)
+
+        try:
+            with MemFS(1024) as memfs:
+                os.symlink(secret_path, memfs.output / "leak.txt")
+
+                results = memfs.files_list(limit=10, pattern="**/*")
+                leaked = [r for r in results if r.content == b"host-secret-content"]
+
+                self.assertEqual(
+                    leaked,
+                    [],
+                    "Symlink to a file outside the output dir was followed "
+                    "and its content was exfiltrated",
+                )
+        finally:
+            secret_path.unlink(missing_ok=True)
+
+    def test_symlink_within_output_dir_still_collected(self):
+        """Symlinks pointing to files within the output dir should still be collected."""
+        with MemFS(1024) as memfs:
+            real = memfs.output / "real.txt"
+            real.write_text("normal-output-content")
+            os.symlink(real, memfs.output / "link.txt")
+
+            results = {r.path: r.content for r in memfs.files_list(limit=10, pattern="**/*")}
+
+            self.assertIn("link.txt", results)
+            self.assertEqual(results["link.txt"], b"normal-output-content")
