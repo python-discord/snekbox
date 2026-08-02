@@ -74,8 +74,7 @@ class NsJailTests(unittest.TestCase):
 
     def test_subprocess_resource_unavailable(self):
         max_pids = self.nsjail.config.cgroup_pids_max
-        code = dedent(
-            f"""
+        code = dedent(f"""
             import subprocess
 
             # Should fail at n (max PIDs) since the caller python process counts as well
@@ -87,8 +86,7 @@ class NsJailTests(unittest.TestCase):
                         'import time; time.sleep(1)'
                     ],
                 ).pid)
-            """
-        ).strip()
+            """).strip()
 
         result = self.eval_file(code, nsjail_args=("--cgroup_mem_max", "0"))
         self.assertEqual(result.returncode, 1)
@@ -99,8 +97,7 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.stderr, None)
 
     def test_multiprocess_resource_limits(self):
-        code = dedent(
-            """
+        code = dedent("""
             import time
             from multiprocessing import Process
 
@@ -119,8 +116,7 @@ class NsJailTests(unittest.TestCase):
                 proc_2.join()
 
                 print(proc_1.exitcode, proc_2.exitcode)
-            """
-        )
+            """)
 
         result = self.eval_file(code)
 
@@ -130,8 +126,7 @@ class NsJailTests(unittest.TestCase):
 
     def test_multiprocessing_pool(self):
         # Validates that shm is working as expected
-        code = dedent(
-            """
+        code = dedent("""
             from multiprocessing import Pool
 
             def f(x):
@@ -140,8 +135,7 @@ class NsJailTests(unittest.TestCase):
             if __name__ == "__main__":
                 with Pool(2) as p:
                     print(p.map(f, [1, 2, 3]))
-        """
-        )
+        """)
 
         result = self.eval_file(code)
 
@@ -151,12 +145,10 @@ class NsJailTests(unittest.TestCase):
     def test_read_only_file_system(self):
         for path in ("/", "/etc", "/lib", "/lib64", "/snekbox", "/usr"):
             with self.subTest(path=path):
-                code = dedent(
-                    f"""
+                code = dedent(f"""
                     with open('{path}/hello', 'w') as f:
                         f.write('world')
-                    """
-                ).strip()
+                    """).strip()
 
                 result = self.eval_file(code)
                 self.assertEqual(result.returncode, 1)
@@ -164,14 +156,12 @@ class NsJailTests(unittest.TestCase):
                 self.assertEqual(result.stderr, None)
 
     def test_write(self):
-        code = dedent(
-            """
+        code = dedent("""
             from pathlib import Path
             with open('test.txt', 'w') as f:
                 f.write('hello')
             print(Path('test.txt').read_text())
-            """
-        ).strip()
+            """).strip()
 
         result = self.eval_file(code)
         self.assertEqual(result.returncode, 0)
@@ -179,14 +169,12 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.stderr, None)
 
     def test_write_exceed_space(self):
-        code = dedent(
-            f"""
+        code = dedent(f"""
             size = {self.nsjail.memfs_instance_size} // 2048
             with open('f.bin', 'wb') as f:
                 for i in range(size):
                     f.write(b'1' * 2048)
-            """
-        ).strip()
+            """).strip()
 
         result = self.eval_file(code)
         self.assertEqual(result.returncode, 1)
@@ -195,8 +183,7 @@ class NsJailTests(unittest.TestCase):
 
     def test_write_hidden_exclude(self):
         """Hidden paths should be excluded from output."""
-        code = dedent(
-            """
+        code = dedent("""
             from pathlib import Path
 
             Path("normal").mkdir()
@@ -204,8 +191,7 @@ class NsJailTests(unittest.TestCase):
             Path("normal/.hidden.txt").write_text("a")
             Path(".hidden").mkdir()
             Path(".hidden/b.txt").write_text("b")
-            """
-        ).strip()
+            """).strip()
 
         result = self.eval_file(code)
         self.assertEqual(result.returncode, 0)
@@ -220,13 +206,11 @@ class NsJailTests(unittest.TestCase):
         # limit so that the only reason the test code should be killed is due to
         # PID exhaustion.
 
-        code = dedent(
-            """
+        code = dedent("""
             import os
             while 1:
                 os.fork()
-            """
-        ).strip()
+            """).strip()
 
         result = self.eval_file(
             code, nsjail_args=("--cgroup_mem_max", "0", "--cgroup_pids_max", "5")
@@ -236,8 +220,7 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.stderr, None)
 
     def test_file_parsing_timeout(self):
-        code = dedent(
-            """
+        code = dedent("""
             import os
             data = "a" * 1024
             size = 32 * 1024 * 1024
@@ -248,8 +231,7 @@ class NsJailTests(unittest.TestCase):
 
             for i in range(100):
                 os.symlink("file", f"file{i}")
-            """
-        ).strip()
+            """).strip()
         # A value higher than the actual memory needed is used to avoid the limit
         # on total file size being reached before the timeout when reading.
         nsjail = NsJail(memfs_instance_size=128 * Size.MiB, files_timeout=0.1)
@@ -261,12 +243,10 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.stderr, None)
 
     def test_filename_encoding_illegal_chars(self):
-        code = dedent(
-            r"""
+        code = dedent(r"""
             with open(b"\xC3.txt", "w") as f:
                 f.write("test")
-            """
-        ).strip()
+            """).strip()
         result = self.eval_file(code)
         self.assertEqual(result.returncode, None)
         self.assertEqual(
@@ -275,8 +255,7 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.stderr, None)
 
     def test_file_parsing_depth_limit(self):
-        code = dedent(
-            """
+        code = dedent("""
             import os
 
             x = ""
@@ -285,8 +264,7 @@ class NsJailTests(unittest.TestCase):
                 os.mkdir(x)
 
             open(f"{x}test.txt", "w").write("test")
-            """
-        ).strip()
+            """).strip()
 
         nsjail = NsJail(memfs_instance_size=32 * Size.MiB, files_timeout=5)
         result = nsjail.python3(["-c", code])
@@ -299,16 +277,14 @@ class NsJailTests(unittest.TestCase):
 
     def test_file_parsing_size_limit_sparse_files(self):
         tmpfs_size = 8 * Size.MiB
-        code = dedent(
-            f"""
+        code = dedent(f"""
             import os
             with open("test.txt", "w") as f:
                 os.truncate(f.fileno(), {tmpfs_size // 2 + 1})
 
             with open("test2.txt", "w") as f:
                 os.truncate(f.fileno(), {tmpfs_size // 2 + 1})
-            """
-        )
+            """)
         nsjail = NsJail(memfs_instance_size=tmpfs_size, files_timeout=5)
         result = nsjail.python3(["-c", code])
         self.assertEqual(result.returncode, 0)
@@ -316,15 +292,13 @@ class NsJailTests(unittest.TestCase):
 
     def test_file_parsing_size_limit_sparse_files_large(self):
         tmpfs_size = 8 * Size.MiB
-        code = dedent(
-            f"""
+        code = dedent(f"""
             import os
             with open("test.txt", "w") as f:
                 # Use a very large value to ensure the test fails if the
                 # file is read even if would have been discarded later.
                 os.truncate(f.fileno(), {1024 * Size.TiB})
-            """
-        )
+            """)
         nsjail = NsJail(memfs_instance_size=tmpfs_size, files_timeout=5)
         result = nsjail.python3(["-c", code])
         self.assertEqual(result.returncode, 0)
@@ -332,8 +306,7 @@ class NsJailTests(unittest.TestCase):
 
     def test_file_parsing_size_limit_symlinks(self):
         tmpfs_size = 8 * Size.MiB
-        code = dedent(
-            f"""
+        code = dedent(f"""
             import os
             data = "a" * 1024
             size = {tmpfs_size // 8}
@@ -344,8 +317,7 @@ class NsJailTests(unittest.TestCase):
 
             for i in range(20):
                 os.symlink("file", f"file{{i}}")
-            """
-        )
+            """)
         nsjail = NsJail(memfs_instance_size=tmpfs_size, files_timeout=5)
         result = nsjail.python3(["-c", code])
         self.assertEqual(result.returncode, 0)
@@ -366,12 +338,10 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.returncode, None)
 
     def test_sigsegv_returns_139(self):  # In honour of Juan.
-        code = dedent(
-            """
+        code = dedent("""
             import ctypes
             ctypes.string_at(0)
-            """
-        ).strip()
+            """).strip()
 
         result = self.eval_file(code)
         self.assertEqual(result.returncode, 139)
@@ -392,16 +362,12 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.stderr, None)
 
     def test_unicode_env_erase_escape_fails(self):
-        result = self.eval_file(
-            dedent(
-                """
+        result = self.eval_file(dedent("""
                 import os
                 import sys
                 os.unsetenv('PYTHONIOENCODING')
                 os.execl(sys.executable, 'python', '-c', 'print(chr(56550))')
-                """
-            ).strip()
-        )
+                """).strip())
         self.assertEqual(result.returncode, None)
         self.assertEqual(result.stdout, "UnicodeDecodeError: invalid Unicode in output pipe")
         self.assertEqual(result.stderr, None)
@@ -437,12 +403,10 @@ class NsJailTests(unittest.TestCase):
         )
 
     def test_tmp_not_mounted(self):
-        code = dedent(
-            """
+        code = dedent("""
             with open('/tmp/test', 'wb') as file:
                 file.write(bytes([255]))
-        """
-        ).strip()
+        """).strip()
 
         result = self.eval_file(code)
         self.assertEqual(result.returncode, 1)
@@ -462,16 +426,14 @@ class NsJailTests(unittest.TestCase):
             with self.subTest(shm_size=shm_size, buffer_size=buffer_size):
                 # Need enough memory for buffer and bytearray plus some overhead.
                 mem_max = (buffer_size * 2) + (400 * Size.MiB)
-                code = dedent(
-                    f"""
+                code = dedent(f"""
                     from multiprocessing.shared_memory import SharedMemory
 
                     shm = SharedMemory(create=True, size={shm_size})
                     shm.buf[:{buffer_size}] = bytearray([1] * {buffer_size})
                     shm.close()
                     shm.unlink()
-                """
-                ).strip()
+                """).strip()
 
                 result = self.eval_file(code, nsjail_args=("--cgroup_mem_max", str(mem_max)))
 
@@ -481,13 +443,11 @@ class NsJailTests(unittest.TestCase):
 
     def test_multiprocessing_shared_memory_mmap_limited(self):
         """The mmap call should be OOM trying to map a large & sparse shared memory object."""
-        code = dedent(
-            f"""
+        code = dedent(f"""
             from multiprocessing.shared_memory import SharedMemory
 
             SharedMemory(create=True, size={self.nsjail.config.cgroup_mem_max + Size.GiB})
-        """
-        ).strip()
+        """).strip()
 
         result = self.eval_file(code)
         self.assertEqual(result.returncode, 1)
@@ -503,12 +463,10 @@ class NsJailTests(unittest.TestCase):
     def test_output_order(self):
         stdout_msg = "greetings from stdout!"
         stderr_msg = "hello from stderr!"
-        code = dedent(
-            f"""
+        code = dedent(f"""
             print({stdout_msg!r})
             raise ValueError({stderr_msg!r})
-            """
-        ).strip()
+            """).strip()
 
         result = self.eval_file(code)
         self.assertLess(
@@ -604,8 +562,7 @@ class NsJailCgroupTests(unittest.TestCase):
         logging.getLogger("snekbox.nsjail").setLevel(logging.ERROR)
         logging.getLogger("snekbox.limits.swap").setLevel(logging.ERROR)
 
-        config_base = dedent(
-            """
+        config_base = dedent("""
             mode: ONCE
             mount {
                 src: "/"
@@ -617,8 +574,7 @@ class NsJailCgroupTests(unittest.TestCase):
                 path: "/bin/su"
                 arg: ""
             }
-            """
-        ).strip()
+            """).strip()
 
         cases = (
             (

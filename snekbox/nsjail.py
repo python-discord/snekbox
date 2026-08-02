@@ -273,11 +273,14 @@ class NsJail:
             nsjail_args: Overrides for the NsJail configuration.
             executable_path: The path to the executable to run within nsjail.
         """
-        with NamedTemporaryFile() as nsj_log, MemFS(
-            instance_size=self.memfs_instance_size,
-            home=self.memfs_home,
-            output=self.memfs_output,
-        ) as fs:
+        with (
+            NamedTemporaryFile() as nsj_log,
+            MemFS(
+                instance_size=self.memfs_instance_size,
+                home=self.memfs_home,
+                output=self.memfs_output,
+            ) as fs,
+        ):
             args = self._build_args(
                 py_args,
                 nsjail_args,

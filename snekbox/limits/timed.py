@@ -1,4 +1,5 @@
 """Calling functions with time limits."""
+
 import signal
 from collections.abc import Generator
 from contextlib import contextmanager
