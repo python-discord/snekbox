@@ -12,9 +12,8 @@ RUN apt-get -y update \
         protobuf-compiler \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git clone -b master --single-branch https://github.com/google/nsjail.git . \
-    && git checkout dccf911fd2659e7b08ce9507c25b2b38ec2c5800
-RUN make
+RUN git clone -b 3.6 --single-branch --depth 1 https://github.com/google/nsjail.git . \
+    && make -j"$(nproc)"
 
 FROM python:3.14-slim-bookworm AS base
 
