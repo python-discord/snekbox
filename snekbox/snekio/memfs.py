@@ -1,4 +1,5 @@
 """Memory filesystem for snekbox."""
+
 from __future__ import annotations
 
 import glob
@@ -78,7 +79,7 @@ class MemFS:
         with suppress(OSError):
             unmount(path)
             path.rmdir()
-        warnings.warn(warn_message, ResourceWarning)
+        warnings.warn(warn_message, ResourceWarning, stacklevel=2)
 
     def cleanup(self) -> None:
         """Unmount the tempfs and remove the directory."""

@@ -174,8 +174,7 @@ class IntegrationTests(unittest.TestCase):
                 "files": [
                     {
                         "path": "main.py",
-                        "content": b64encode_code(
-                            """
+                        "content": b64encode_code("""
                             from pathlib import Path
                             from mod import lib
                             print(lib.var)
@@ -185,8 +184,7 @@ class IntegrationTests(unittest.TestCase):
 
                             Path('dir').mkdir()
                             Path('dir/test2.txt').write_text('test 2')
-                            """
-                        ),
+                            """),
                     },
                     {"path": "mod/__init__.py"},
                     {"path": "mod/lib.py", "content": b64encode_code("var = 'hello'")},

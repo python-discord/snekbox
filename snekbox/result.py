@@ -1,4 +1,5 @@
 """Types for representing the result of an evaluation job."""
+
 from collections.abc import Sequence
 from os import PathLike
 from subprocess import CompletedProcess
