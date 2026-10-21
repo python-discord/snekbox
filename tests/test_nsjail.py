@@ -72,6 +72,27 @@ class NsJailTests(unittest.TestCase):
         self.assertEqual(result.stdout, "hello\n")
         self.assertEqual(result.stderr, None)
 
+    def test_busybox_shell_pipeline(self):
+        code = dedent(r"""
+            import subprocess
+
+            print(
+                subprocess.run(
+                    r'''printf 'Hello world!\nThis is a test.\n' | /usr/bin/env wc''',
+                    shell=True,
+                    check=True,
+                    capture_output=True,
+                    text=True,
+                ).stdout
+            )
+            """).strip()
+
+        result = self.eval_file(code)
+        self.assertEqual(result.returncode, 0)
+        # Count of lines, words, and characters, separated by whitespace.
+        self.assertEqual(result.stdout.split(), ["2", "6", "29"])
+        self.assertEqual(result.stderr, None)
+
     def test_subprocess_resource_unavailable(self):
         max_pids = self.nsjail.config.cgroup_pids_max
         code = dedent(f"""
