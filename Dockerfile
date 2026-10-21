@@ -17,17 +17,19 @@ RUN git clone -b 3.6 --single-branch --depth 1 https://github.com/google/nsjail.
 
 FROM python:3.14-slim-bookworm AS base
 
-RUN mkdir -p /snekbin/python/
+RUN mkdir -p /snekbin/python/ /busybox/
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=false
 
 RUN apt-get -y update \
     && apt-get install -y --no-install-recommends \
+        busybox \
         gcc \
         git \
         libnl-route-3-200 \
         libprotobuf32 \
+    && busybox --install /busybox/ \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --link --from=builder-nsjail /nsjail/nsjail /usr/sbin/
