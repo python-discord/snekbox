@@ -387,7 +387,7 @@ class NsJailTests(unittest.TestCase):
                 import os
                 import sys
                 os.unsetenv('PYTHONIOENCODING')
-                os.execl(sys.executable, 'python', '-c', 'print(chr(56550))')
+                os.execl(sys.executable, sys.executable, '-c', 'print(chr(56550))')
                 """).strip())
         self.assertEqual(result.returncode, None)
         self.assertEqual(result.stdout, "UnicodeDecodeError: invalid Unicode in output pipe")

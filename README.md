@@ -121,7 +121,7 @@ You can use the `executable_path` parameter in `POST` requests to `/eval` to sel
 
 The default interpreter is at `/snekbin/python/default/bin/python`, you can symlink `/snekbin/python/default` to another interpreter such as `/snekbin/python/3.14` to change this default.
 
-See [`Dockerfile.pydis`](Dockerfile.pydis) for an example using additional prebuilt interpreters and how to change the defaults.. This uses images built from [`python-discord/python-builds`](https://github.com/python-discord/python-builds).
+See [`Dockerfile.pydis`](Dockerfile.pydis) for an example using additional prebuilt interpreters and how to change the defaults. This uses [`uv`](https://docs.astral.sh/uv/) to install prebuilt [python-build-standalone](https://github.com/astral-sh/python-build-standalone) interpreters.
 
 ## Third-party Packages
 

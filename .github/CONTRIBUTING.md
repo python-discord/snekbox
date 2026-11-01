@@ -64,12 +64,15 @@ Other things to look out for are breaking changes to NsJail's config format, its
 
 ## Adding and Updating Python Interpreters
 
-Python interpreters are built using pyenv via the `scripts/build_python.sh` helper script. This script accepts a pyenv version specifier (`pyenv install --list`) and builds the interpreter in a version-specific directory under `/snekbin/python`. In the image, each minor version of a Python interpreter should have its own build stage and the resulting `/snekbin/python` directory can be copied from that stage into the `base` stage.
+Python interpreters are installed using [uv] via the `scripts/install_python.sh` helper script. This script installs a prebuilt [python-build-standalone] interpreter into a version-specific directory under `/snekbin/python`. It accepts a minor version (e.g. `3.14`), optionally followed by `t` for a free-threaded build or `j` for a build with the JIT enabled, and installs the latest patch release of that version known to uv.
 
-When updating a patch version (e.g. 3.11.3 to 3.11.4), edit the existing build stage in the image for the minor version (3.11); do not add a new build stage. To have access to a new version, pyenv likely needs to be updated. To do so, change the tag in the `git clone` command in the image, but only for the build stage that needs access to the new version. Updating pyenv for all build stages will just cause unnecessary build cache invalidations.
+[Dockerfile.pydis] uses the latest release of the `ghcr.io/astral-sh/uv` image, so new patch releases are picked up automatically once uv knows about them. Run `docker pull ghcr.io/astral-sh/uv:latest` before building to make sure a stale local copy of the uv image isn't used.
 
-To change the default interpreter used by NsJail, update the target of the `/snekbin/python/default` symlink created in the `base` stage.
+By default, NsJail uses the system Python of the `base` stage. [Dockerfile.pydis] changes the default by updating the target of the `/snekbin/python/default` symlink.
 
 [readme]: ../README.md
 [Dockerfile]: ../Dockerfile
+[Dockerfile.pydis]: ../Dockerfile.pydis
+[uv]: https://docs.astral.sh/uv/
+[python-build-standalone]: https://github.com/astral-sh/python-build-standalone
 [Compose v2]: https://docs.docker.com/compose/compose-v2/
