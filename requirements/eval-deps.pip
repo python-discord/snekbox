@@ -6,7 +6,7 @@ beautifulsoup4~=4.15
 # Doesn't support 3.13, 3.14 or 3.14t, so commented out for now.
 # einspect~=0.5
 
-fishhook~=0.3; python_version == "3.13"
+fishhook~=0.3
 forbiddenfruit~=0.1
 fuzzywuzzy~=0.18
 
